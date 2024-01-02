@@ -6,7 +6,11 @@ import ProtectedRoute from "@/layouts/ProtectedRoute";
 
 import Signup from "@/pages/signup/Signup";
 import Login from "@/pages/login/Login";
-import Home from "@/pages/home/Home";
+import ResetPassword from "@/pages/login/ResetPassword";
+import ResetAsk from "@/pages/login/ResetAsk";
+import Table from "@/pages/dashboard/Table";
+import OTP from "@/pages/signup/OTP";
+
 
 // lazy import components
 const PostList = lazy(() => import("@/pages/posts/list"));
@@ -23,7 +27,10 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <h1>Dashboard</h1>,
+            element: <div className="flex flex-col gap-10">
+            
+            <Table />
+          </div>,
           },
           {
             path: "posts",
@@ -53,6 +60,18 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login></Login>
+  },
+  {
+    path: '/reset',
+    element: <ResetPassword></ResetPassword>
+  },
+  {
+    path: '/resetask',
+    element: <ResetAsk></ResetAsk>
+  },
+  {
+    path: '/otp',
+    element: <OTP></OTP>
   },
   
 ]);

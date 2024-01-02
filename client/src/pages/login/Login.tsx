@@ -1,53 +1,77 @@
-
-
 import { setIsAuthenticated } from "@/app/authSlice";
 import { useAppDispatch } from "@/app/store";
-import { HiAtSymbol, HiFingerPrint } from 'react-icons/hi';
-import { Link } from "react-router-dom";
+import { HiAtSymbol, HiEye, HiEyeOff } from "react-icons/hi";
+import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from 'axios';
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Login = () => {
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
+  const notifySuccess = (message: string) => toast.success(message);
+  const notifyError = (message: string) => toast.error(message);
 
   // const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
   //   dispatch(setIsAuthenticated(true));
   // };
 
-  const [users, setUsers] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const navigate = useNavigate()
+  const [users, setUsers] = useState([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   useEffect(() => {
     fetchUsers();
-  }, [])
+  }, []);
 
-  const fetchUsers = () =>{
-    axios.get('http://localhost:5173/register')
-    .then((res) => {
-      console.log(res.data)
-    })
-  }
+  const fetchUsers = () => {
+    axios.get("http://localhost:5173/register").then((res) => {
+      console.log(res.data);
+    });
+  };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try{
-      const response = await axios.post('http://localhost:5173/login', {username, password})
-      const token = response.data.token
-      alert('Login Sucessful')
-      setUsername('')
-      setPassword('')
+    try {
+      const response = await axios.post("http://localhost:5173/login", {
+        email,
+        password,
+      });
+      const token = response.data.token;
+      alert("Login Sucessful");
+      dispatch(setIsAuthenticated(true));
+      setEmail("");
+      setPassword("");
       fetchUsers();
-      navigate('/')
-      window.location.reload()
-      localStorage.setItem('token', token)
-    }catch(error){
-      console.log('Login Error!', error)
+      console.log("Going to the homepage");
+      navigate("/");
+      console.log("in home page");
+      window.location.reload();
+      localStorage.setItem("token", token);
+    } catch (error: any) {
+      if (error.response && error.response.data) {
+        const { data } = error.response;
+
+        if (data.error) {
+          alert(data.error);
+        } else if (data.errors) {
+          const errors = data.errors;
+          errors.forEach((err: { msg: string }) => alert(err.msg));
+        } else {
+          console.error("Login Error!", error);
+        }
+      } else {
+        console.error("Login Error!", error);
+      }
     }
-  }
+  };
 
   return (
     <div className="flex h-screen">
@@ -59,14 +83,12 @@ const Login = () => {
       {/* Right Panel */}
       <div className="bg-slate-50 w-1/2 flex flex-col justify-evenly py-10 text-center">
         <section className="w-3/4 mx-auto flex flex-col gap-10">
-
-          
-
           {/* Title Section */}
           <div className="title">
-          
             <h3 className="text-gray-800 text-2xl font-bold py-4">Log In</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">Please login to your account.</p>
+            <p className="w-3/4 text-gray-400 mx-auto text-sm">
+              Please login to your account.
+            </p>
           </div>
 
           {/* Form Section */}
@@ -75,11 +97,11 @@ const Login = () => {
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
                 type="text"
-                name="username"
+                name="email"
                 id=""
-                placeholder="Username"
-                value={username}
-                 onChange={(e) => setUsername(e.target.value)}
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400 "
               />
@@ -91,17 +113,20 @@ const Login = () => {
             {/* Password Input */}
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
-                 type="password"
-                 name="password"
-                 id=""
-                 placeholder="Password"
-                 value={password}
+                type={showPassword ? "text" : "password"}
+                name="password"
+                id=""
+                placeholder="Password"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                 required
-                 className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
+                required
+                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
               />
-              <span className="icon flex items-center px-4">
-                <HiFingerPrint />
+              <span
+                className="icon flex items-center px-4 cursor-pointer"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <HiEyeOff /> : <HiEye />}
               </span>
             </div>
 
@@ -114,10 +139,21 @@ const Login = () => {
                 Log In
               </button>
             </div>
+            {/* Forgot Password Link */}
+            <p className="text-right text-gray-400 text-sm ">
+              <NavLink to={"/resetask"} className="text-lime-700 underline">
+                <button
+                  className="w-full border border-lime-500 rounded-xl py-2 px-4 text-lime-500 text-sm "
+                  style={{ background: "white" }}
+                >
+                  Forgot Password?
+                </button>
+              </NavLink>
+            </p>
           </form>
 
           {/* Additional Info Section */}
-          <p className="text-center text-gray-400 text-sm mt-2">
+          <p className="text-center text-gray-400 text-sm ">
             Don't have an account?{" "}
             <Link to={"/signup"}>
               <a href="" className="text-lime-700 underline">

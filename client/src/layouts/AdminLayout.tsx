@@ -38,6 +38,7 @@ const AdminLayout = () => {
         <div className="drawer-side">
           <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
           <ul className="menu p-4 w-80 bg-base-100 text-base-content">
+            <img src="src\assets\logo-l.png" alt="" className="w-2/3 h-auto object-cover mx-auto px-3 pb-3"/>
             <li>
               <Link to="/">Dashboard</Link>
             </li>
@@ -47,7 +48,7 @@ const AdminLayout = () => {
             {/* logout button at bottom */}
             <div className="absolute bottom-0 w-full left-0 p-4">
               <button
-                className="btn btn-error w-full text-center text-white"
+                className="btn border-none  bg-error w-full text-center text-white"
                 onClick={() => dispatch(logout())}
               >
                 Logout

@@ -1,50 +1,87 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { HiAtSymbol, HiEye, HiPhone } from 'react-icons/hi';
-import styles from "./styles.module.css";  // Make sure to use styles if needed
-import { useState, useEffect } from "react";
+import { HiAtSymbol, HiEye, HiPhone, HiEyeOff, HiIdentification  } from 'react-icons/hi';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Signup() {
-  // If you're planning to use state, you should declare it using useState.
-  const [user, setUsers] = useState([])
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [number, setNumber] = useState('')
-  const [password, setPassword] = useState('')
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [number, setNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const notifySuccess = (message: string) => toast.success(message);
+  const notifyError = (message: string) => toast.error(message);
 
   useEffect(() => {
     fetchUsers();
-  }, [])
+  }, []);
 
-  const fetchUsers = () =>{
+  const fetchUsers = () => {
     axios.get('http://localhost:5173/register')
-    .then((res) => {
-      console.log(res.data)
-    })
+      .then((res) => {
+        console.log(res.data);
+      })
+      .catch((error) => {
+        console.error('Fetch Users Error:', error);
+      });
   }
 
-  const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); //dont want the page to refresh the page
-    axios.post('http://localhost:5173/register', {email, number, username, password})
-    .then(() => {
-      alert('Sucessfully registered!')
-      setEmail('')
-      setUsername('')
-      setNumber('')
-      setPassword('')
-      fetchUsers()
-      navigate('/login')
-    })
-    .catch((error) => {
-      console.log('Unable to register!')
-    })
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
 
-    
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
-  
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!isValidEmail(email)) {
+      notifyError('Invalid email address');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      notifyError('Passwords do not match');
+      return;
+    }
+
+    axios.post('http://localhost:5173/register', { email, number, username, password })
+      .then(() => {
+        alert('Successfully registered!');
+        setEmail('');
+        setUsername('');
+        setNumber('');
+        setPassword('');
+        setConfirmPassword('');
+        fetchUsers();
+        navigate('/login');
+      })
+      .catch((error) => {
+        if (error.response && error.response.data && error.response.data.error) {
+            notifyError(error.response.data.error);
+        } else if (error.response && error.response.data && error.response.data.errors) {
+            // Handle multiple validation errors
+            const errors = error.response.data.errors;
+            errors.forEach((err: { msg: string }) => notifyError(err.msg));
+        } else {
+            console.error('Unable to register!', error);
+        }
+    });
+  };
 
   return (
     <div className="flex h-screen">
@@ -68,23 +105,6 @@ export default function Signup() {
 
           {/* Form Section */}
           <form className="flex flex-col gap-5" onSubmit={handleRegister}>
-            <div className="flex flex-row gap-2 border rounded-xl relative ">
-              {/* <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none hover:border-lime-500"
-              />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none hover:border-lime-500"
-              /> */}
-            </div>
-
             {/* Email Input */}
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
@@ -116,7 +136,7 @@ export default function Signup() {
               </span>
             </div>
 
-            {/* Password Input */}
+            {/* Username Input */}
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
                 type="text"
@@ -128,24 +148,49 @@ export default function Signup() {
                 onChange={(e) => setUsername(e.target.value)}
               />
               <span className="icon flex items-center px-4">
-                <HiEye />
+                <HiIdentification  />
               </span>
             </div>
 
-            {/* Confirmed Password Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <span className="icon flex items-center px-4">
-                <HiEye />
-              </span>
-            </div>
+            <div>
+      {/* Password Input */}
+      <div className="flex border rounded-xl relative hover:border-lime-500 mb-5">
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password"
+          required
+          className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <span
+          className="icon flex items-center px-4 cursor-pointer"
+          onClick={togglePasswordVisibility}
+        >
+          {showPassword ? <HiEyeOff /> : <HiEye />}
+        </span>
+      </div>
+
+      {/* Confirm Password Input */}
+      <div className="flex border rounded-xl relative hover:border-lime-500">
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          required
+          className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        <span
+          className="icon flex items-center px-4 cursor-pointer"
+          onClick={toggleConfirmPasswordVisibility}
+        >
+          {showConfirmPassword ? <HiEyeOff /> : <HiEye />}
+        </span>
+      </div>
+    </div>
 
             {/* Submit Button */}
             <div className="input-button">
@@ -159,7 +204,7 @@ export default function Signup() {
           </form>
 
           {/* Additional Info Section */}
-          <p className="text-center text-gray-400 text-sm mt-2">
+          <p className="text-center text-gray-400 text-sm mt-1">
             Already have an account?{" "}
             <Link to="/login" className="text-lime-700 underline">
               Log In
@@ -167,6 +212,7 @@ export default function Signup() {
           </p>
         </section>
       </div>
+      <ToastContainer />
     </div>
   );
 }
