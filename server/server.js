@@ -6,6 +6,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
 const app = express();
+const nodemailer = require('nodemailer');
+const otpGenerator = require('otp-generator');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const dbURI =
   "mongodb+srv://medihub:medihub%40123@cluster0.a1uktfi.mongodb.net/UsersDB?retryWrites=true&w=majority";
@@ -25,6 +29,19 @@ mongoose
 
 app.use(bodyParser.json());
 app.use(cors());
+
+const transporter = nodemailer.createTransport({
+  service: process.env.SERVICE,
+  auth: {
+    user: process.env.USER,
+    pass: process.env.PASSWORD,
+  },
+});
+
+module.exports = transporter;
+
+const generateOTP = () => otpGenerator.generate
+(6, { digits: true, alphabets: false, upperCase: false, specialChars: false });
 
 async function hashPassword(password) {
   const hashedPassword = await bcrypt.hash(password, saltRounds);

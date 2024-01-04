@@ -20,40 +20,40 @@ const CreatePost = lazy(() => import("@/pages/posts/create"));
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <ProtectedRoute />,
-    children: [
-      {
-        path: "/",
-        element: <AdminLayout />,
-        children: [
-          {
-            index: true,
-            element: <div className="flex flex-col gap-10">
+    element: <OTP />,
+    // children: [
+    //   {
+    //     path: "/",
+    //     element: <AdminLayout />,
+    //     children: [
+    //       {
+    //         index: true,
+    //         element: <div className="flex flex-col gap-10">
             
             
             
-            <Form />
-          </div>,
-          },
-          {
-            path: "posts",
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <PostList />
-              </Suspense>
-            ),
-          },
-          {
-            path: "posts/create",
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <CreatePost />
-              </Suspense>
-            ),
-          },
-        ],
-      },
-    ],
+    //         <Form />
+    //       </div>,
+    //       },
+    //       {
+    //         path: "posts",
+    //         element: (
+    //           <Suspense fallback={<div>Loading...</div>}>
+    //             <PostList />
+    //           </Suspense>
+    //         ),
+    //       },
+    //       {
+    //         path: "posts/create",
+    //         element: (
+    //           <Suspense fallback={<div>Loading...</div>}>
+    //             <CreatePost />
+    //           </Suspense>
+    //         ),
+    //       },
+    //     ],
+    //   },
+    // ],
   },
 
   {
