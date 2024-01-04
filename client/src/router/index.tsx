@@ -10,7 +10,8 @@ import ResetPassword from "@/pages/login/ResetPassword";
 import ResetAsk from "@/pages/login/ResetAsk";
 import Table from "@/pages/dashboard/Table";
 import OTP from "@/pages/signup/OTP";
-
+import Card from "@/components/Card";
+import Form from "@/components/doctor/Form";
 
 // lazy import components
 const PostList = lazy(() => import("@/pages/posts/list"));
@@ -29,7 +30,9 @@ const router = createBrowserRouter([
             index: true,
             element: <div className="flex flex-col gap-10">
             
-            <Table />
+            
+            
+            <Form />
           </div>,
           },
           {
