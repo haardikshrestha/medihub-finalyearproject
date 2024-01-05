@@ -61,14 +61,14 @@ export default function Signup() {
 
     axios.post('http://localhost:5173/register', { email, number, username, password })
       .then(() => {
-        alert('Successfully registered!');
+        alert('Check your email for OTP verification.');
         setEmail('');
         setUsername('');
         setNumber('');
         setPassword('');
         setConfirmPassword('');
         fetchUsers();
-        navigate('/login');
+        navigate('/otp');
       })
       .catch((error) => {
         if (error.response && error.response.data && error.response.data.error) {

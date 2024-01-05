@@ -1,4 +1,26 @@
+import { ReactHTMLElement, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 export default function OTP ()  {
+  const [otp, setOtp] = useState('');
+  const navigate = useNavigate();
+
+  const handleVerify = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    axios.post('http://localhost:5173/verify-otp', { email: 'shantisth000@gmail.com', otp }) // Replace 'user@example.com' with the actual user email
+      .then((response) => {
+        alert(response.data.message);
+        navigate('/')
+        // Add logic to navigate to the next page or perform other actions after successful verification
+      })
+      .catch((error) => {
+        // Handle verification error
+        console.error('OTP Verification Error:', error);
+      });
+  };
+
    return (
       <div className="flex h-screen">
         {/* Left Panel */}

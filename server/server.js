@@ -60,6 +60,7 @@ app.post("/register", async (req, res) => {
     //email validation
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
+      console.log('hi')
       return res.status(400).json({ error: "Email is already taken!" });
     }
 
@@ -101,6 +102,9 @@ app.post("/register", async (req, res) => {
       });
     }
 
+    const otp = generateOTP();
+    console.log(otp);
+
     const hashedPassword = await hashPassword(password); // Hash the password using bcrypt
     const newUser = new User({
       email,
@@ -109,7 +113,20 @@ app.post("/register", async (req, res) => {
       password: hashedPassword,
     });
     await newUser.save();
-    res.status(201).json({ message: "User created successfully!" });
+    console.log('DOne');
+
+    const mailer = {
+      from: process.env.USER,
+      to: email,
+      subject: 'OTP Verification',
+      text: 'Your OTP for verification is: ${otp}',
+    }
+    console.log('mail details filled');
+
+    await transporter.sendMail(mailer);
+    console.log('mailed!!')
+
+    res.status(201).json({ message: "Please check your email for OTP pin." });
   } catch (error) {
     res.status(500).json({ error: "Error signing up!" });
   }
@@ -167,3 +184,31 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+app.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (user.otp && user.otpExpiresAt > Date.now()) {
+      if (user.otp === otp) {
+        user.isVerified = true; // Update the user status to indicate verification
+        await user.save();
+        return res.status(200).json({ message: "OTP verified successfully." });
+      } else {
+        return res.status(400).json({ error: "Invalid OTP." });
+      }
+    } else {
+      return res.status(400).json({ error: "OTP has expired. Request a new one." });
+    }
+  } catch (error) {
+    console.error("OTP Verification Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
