@@ -11,9 +11,8 @@ const otpGenerator = require('otp-generator');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const dbURI =
-  "mongodb+srv://medihub:medihub%40123@cluster0.a1uktfi.mongodb.net/UsersDB?retryWrites=true&w=majority";
-const SECRET_KEY = "secretkey";
+const dbURI = process.env.MONGODB_URI;
+const SECRET_KEY = process.env.JWT_SECRET;
 const saltRounds = 10;
 
 mongoose
@@ -34,7 +33,7 @@ const transporter = nodemailer.createTransport({
   service: process.env.SERVICE,
   auth: {
     user: process.env.USER,
-    pass: process.env.PASSWORD,
+    pass: process.env.PASS,
   },
 });
 
@@ -103,6 +102,7 @@ app.post("/register", async (req, res) => {
     }
 
     const otp = generateOTP();
+    const otpExpiresAt = Date.now() + 15 * 60 * 1000;
     console.log(otp);
 
     const hashedPassword = await hashPassword(password); // Hash the password using bcrypt
@@ -111,24 +111,28 @@ app.post("/register", async (req, res) => {
       username,
       number,
       password: hashedPassword,
+      otp,
+      otpExpiresAt,
     });
     await newUser.save();
-    console.log('DOne');
 
     const mailer = {
       from: process.env.USER,
       to: email,
       subject: 'OTP Verification',
-      text: 'Your OTP for verification is: ${otp}',
+      text: `Your OTP for verification is: ${otp}`,
+    };
+    
+    try {
+      await transporter.sendMail(mailer);
+      console.log('mailed!!')
+      res.status(201).json({ message: "Please check your email for OTP pin." });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: "Error sending verification email." });
     }
-    console.log('mail details filled');
-
-    await transporter.sendMail(mailer);
-    console.log('mailed!!')
-
-    res.status(201).json({ message: "Please check your email for OTP pin." });
   } catch (error) {
-    res.status(500).json({ error: "Error signing up!" });
+    res.status(500).json({ error });
   }
 });
 
@@ -146,29 +150,35 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    //email validation
+    // email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: "Invalid email address!" });
     }
 
-    //password validation
+    // password validation
     const passwordRegex =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
     if (!passwordRegex.test(password)) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-        });
+      return res.status(400).json({
+        error:
+          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      });
     }
 
     if (!user) {
       return res.status(401).json({ error: "Invalid Credentials!" });
     }
 
-    const isPasswordValid = await comparePassword(password, user.password); // Compare passwords using bcrypt
+    // Check if the user is verified
+    if (!user.verified) {
+      return res.status(401).json({ error: "Your account is not verified. Please check your email for verification instructions." });
+    }
+
+    const isPasswordValid = await comparePassword(
+      password,
+      user.password
+    ); // Compare passwords using bcrypt
 
     if (isPasswordValid) {
       // Password is valid, you can generate and send a token here
@@ -185,6 +195,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
+
 app.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -197,15 +208,15 @@ app.post("/verify-otp", async (req, res) => {
 
     if (user.otp && user.otpExpiresAt > Date.now()) {
       if (user.otp === otp) {
-        user.isVerified = true; // Update the user status to indicate verification
-        await user.save();
-        return res.status(200).json({ message: "OTP verified successfully." });
+         user.verified = true;
+         await user.save();
+         return res.status(200).json({ message: "OTP verified successfully." });
       } else {
-        return res.status(400).json({ error: "Invalid OTP." });
+         return res.status(400).json({ error: "Invalid OTP." });
       }
-    } else {
+   } else {
       return res.status(400).json({ error: "OTP has expired. Request a new one." });
-    }
+   }
   } catch (error) {
     console.error("OTP Verification Error:", error);
     res.status(500).json({ error: "Internal Server Error" });

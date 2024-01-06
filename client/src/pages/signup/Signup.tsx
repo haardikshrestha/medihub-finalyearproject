@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate   } from "react-router-dom";
 import { HiAtSymbol, HiEye, HiPhone, HiEyeOff, HiIdentification  } from 'react-icons/hi';
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -68,7 +67,7 @@ export default function Signup() {
         setPassword('');
         setConfirmPassword('');
         fetchUsers();
-        navigate('/otp');
+        navigate(`/otp?email=${email}`);
       })
       .catch((error) => {
         if (error.response && error.response.data && error.response.data.error) {
