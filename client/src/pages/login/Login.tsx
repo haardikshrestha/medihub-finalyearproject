@@ -45,7 +45,7 @@ const Login = () => {
         password,
       });
       const token = response.data.token;
-      alert("Login Sucessful");
+      notifySuccess("Login Sucessful");
       dispatch(setIsAuthenticated(true));
       setEmail("");
       setPassword("");
@@ -60,7 +60,7 @@ const Login = () => {
         const { data } = error.response;
 
         if (data.error) {
-          alert(data.error);
+          notifyError(data.error);
         } else if (data.errors) {
           const errors = data.errors;
           errors.forEach((err: { msg: string }) => alert(err.msg));

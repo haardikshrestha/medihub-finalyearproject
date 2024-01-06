@@ -6,10 +6,13 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
 const app = express();
+const nodemailer = require('nodemailer');
+const otpGenerator = require('otp-generator');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const dbURI =
-  "mongodb+srv://medihub:medihub%40123@cluster0.a1uktfi.mongodb.net/UsersDB?retryWrites=true&w=majority";
-const SECRET_KEY = "secretkey";
+const dbURI = process.env.MONGODB_URI;
+const SECRET_KEY = process.env.JWT_SECRET;
 const saltRounds = 10;
 
 mongoose
@@ -25,6 +28,19 @@ mongoose
 
 app.use(bodyParser.json());
 app.use(cors());
+
+const transporter = nodemailer.createTransport({
+  service: process.env.SERVICE,
+  auth: {
+    user: process.env.USER,
+    pass: process.env.PASS,
+  },
+});
+
+module.exports = transporter;
+
+const generateOTP = () => otpGenerator.generate
+(6, { digits: true, alphabets: false, upperCase: false, specialChars: false });
 
 async function hashPassword(password) {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -43,6 +59,7 @@ app.post("/register", async (req, res) => {
     //email validation
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
+      console.log('hi')
       return res.status(400).json({ error: "Email is already taken!" });
     }
 
@@ -84,17 +101,38 @@ app.post("/register", async (req, res) => {
       });
     }
 
+    const otp = generateOTP();
+    const otpExpiresAt = Date.now() + 15 * 60 * 1000;
+    console.log(otp);
+
     const hashedPassword = await hashPassword(password); // Hash the password using bcrypt
     const newUser = new User({
       email,
       username,
       number,
       password: hashedPassword,
+      otp,
+      otpExpiresAt,
     });
     await newUser.save();
-    res.status(201).json({ message: "User created successfully!" });
+
+    const mailer = {
+      from: process.env.USER,
+      to: email,
+      subject: 'OTP Verification',
+      text: `Your OTP for verification is: ${otp}`,
+    };
+    
+    try {
+      await transporter.sendMail(mailer);
+      console.log('mailed!!')
+      res.status(201).json({ message: "Please check your email for OTP pin." });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: "Error sending verification email." });
+    }
   } catch (error) {
-    res.status(500).json({ error: "Error signing up!" });
+    res.status(500).json({ error });
   }
 });
 
@@ -112,29 +150,35 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    //email validation
+    // email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: "Invalid email address!" });
     }
 
-    //password validation
+    // password validation
     const passwordRegex =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
     if (!passwordRegex.test(password)) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-        });
+      return res.status(400).json({
+        error:
+          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      });
     }
 
     if (!user) {
       return res.status(401).json({ error: "Invalid Credentials!" });
     }
 
-    const isPasswordValid = await comparePassword(password, user.password); // Compare passwords using bcrypt
+    // Check if the user is verified
+    if (!user.verified) {
+      return res.status(401).json({ error: "Your account is not verified. Please check your email for verification instructions." });
+    }
+
+    const isPasswordValid = await comparePassword(
+      password,
+      user.password
+    ); // Compare passwords using bcrypt
 
     if (isPasswordValid) {
       // Password is valid, you can generate and send a token here
@@ -150,3 +194,32 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+app.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (user.otp && user.otpExpiresAt > Date.now()) {
+      if (user.otp === otp) {
+         user.verified = true;
+         await user.save();
+         return res.status(200).json({ message: "OTP verified successfully." });
+      } else {
+         return res.status(400).json({ error: "Invalid OTP." });
+      }
+   } else {
+      return res.status(400).json({ error: "OTP has expired. Request a new one." });
+   }
+  } catch (error) {
+    console.error("OTP Verification Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
