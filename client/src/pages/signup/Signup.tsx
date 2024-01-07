@@ -15,8 +15,17 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
-  const notifySuccess = (message: string) => toast.success(message);
-  const notifyError = (message: string) => toast.error(message);
+  const [isMounted, setIsMounted] = useState(true);
+
+  useEffect(() => {
+    return () => {
+      // Component will unmount, set isMounted to false
+      setIsMounted(false);
+    };
+  }, []);
+
+  const notifySuccess = (message: string) => isMounted && toast.success(message);
+  const notifyError = (message: string) => isMounted && toast.error(message);
 
   useEffect(() => {
     fetchUsers();
@@ -71,11 +80,11 @@ export default function Signup() {
       })
       .catch((error) => {
         if (error.response && error.response.data && error.response.data.error) {
-            notifyError(error.response.data.error);
+            alert(error.response.data.error);
         } else if (error.response && error.response.data && error.response.data.errors) {
             // Handle multiple validation errors
             const errors = error.response.data.errors;
-            errors.forEach((err: { msg: string }) => notifyError(err.msg));
+            errors.forEach((err: { msg: string }) => alert(err.msg));
         } else {
             console.error('Unable to register!', error);
         }

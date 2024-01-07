@@ -1,11 +1,11 @@
 import { ReactHTMLElement, useState } from "react";
 import axios from "axios";
-import { useNavigate, useSearchParams  } from "react-router-dom";
+import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
 
 export default function OTP() {
   const [otp, setOtp] = useState("");
   const [searchParams] = useSearchParams();
-const email = searchParams.get('email');
+  const email = searchParams.get("email");
   const navigate = useNavigate();
 
   const handleVerify = (e: React.FormEvent<HTMLFormElement>) => {
@@ -22,6 +22,19 @@ const email = searchParams.get('email');
       .catch((error) => {
         // Handle verification error
         console.error("OTP Verification Error:", error);
+      });
+  };
+
+  const handleResendCode = () => {
+    axios
+      .post("http://localhost:5173/resend-code", { email })
+      .then((response) => {
+        alert(response.data.message);
+        // Add logic to handle success, if needed
+      })
+      .catch((error) => {
+        console.error("Resend Code Error:", error);
+        // Handle error, if needed
       });
   };
 
@@ -68,6 +81,16 @@ const email = searchParams.get('email');
                 Verify
               </button>
             </div>
+            {/* Forgot Password Link */}
+            <p className="text-right text-gray-400 text-sm ">
+              <button
+                onClick={handleResendCode}
+                className="w-full border border-lime-500 rounded-xl py-2 px-4 text-lime-500 text-sm "
+                style={{ background: "white" }}
+              >
+                Resend Code
+              </button>
+            </p>
           </form>
         </section>
       </div>

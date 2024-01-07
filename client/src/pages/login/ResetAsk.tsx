@@ -1,17 +1,23 @@
-// ResetAsk.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { HiAtSymbol } from "react-icons/hi";
 
 const ResetAsk = () => {
-  const notifySuccess = (message: string) => toast.success(message);
-  const notifyError = (message: string) => toast.error(message);
+  const [isMounted, setIsMounted] = useState(true);
+
+  useEffect(() => {
+    return () => {
+      // Component will unmount, set isMounted to false
+      setIsMounted(false);
+    };
+  }, []);
+
+  const notifySuccess = (message: string) => isMounted && toast.success(message);
+  const notifyError = (message: string) => isMounted && toast.error(message);
 
   const [email, setEmail] = useState("");
-  const navigate = useNavigate();
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,7 +28,7 @@ const ResetAsk = () => {
       
       notifySuccess(response.data.message);
       // Optionally, you can redirect the user to another page
-      navigate('/login');
+      
     } catch (error) {
       console.error('Password Reset Error:', error);
       notifyError('Error initiating password reset. Please try again.');

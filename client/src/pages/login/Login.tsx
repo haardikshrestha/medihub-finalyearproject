@@ -9,8 +9,9 @@ import { toast } from "react-toastify";
 
 const Login = () => {
   const dispatch = useAppDispatch();
-  const notifySuccess = (message: string) => toast.success(message);
-  const notifyError = (message: string) => toast.error(message);
+
+  //const notifySuccess = (message: string) => toast.success(message);
+  //const notifyError = (message: string) => toast.error(message);
 
   // const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
@@ -44,23 +45,40 @@ const Login = () => {
         email,
         password,
       });
+      console.log(response.data);
       const token = response.data.token;
-      notifySuccess("Login Sucessful");
-      dispatch(setIsAuthenticated(true));
-      setEmail("");
-      setPassword("");
-      fetchUsers();
-      console.log("Going to the homepage");
-      navigate("/");
-      console.log("in home page");
-      window.location.reload();
       localStorage.setItem("token", token);
+      const role = response.data.role;
+      
+      if (role == "admin") {
+
+        alert("Admin login Sucessful");
+        dispatch(setIsAuthenticated(true));
+        setEmail("");
+        setPassword("");
+        fetchUsers();
+        console.log("Going to the homepage");
+        navigate("/admin");
+        window.location.reload();
+
+      } else if (role == "user") {
+
+        alert("User login Sucessful");
+        dispatch(setIsAuthenticated(true));
+        setEmail("");
+        setPassword("");
+        fetchUsers();
+        console.log("Going to the homepage");
+        navigate("/patient");
+        window.location.reload();
+
+      } 
     } catch (error: any) {
       if (error.response && error.response.data) {
         const { data } = error.response;
 
         if (data.error) {
-          notifyError(data.error);
+          toast.error(data.error);
         } else if (data.errors) {
           const errors = data.errors;
           errors.forEach((err: { msg: string }) => alert(err.msg));

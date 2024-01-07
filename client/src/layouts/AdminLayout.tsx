@@ -1,10 +1,17 @@
 import { Link, Outlet } from "react-router-dom";
 
 import { logout } from "@/app/authSlice";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/store";
+import Card from "@/components/Card";
+import UserTable from "@/components/UserTable";
 
 const AdminLayout = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const handlelogout = () => {
+    navigate("/login");
+  }
   return (
     <div>
       <div className="drawer drawer-mobile">
@@ -31,6 +38,7 @@ const AdminLayout = () => {
               </svg>
             </label>
           </div>
+          <UserTable/>
           <main>
             <Outlet />
           </main>
@@ -49,7 +57,7 @@ const AdminLayout = () => {
             <div className="absolute bottom-0 w-full left-0 p-4">
               <button
                 className="btn border-none  bg-error w-full text-center text-white"
-                onClick={() => dispatch(logout())}
+                onClick={handlelogout}
               >
                 Logout
               </button>
