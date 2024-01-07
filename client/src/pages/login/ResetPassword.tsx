@@ -1,20 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const ResetPassword = () => {
-  const notifySuccess = (message: string) => toast.success(message);
-  const notifyError = (message: string) => toast.error(message);
+  const [isMounted, setIsMounted] = useState(true);
 
-  const [token, setToken] = useState("");
+  useEffect(() => {
+    return () => {
+      // Component will unmount, set isMounted to false
+      setIsMounted(false);
+    };
+  }, []);
+
+  const notifySuccess = (message: string) => isMounted && toast.success(message);
+  const notifyError = (message: string) => isMounted && toast.error(message);
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  console.log(token);
+
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
   const handleResetPassword = async () => {
     try {
+      // Check if the passwords match
+      if (newPassword !== confirmPassword) {
+        notifyError("Passwords do not match. Please enter matching passwords.");
+        return;
+      }
+      console.log("ok");
       // Call the server endpoint to update the password
       await axios.post("http://localhost:5173/update-password", { token, newPassword });
+      
       notifySuccess("Password updated successfully!");
       // Redirect the user to the login page or any other appropriate page
       navigate("/login");
@@ -43,19 +63,6 @@ const ResetPassword = () => {
           </div>
 
           <form className="flex flex-col gap-5">
-            {/* Token Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
-              <input
-                type="text"
-                name="token"
-                placeholder="Reset Token"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
-              />
-            </div>
-
             {/* New Password Input */}
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
@@ -64,6 +71,19 @@ const ResetPassword = () => {
                 placeholder="New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                required
+                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
+              />
+            </div>
+
+            {/* Confirm Password Input */}
+            <div className="flex border rounded-xl relative hover:border-lime-500">
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
               />
@@ -79,7 +99,7 @@ const ResetPassword = () => {
                 Reset Password
               </button>
             </div>
-        </form>
+          </form>
         </section>
       </div>
     </div>

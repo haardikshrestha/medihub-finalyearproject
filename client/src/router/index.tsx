@@ -1,87 +1,39 @@
-import { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route} from "react-router-dom"
 import { createBrowserRouter } from "react-router-dom";
 
 import AdminLayout from "@/layouts/AdminLayout";
+import PatientLayout from "@/layouts/PatientLayout";
 import ProtectedRoute from "@/layouts/ProtectedRoute";
-
 import Signup from "@/pages/signup/Signup";
 import Login from "@/pages/login/Login";
 import ResetPassword from "@/pages/login/ResetPassword";
 import ResetAsk from "@/pages/login/ResetAsk";
-import Table from "@/pages/dashboard/Table";
 import OTP from "@/pages/signup/OTP";
-import Card from "@/components/Card";
-import Form from "@/components/doctor/Form";
 
-// lazy import components
-const PostList = lazy(() => import("@/pages/posts/list"));
-const CreatePost = lazy(() => import("@/pages/posts/create"));
+const AppRouter = ()=>{
+  return(
+    <Router>
+      <Routes>
+        <Route>
+          {/* <Route element = {<ProtectedRoute/>} path = "/" > */}
+                <Route element = {<AdminLayout/>} path = "/admin" ></Route>
+                <Route element = {<PatientLayout/>} path = "/patient" ></Route>
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Signup />,
-    
-  },
+          {/* </Route> */}
+          <Route element = {<Signup/>} path = "/signup" ></Route>
+          <Route element = {<Login/>} path = "/login" ></Route>
+          <Route element = {<OTP/>} path = "/otp" ></Route>
+          <Route element = {<ResetPassword/>} path = "/reset" ></Route>
+          <Route element = {<ResetAsk/>} path = "/resetask" ></Route>
 
-  {
-    path: '/signup',
-    element: <Signup></Signup>
-  },
-  {
-    path: '/login',
-    element: <Login></Login>
-  },
-  {
-    path: '/reset',
-    element: <ResetPassword></ResetPassword>
-  },
-  {
-    path: '/resetask',
-    element: <ResetAsk></ResetAsk>
-  },
-  {
-    path: '/otp',
-    element: <OTP></OTP>
-  },
-  // {
-  //   path: "/dash",
-    
-  //   children: [
-  //     {
-  //       path: "/",
-  //       element: <AdminLayout />,
-  //       children: [
-  //         {
-  //           index: true,
-  //           element: <div className="flex flex-col gap-10">
-            
-            
-            
-  //           <Form />
-  //         </div>,
-  //         },
-  //         {
-  //           path: "posts",
-  //           element: (
-  //             <Suspense fallback={<div>Loading...</div>}>
-  //               <PostList />
-  //             </Suspense>
-  //           ),
-  //         },
-  //         {
-  //           path: "posts/create",
-  //           element: (
-  //             <Suspense fallback={<div>Loading...</div>}>
-  //               <CreatePost />
-  //             </Suspense>
-  //           ),
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // }
-  
-]);
 
-export default router;
+        </Route>
+      </Routes>
+    </Router>
+
+
+  )
+}
+
+
+export default AppRouter;
