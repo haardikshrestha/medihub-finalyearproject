@@ -48,7 +48,7 @@ const AdminLayout = () => {
           <ul className="menu p-4 w-80 bg-base-100 text-base-content">
             <img src="src\assets\logo-l.png" alt="" className="w-2/3 h-auto object-cover mx-auto px-3 pb-3"/>
             <li>
-              <Link to="/">Dashboard</Link>
+              <Link to="/admin">Dashboard</Link>
             </li>
             <li>
               <Link to="/posts">Posts</Link>

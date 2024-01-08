@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Making schema for user post
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true },
   username: { type: String, required: true, unique: true },
@@ -12,8 +11,6 @@ const userSchema = new mongoose.Schema({
   role: {type: String, default: 'user'},
 });
 
-// Put all the above in a basket(User) to use it later on //user means all of the schema
 const User = mongoose.model("User", userSchema);
 
-// To use it anywhere:
 module.exports = User;

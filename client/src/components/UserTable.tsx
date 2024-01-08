@@ -24,6 +24,9 @@ const UserTable = () => {
     fetchUsers();
   }, []);
 
+
+  
+
   return (
     <div>
       <div className="flex justify-between mb-2">
@@ -78,7 +81,12 @@ const UserTable = () => {
                   <button className="text-green-600 hover:text-green-900 mr-2">
                     Edit
                   </button>
-                  <button className="text-red-600 hover:text-red-900">Delete</button>
+                  <button
+                    className="text-red-600 hover:text-red-900"
+                    
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
