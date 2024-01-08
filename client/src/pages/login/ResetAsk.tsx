@@ -26,7 +26,7 @@ const ResetAsk = () => {
       // Make an API call to initiate the password reset process
       const response = await axios.post("http://localhost:5173/reset-password", { email });
       
-      notifySuccess(response.data.message);
+      alert(response.data.message);
       // Optionally, you can redirect the user to another page
       
     } catch (error) {
