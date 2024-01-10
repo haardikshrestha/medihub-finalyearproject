@@ -8,6 +8,7 @@ import UserTable from "@/components/admin/UserTable";
 import DoctorTable from "@/components/admin/DoctorTable";
 import PathologistTable from "@/components/admin/PathologistTable";
 import Header from "@/components/common/Header";
+import CreateDoctor from "@/components/admin/CreateDoctor";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -55,11 +56,12 @@ const AdminLayout = () => {
           </div>
           <div className="mt-10">
             <DoctorTable />
+            <CreateDoctor />
           </div>
           <div className="mt-10">
             <PathologistTable />
           </div>
-
+          
           <main>
             <Outlet />
           </main>
@@ -79,7 +81,7 @@ const AdminLayout = () => {
               <Link to="/posts">Patients</Link>
             </li>
             <li>
-              <Link to="/admin">Doctors</Link>
+              <Link to="/admin/doctor">Doctors</Link>
             </li>
             <li>
               <Link to="/posts">Pathologists</Link>

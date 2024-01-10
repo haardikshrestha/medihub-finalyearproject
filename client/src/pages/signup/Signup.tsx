@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate   } from "react-router-dom";
-import { HiAtSymbol, HiEye, HiPhone, HiEyeOff, HiIdentification  } from 'react-icons/hi';
+import { Link, useNavigate } from "react-router-dom";
+import {
+  HiAtSymbol,
+  HiEye,
+  HiPhone,
+  HiEyeOff,
+  HiIdentification,
+} from 'react-icons/hi';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -23,9 +27,6 @@ export default function Signup() {
       setIsMounted(false);
     };
   }, []);
-
-  const notifySuccess = (message: string) => isMounted && toast.success(message);
-  const notifyError = (message: string) => isMounted && toast.error(message);
 
   useEffect(() => {
     fetchUsers();
@@ -58,12 +59,12 @@ export default function Signup() {
     e.preventDefault();
 
     if (!isValidEmail(email)) {
-      notifyError('Invalid email address');
+      alert('Invalid email address');
       return;
     }
 
     if (password !== confirmPassword) {
-      notifyError('Passwords do not match');
+      alert('Passwords do not match');
       return;
     }
 
@@ -80,15 +81,14 @@ export default function Signup() {
       })
       .catch((error) => {
         if (error.response && error.response.data && error.response.data.error) {
-            alert(error.response.data.error);
+          alert(error.response.data.error);
         } else if (error.response && error.response.data && error.response.data.errors) {
-            // Handle multiple validation errors
-            const errors = error.response.data.errors;
-            errors.forEach((err: { msg: string }) => alert(err.msg));
+          const errors = error.response.data.errors;
+          errors.forEach((err: { msg: string }) => alert(err.msg));
         } else {
-            console.error('Unable to register!', error);
+          console.error('Unable to register!', error);
         }
-    });
+      });
   };
 
   return (
@@ -108,7 +108,7 @@ export default function Signup() {
           {/* Title Section */}
           <div className="title">
             <h3 className="text-gray-800 text-2xl font-bold py-4">Sign Up</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">Please sign up your account.</p>
+            <p className="w-3/4 text-gray-400 mx-auto text-sm">Please sign up for your account.</p>
           </div>
 
           {/* Form Section */}
@@ -120,7 +120,7 @@ export default function Signup() {
                 name="email"
                 placeholder="Email"
                 required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
+                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400 "
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -161,44 +161,44 @@ export default function Signup() {
             </div>
 
             <div>
-      {/* Password Input */}
-      <div className="flex border rounded-xl relative hover:border-lime-500 mb-5">
-        <input
-          type={showPassword ? "text" : "password"}
-          name="password"
-          placeholder="Password"
-          required
-          className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <span
-          className="icon flex items-center px-4 cursor-pointer"
-          onClick={togglePasswordVisibility}
-        >
-          {showPassword ? <HiEyeOff /> : <HiEye />}
-        </span>
-      </div>
+              {/* Password Input */}
+              <div className="flex border rounded-xl relative hover:border-lime-500 mb-5">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  required
+                  className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <span
+                  className="icon flex items-center px-4 cursor-pointer"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <HiEyeOff /> : <HiEye />}
+                </span>
+              </div>
 
-      {/* Confirm Password Input */}
-      <div className="flex border rounded-xl relative hover:border-lime-500">
-        <input
-          type={showConfirmPassword ? "text" : "password"}
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          required
-          className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        <span
-          className="icon flex items-center px-4 cursor-pointer"
-          onClick={toggleConfirmPasswordVisibility}
-        >
-          {showConfirmPassword ? <HiEyeOff /> : <HiEye />}
-        </span>
-      </div>
-    </div>
+              {/* Confirm Password Input */}
+              <div className="flex border rounded-xl relative hover:border-lime-500">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  required
+                  className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <span
+                  className="icon flex items-center px-4 cursor-pointer"
+                  onClick={toggleConfirmPasswordVisibility}
+                >
+                  {showConfirmPassword ? <HiEyeOff /> : <HiEye />}
+                </span>
+              </div>
+            </div>
 
             {/* Submit Button */}
             <div className="input-button">
@@ -220,7 +220,6 @@ export default function Signup() {
           </p>
         </section>
       </div>
-      <ToastContainer />
     </div>
   );
 }
