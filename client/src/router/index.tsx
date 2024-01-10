@@ -9,6 +9,7 @@ import Login from "@/pages/login/Login";
 import ResetPassword from "@/pages/login/ResetPassword";
 import ResetAsk from "@/pages/login/ResetAsk";
 import OTP from "@/pages/signup/OTP";
+import DoctorTable from "@/components/admin/DoctorTable";
 
 const AppRouter = ()=>{
   return(
@@ -16,7 +17,9 @@ const AppRouter = ()=>{
       <Routes>
         <Route>
           {/* <Route element = {<ProtectedRoute/>} path = "/" > */}
-                <Route element = {<AdminLayout/>} path = "/admin" ></Route>
+                <Route element = {<AdminLayout/>} path = "/admin" >
+                <Route element = {<DoctorTable/>} path = "/admin/doctor" ></Route>
+                </Route>
                 <Route element = {<PatientLayout/>} path = "/patient" ></Route>
 
           {/* </Route> */}
