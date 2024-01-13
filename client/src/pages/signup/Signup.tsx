@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  HiAtSymbol,
-  HiEye,
-  HiPhone,
-  HiEyeOff,
-  HiIdentification,
-} from 'react-icons/hi';
-import axios from 'axios';
+import { HiAtSymbol, HiEye, HiPhone, HiEyeOff, HiIdentification } from "react-icons/hi";
+import axios from "axios";
 
 export default function Signup() {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [number, setNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [number, setNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -33,19 +27,20 @@ export default function Signup() {
   }, []);
 
   const fetchUsers = () => {
-    axios.get('http://localhost:5173/register')
+    axios
+      .get("http://localhost:5173/register")
       .then((res) => {
         console.log(res.data);
       })
       .catch((error) => {
-        console.error('Fetch Users Error:', error);
+        console.error("Fetch Users Error:", error);
       });
-  }
+  };
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -59,23 +54,24 @@ export default function Signup() {
     e.preventDefault();
 
     if (!isValidEmail(email)) {
-      alert('Invalid email address');
+      alert("Invalid email address");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      alert("Passwords do not match");
       return;
     }
 
-    axios.post('http://localhost:5173/register', { email, number, username, password })
+    axios
+      .post("http://localhost:5173/register", { email, number, username, password })
       .then(() => {
-        alert('Check your email for OTP verification.');
-        setEmail('');
-        setUsername('');
-        setNumber('');
-        setPassword('');
-        setConfirmPassword('');
+        alert("Check your email for OTP verification.");
+        setEmail("");
+        setUsername("");
+        setNumber("");
+        setPassword("");
+        setConfirmPassword("");
         fetchUsers();
         navigate(`/otp?email=${email}`);
       })
@@ -86,7 +82,7 @@ export default function Signup() {
           const errors = error.response.data.errors;
           errors.forEach((err: { msg: string }) => alert(err.msg));
         } else {
-          console.error('Unable to register!', error);
+          console.error("Unable to register!", error);
         }
       });
   };
@@ -95,11 +91,7 @@ export default function Signup() {
     <div className="flex h-screen">
       {/* Left Panel */}
       <div className="bg-lime-300 w-1/2 relative overflow-hidden flex items-center justify-center">
-        <img
-          src="src/assets/doc2.svg"
-          alt=""
-          className="h-full w-full object-cover"
-        />
+        <img src="src/assets/doc2.svg" alt="" className="h-full w-full object-cover" />
       </div>
 
       {/* Right Panel */}
@@ -108,7 +100,9 @@ export default function Signup() {
           {/* Title Section */}
           <div className="title">
             <h3 className="text-gray-800 text-2xl font-bold py-4">Sign Up</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">Please sign up for your account.</p>
+            <p className="w-3/4 text-gray-400 mx-auto text-sm">
+              Please sign up for your account.
+            </p>
           </div>
 
           {/* Form Section */}
@@ -156,7 +150,7 @@ export default function Signup() {
                 onChange={(e) => setUsername(e.target.value)}
               />
               <span className="icon flex items-center px-4">
-                <HiIdentification  />
+                <HiIdentification />
               </span>
             </div>
 
