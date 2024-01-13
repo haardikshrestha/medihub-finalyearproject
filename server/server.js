@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
+const Doctor = require("./models/doctorSchema");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
 const path = require("path");
@@ -425,5 +426,80 @@ app.post("/update-password", async (req, res) => {
     res
       .status(500)
       .json({ error: "Error updating password. Please try again." });
+  }
+});
+
+app.post("/doctorregister", async (req, res) => {
+  try {
+    const { fullname, email, nmcnumber, phonenumber, password } = req.body;
+    console.log("start");
+    //email validation
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ error: "Email is already taken!" });
+    }
+    console.log("no existing email");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email address!" });
+    }
+    console.log("email validated");
+    //number validation
+    // const phoneNumberRegex = /^\d{10}$/;
+    // if (!phoneNumberRegex.match(phonenumber)) {
+    //   return res.status(400).json({
+    //     error: "Invalid phone number! It should be 10 digits and all numbers.",
+    //   });
+    // }
+    console.log("number validated");
+
+    //nmc number validation
+    const nmcNumberRegex = /^\d+$/;
+    if(!nmcNumberRegex.test(nmcnumber)){
+      return res.status(400).json({ error: "Invalid NMC number!"});
+    }
+    console.log("nmc validated");
+
+    // Password validation
+    const passwordRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        error:
+          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      });
+    }
+    console.log("pw validated");
+
+    const hashedPassword = await hashPassword(password); 
+    const newDoctor = new Doctor({
+      fullname,
+      phonenumber,
+      nmcnumber,
+      email,
+      password: hashedPassword
+    });
+    await newDoctor.save();
+    console.log("user created");
+
+    const mailer = {
+      from: process.env.USER,
+      to: email,
+      subject: "Account Credentials",
+      text: `Welcome to MediHub, Dr.${fullname}! Use your credentials to log in. 
+      Email: ${email} and Password: ${password}`,
+    };
+    console.log("mail details filled");
+
+    try {
+      await transporter.sendMail(mailer);
+      console.log("mailed!!");
+      res.status(201).json({ message: "Please check your email for OTP pin." });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      res.status(500).json({ error: "Error sending verification email." });
+    }
+  } catch (error) {
+    res.status(500).json({ error });
   }
 });

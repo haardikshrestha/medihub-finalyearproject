@@ -1,6 +1,6 @@
 import { HiKey } from "react-icons/hi";
 
-const CreatePathologist = () => {
+const CreateDepartment = () => {
   return (
     <form className="bg-white rounded-lg px-10 pt-6 pb-8 mb-4 mt-4">
       <div className="mb-6">
@@ -51,11 +51,11 @@ const CreatePathologist = () => {
           className="bg-lime-500 hover:bg-lime-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
           type="button"
         >
-          Add Doctor
+          Add Department
         </button>
       </div>
     </form>
   );
 };
 
-export default CreatePathologist;
+export default CreateDepartment;

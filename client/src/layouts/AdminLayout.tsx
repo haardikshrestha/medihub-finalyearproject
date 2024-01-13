@@ -9,6 +9,13 @@ import DoctorTable from "@/components/admin/DoctorTable";
 import PathologistTable from "@/components/admin/PathologistTable";
 import Header from "@/components/common/Header";
 import CreateDoctor from "@/components/admin/CreateDoctor";
+import CreatePathologist from "@/components/admin/CreatePathologist";
+import { ProfileCard } from "@/components/patient/LabCard";
+import DepartmentsTable from "@/components/admin/DepartmentsTable";
+import WardTable from "@/components/admin/WardTable";
+import CreateDepartment from "@/components/admin/CreateDepartment";
+import CreateWard from "@/components/admin/CreateWard";
+
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -44,11 +51,11 @@ const AdminLayout = () => {
             </label>
           </div>
           <div className="flex flex-row justify-between">
-            <Card number="2" title="Patients" imageUrl="src/assets/images/patient.png" />
-            <Card number="7" title="Doctors" imageUrl="src/assets/images/doctor.png" />
-            <Card number="4" title="Pathologists" imageUrl="src/assets/images/pathologist.png" />
-            <Card number="10" title="Departments" imageUrl="src/assets/images/department.png" />
-            <Card number="6" title="Wards" imageUrl="src/assets/images/ward.png" />
+            <Card number="2" title="Patients" imageUrl="src/assets/admin-images/patient.png" />
+            <Card number="7" title="Doctors" imageUrl="src/assets/admin-images/doctor.png" />
+            <Card number="4" title="Pathologists" imageUrl="src/assets/admin-images/pathologist.png" />
+            <Card number="10" title="Departments" imageUrl="src/assets/admin-images/department.png" />
+            <Card number="6" title="Wards" imageUrl="src/assets/admin-images/ward.png" />
           </div>
 
           <div className="mt-10">
@@ -60,6 +67,15 @@ const AdminLayout = () => {
           </div>
           <div className="mt-10">
             <PathologistTable />
+            <CreatePathologist />
+          </div>
+          <div className="mt-10">
+            <DepartmentsTable />
+            <CreateDepartment/>
+          </div>
+          <div className="mt-10">
+            <WardTable />
+            <CreateWard/>
           </div>
           
           <main>
@@ -78,19 +94,19 @@ const AdminLayout = () => {
               <Link to="/admin">Dashboard</Link>
             </li>
             <li>
-              <Link to="/posts">Patients</Link>
+              <Link to="/admin/patients">Patients</Link>
             </li>
             <li>
               <Link to="/admin/doctor">Doctors</Link>
             </li>
             <li>
-              <Link to="/posts">Pathologists</Link>
+              <Link to="/admin/pathologists">Pathologists</Link>
             </li>
             <li>
-              <Link to="/admin">Departments</Link>
+              <Link to="/admin/departments">Departments</Link>
             </li>
             <li>
-              <Link to="/posts">Wards</Link>
+              <Link to="/admin/wards">Wards</Link>
             </li>
             {/* logout button at bottom */}
             <div className="absolute bottom-0 w-full left-0 p-4">
