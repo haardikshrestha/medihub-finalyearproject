@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import axios from "axios";
+import CreateDoctor from "./CreateDoctor";
 
 interface User {
   _id: string;
@@ -37,7 +38,7 @@ const DoctorTable = () => {
         </div>
 
         {/* "Add Users" Button */}
-        <button className="bg-lime-500 text-white px-4 py-2 rounded">Add Doctor</button>
+        <CreateDoctor/>
       </div>
 
       <div className="overflow-x-auto">

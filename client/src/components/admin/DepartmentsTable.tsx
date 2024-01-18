@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import CreateDepartment from "./CreateDepartment";
 
 interface User {
   _id: string;
@@ -36,8 +37,7 @@ const DepartmentsTable = () => {
           <span className="font-bold">{users.length}</span>
         </div>
 
-        {/* "Add Users" Button */}
-        <button className="bg-lime-500 text-white px-4 py-2 rounded">Add Department</button>
+       <CreateDepartment/>
       </div>
 
       <div className="overflow-x-auto">
