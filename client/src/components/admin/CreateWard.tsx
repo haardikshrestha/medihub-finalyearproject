@@ -1,86 +1,96 @@
 import React, { useState } from 'react';
+import { HiX } from 'react-icons/hi';
 
 const CreateWard = () => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [wardNumber, setWardNumber] = useState('');
+  const [departmentName, setDepartmentName] = useState('');
 
-  const toggleDropdown = () => {
-    setDropdownOpen(!isDropdownOpen);
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
+  const handleAddWard = () => {
+    // Implement your logic for adding ward with wardNumber and departmentName
+    console.log('Adding ward:', wardNumber, 'in department:', departmentName);
   };
 
   return (
-    <form className="bg-white rounded-lg px-10 pt-6 pb-8 mb-4 mt-4">
-      <div className="flex items-center justify-center">
-        {/* Container for Phone Number and Dropdown */}
-        <div className="flex">
-          {/* Phone Number */}
-          <div className="mb-6">
-            <input
-              className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="wardnumber"
-              type="text"
-              placeholder="Ward Number"
-            />
+    <>
+      {/* Modal toggle */}
+      <button
+        onClick={toggleModal}
+        className="block text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:outline-none focus:ring-lime-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center "
+        type="button"
+      >
+        Add Ward
+      </button>
+
+      {/* Main modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center">
+          <div className="fixed inset-0 transition-opacity">
+            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
           </div>
 
-          {/* Dropdown */}
-          <div className="relative inline-block text-left ml-4">
-            <button
-              type="button"
-              className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
-              onClick={toggleDropdown}
-              id="options-menu"
-              aria-expanded={isDropdownOpen}
-              aria-haspopup="true"
-            >
-              Department
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-                role="menu"
-                aria-orientation="vertical"
-                aria-labelledby="options-menu"
-              >
-                <div className="py-1" role="none">
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    role="menuitem"
-                  >
-                    Option 1
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    role="menuitem"
-                  >
-                    Option 2
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    role="menuitem"
-                  >
-                    Option 3
-                  </a>
-                </div>
+          <div className="inline-block align-middle bg-white rounded-lg px-4 pt-5 pb-4 overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6">
+            <div>
+              <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Create New Ward
+                </h3>
+                <button
+                  type="button"
+                  onClick={toggleModal}
+                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                >
+                  <HiX className="w-4 h-4" />
+                  <span className="sr-only">Close modal</span>
+                </button>
               </div>
-            )}
+              <form className="p-4 md:p-5">
+                <div className="mb-6 flex">
+                  {/* Department Name */}
+                  <div className="w-1/2 mr-4">
+                    <input
+                      className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      id="departmentname"
+                      type="text"
+                      placeholder="Department"
+                      value={departmentName}
+                      onChange={(e) => setDepartmentName(e.target.value)}
+                    />
+                  </div>
+                  {/* Ward Number */}
+                  <div className="w-1/2 ">
+                    <input
+                      className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      id="wardnumber"
+                      type="text"
+                      placeholder="Ward Number"
+                      value={wardNumber}
+                      onChange={(e) => setWardNumber(e.target.value)}
+                    />
+                  </div>
+
+                  
+                </div>
+
+                <div className="flex items-center justify-center">
+                  <button
+                    className="bg-lime-500 hover:bg-lime-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
+                    type="button"
+                    onClick={handleAddWard}
+                  >
+                    Add Ward
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Add Ward Button */}
-      <div className="flex items-center justify-center">
-        <button
-          className="bg-lime-500 hover:bg-lime-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
-          type="button"
-        >
-          Add Ward
-        </button>
-      </div>
-    </form>
+      )}
+    </>
   );
 };
 

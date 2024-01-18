@@ -1,43 +1,38 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import CreateWard from "./CreateWard";
 
-interface User {
+interface Ward {
   _id: string;
-  username: string;
-  email: string;
-  number: string;
+  wardId: string;
 }
 
 const WardTable = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchWards = async () => {
       try {
-        const response = await axios.get<User[]>("http://localhost:5173/users");
-        setUsers(response.data);
+        const response = await axios.get<Ward[]>("http://localhost:5173/wards");
+        setWards(response.data);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching wards:", error);
       }
     };
 
-    fetchUsers();
+    fetchWards();
   }, []);
-
-
-  
 
   return (
     <div>
       <div className="flex justify-between mb-2">
-        {/* Total Users Box */}
+        {/* Total Wards Box */}
         <div className="flex items-center">
           <span className="text-gray-500 mr-2">Total Wards:</span>
-          <span className="font-bold">{users.length}</span>
+          <span className="font-bold">{wards.length}</span>
         </div>
 
-        {/* "Add Users" Button */}
-        <button className="bg-lime-500 text-white px-4 py-2 rounded">Add Ward</button>
+        <CreateWard/>
       </div>
 
       <div className="overflow-x-auto">
@@ -48,19 +43,7 @@ const WardTable = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Username
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Email
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Phone Number
+                Ward ID
               </th>
               <th
                 scope="col"
@@ -71,11 +54,9 @@ const WardTable = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.username}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.number}</td>
+            {wards.map((ward) => (
+              <tr key={ward._id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{ward.wardId}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <button className="text-blue-600 hover:text-blue-900 mr-2">View</button>
                   <button className="text-green-600 hover:text-green-900 mr-2">
@@ -83,7 +64,7 @@ const WardTable = () => {
                   </button>
                   <button
                     className="text-red-600 hover:text-red-900"
-                    
+                    // Add delete functionality
                   >
                     Delete
                   </button>

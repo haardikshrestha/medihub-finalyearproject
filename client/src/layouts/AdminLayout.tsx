@@ -15,6 +15,7 @@ import DepartmentsTable from "@/components/admin/DepartmentsTable";
 import WardTable from "@/components/admin/WardTable";
 import CreateDepartment from "@/components/admin/CreateDepartment";
 import CreateWard from "@/components/admin/CreateWard";
+import DoctorDashboard from "@/components/admin/Test";
 
 
 const AdminLayout = () => {
@@ -63,19 +64,15 @@ const AdminLayout = () => {
           </div>
           <div className="mt-10">
             <DoctorTable />
-            <CreateDoctor />
           </div>
           <div className="mt-10">
             <PathologistTable />
-            <CreatePathologist />
           </div>
           <div className="mt-10">
             <DepartmentsTable />
-            <CreateDepartment/>
           </div>
           <div className="mt-10">
             <WardTable />
-            <CreateWard/>
           </div>
           
           <main>

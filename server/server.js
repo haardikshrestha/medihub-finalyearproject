@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
 const Doctor = require("./models/doctorSchema");
+const Ward = require("./models/wardScehma");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
 const path = require("path");
@@ -501,5 +502,15 @@ app.post("/doctorregister", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error });
+  }
+});
+
+app.get("/wards", async (req, res) => {
+  try {
+    const wards = await Ward.find();
+    res.json(wards);
+  } catch (error) {
+    console.error("Error fetching wards:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
