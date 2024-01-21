@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HiKey, HiX } from "react-icons/hi";
+import { HiX } from "react-icons/hi";
 
 const CreatePathologist = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

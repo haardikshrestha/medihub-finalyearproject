@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
 const Doctor = require("./models/doctorSchema");
+const Patient = require("./models/patientSchema");
 const Ward = require("./models/wardScehma");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
@@ -184,7 +185,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-
 // Fetch users with role "user"
 app.get("/users", async (req, res) => {
   try {
@@ -195,8 +195,6 @@ app.get("/users", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
 
 app.post("/resend-code", async (req, res) => {
   try {
@@ -234,9 +232,6 @@ app.post("/resend-code", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
-
 
 {
   /* REGISTER GET */
@@ -280,12 +275,10 @@ app.post("/login", async (req, res) => {
 
     // Check if the user is verified
     if (!user.verified) {
-      return res
-        .status(401)
-        .json({
-          error:
-            "Your account is not verified. Please check your email for verification instructions.",
-        });
+      return res.status(401).json({
+        error:
+          "Your account is not verified. Please check your email for verification instructions.",
+      });
     }
 
     const isPasswordValid = await comparePassword(password, user.password); // Compare passwords using bcrypt
@@ -456,8 +449,8 @@ app.post("/doctorregister", async (req, res) => {
 
     //nmc number validation
     const nmcNumberRegex = /^\d+$/;
-    if(!nmcNumberRegex.test(nmcnumber)){
-      return res.status(400).json({ error: "Invalid NMC number!"});
+    if (!nmcNumberRegex.test(nmcnumber)) {
+      return res.status(400).json({ error: "Invalid NMC number!" });
     }
     console.log("nmc validated");
 
@@ -472,13 +465,13 @@ app.post("/doctorregister", async (req, res) => {
     }
     console.log("pw validated");
 
-    const hashedPassword = await hashPassword(password); 
+    const hashedPassword = await hashPassword(password);
     const newDoctor = new Doctor({
       fullname,
       phonenumber,
       nmcnumber,
       email,
-      password: hashedPassword
+      password: hashedPassword,
     });
     await newDoctor.save();
     console.log("user created");
@@ -511,6 +504,63 @@ app.get("/wards", async (req, res) => {
     res.json(wards);
   } catch (error) {
     console.error("Error fetching wards:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post("/patientsinfo", async (req, res) => {
+  try {
+    const {
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+    } = req.body;
+
+    const newPatient = new Patient({
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+    });
+
+    await newPatient.save();
+
+    res.status(201).json({ message: "Patient registered successfully" });
+  } catch (error) {
+    console.error("Error registering patient:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Fetch users with role "user"
+app.get("/getdoctors", async (req, res) => {
+  try {
+    const users = await User.find({ role: "doctor" }).select("-password");
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post("/checkpatient", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const patient = await Patient.findOne({ email });
+    const emailExists = patient !== null;
+
+    res.json({ emailExists });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
