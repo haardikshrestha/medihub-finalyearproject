@@ -45,13 +45,15 @@ const Login = () => {
         email,
         password,
       });
+      const response1 = await axios.post("http://localhost:5173/checkpatient", {
+        email,
+      });
       console.log(response.data);
       const token = response.data.token;
       localStorage.setItem("token", token);
       const role = response.data.role;
-      
-      if (role == "admin") {
 
+      if (role == "admin") {
         alert("Admin login Sucessful");
         dispatch(setIsAuthenticated(true));
         setEmail("");
@@ -60,19 +62,23 @@ const Login = () => {
         console.log("Going to the homepage");
         navigate("/admin");
         window.location.reload();
-
       } else if (role == "user") {
-
         alert("User login Sucessful");
         dispatch(setIsAuthenticated(true));
         setEmail("");
         setPassword("");
         fetchUsers();
         console.log("Going to the homepage");
-        navigate("/patient");
-        window.location.reload();
+        const emailExists = response1.data.emailExists;
 
-      } 
+        if (emailExists) {
+          navigate(`/patient?email=${email}`);
+        } else {
+          navigate(`/in?email=${email}`);
+        }
+
+        window.location.reload();
+      }
     } catch (error: any) {
       if (error.response && error.response.data) {
         const { data } = error.response;

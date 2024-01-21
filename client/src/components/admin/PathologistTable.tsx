@@ -36,7 +36,6 @@ const PathologistTable = () => {
           <span className="text-gray-500 mr-2">Total Pathologists:</span>
           <span className="font-bold">{users.length}</span>
         </div>
-
         <CreatePathologist/>
       </div>
 

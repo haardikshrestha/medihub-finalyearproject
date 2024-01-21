@@ -1,20 +1,21 @@
 import { Link, Outlet } from "react-router-dom";
 
 import { logout } from "@/app/authSlice";
-import { useAppDispatch } from "@/app/store";
-import Form from "@/components/doctor/Form";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/app/store";
+import Sidebar from "@/components/patient/Sidebar";
 
 const PatientLayout = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const handlelogout = () => {
     navigate("/login");
-  }  
+  };
   return (
     <div>
       <div className="drawer drawer-mobile">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+
         <div className="drawer-content bg-gray-100 p-8">
           <div>
             <label
@@ -37,39 +38,14 @@ const PatientLayout = () => {
               </svg>
             </label>
           </div>
-          <div className="flex flex-col justify-center">
-          <Form/>
-          </div>
-          
           <main>
             <Outlet />
           </main>
         </div>
-        <div className="drawer-side">
-          <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-          <ul className="menu p-4 w-80 bg-base-100 text-base-content">
-            <img src="src\assets\logo-l.png" alt="" className="w-2/3 h-auto object-cover mx-auto px-3 pb-3"/>
-            <li>
-              <Link to="/admin">Dashboard</Link>
-            </li>
-            <li>
-              <Link to="/posts">Posts</Link>
-            </li>
-            {/* logout button at bottom */}
-            <div className="absolute bottom-0 w-full left-0 p-4">
-              <button
-                className="btn border-none  bg-error w-full text-center text-white"
-                onClick={handlelogout}
-              >
-                Logout
-              </button>
-            </div>
-          </ul>
-        </div>
+        <Sidebar />
       </div>
     </div>
   );
 };
-
 
 export default PatientLayout;
