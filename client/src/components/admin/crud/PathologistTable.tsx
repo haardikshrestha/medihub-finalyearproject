@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import CreateDepartment from "./CreateDepartment";
+import CreatePathologist from "./CreatePathologist";
 
 interface User {
   _id: string;
@@ -9,13 +9,13 @@ interface User {
   number: string;
 }
 
-const DepartmentsTable = () => {
+const PathologistTable = () => {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get<User[]>("http://localhost:5173/users");
+        const response = await axios.get<User[]>("http://localhost:5173/getpathologists");
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -33,11 +33,10 @@ const DepartmentsTable = () => {
       <div className="flex justify-between mb-2">
         {/* Total Users Box */}
         <div className="flex items-center">
-          <span className="text-gray-500 mr-2">Total Departments:</span>
+          <span className="text-gray-500 mr-2">Total Pathologists:</span>
           <span className="font-bold">{users.length}</span>
         </div>
-
-       <CreateDepartment/>
+        <CreatePathologist/>
       </div>
 
       <div className="overflow-x-auto">
@@ -97,4 +96,4 @@ const DepartmentsTable = () => {
   );
 };
 
-export default DepartmentsTable;
+export default PathologistTable;

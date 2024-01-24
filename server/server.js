@@ -5,12 +5,11 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
-const Doctor = require("./models/doctorSchema");
 const Patient = require("./models/patientSchema");
-const Ward = require("./models/wardScehma");
+const Ward = require("./models/wardSchema");
+const Department = require("./models/departmentSchema");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
-const path = require("path");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
@@ -423,81 +422,6 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
-app.post("/doctorregister", async (req, res) => {
-  try {
-    const { fullname, email, nmcnumber, phonenumber, password } = req.body;
-    console.log("start");
-    //email validation
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      return res.status(400).json({ error: "Email is already taken!" });
-    }
-    console.log("no existing email");
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Invalid email address!" });
-    }
-    console.log("email validated");
-    //number validation
-    // const phoneNumberRegex = /^\d{10}$/;
-    // if (!phoneNumberRegex.match(phonenumber)) {
-    //   return res.status(400).json({
-    //     error: "Invalid phone number! It should be 10 digits and all numbers.",
-    //   });
-    // }
-    console.log("number validated");
-
-    //nmc number validation
-    const nmcNumberRegex = /^\d+$/;
-    if (!nmcNumberRegex.test(nmcnumber)) {
-      return res.status(400).json({ error: "Invalid NMC number!" });
-    }
-    console.log("nmc validated");
-
-    // Password validation
-    const passwordRegex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        error:
-          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-      });
-    }
-    console.log("pw validated");
-
-    const hashedPassword = await hashPassword(password);
-    const newDoctor = new Doctor({
-      fullname,
-      phonenumber,
-      nmcnumber,
-      email,
-      password: hashedPassword,
-    });
-    await newDoctor.save();
-    console.log("user created");
-
-    const mailer = {
-      from: process.env.USER,
-      to: email,
-      subject: "Account Credentials",
-      text: `Welcome to MediHub, Dr.${fullname}! Use your credentials to log in. 
-      Email: ${email} and Password: ${password}`,
-    };
-    console.log("mail details filled");
-
-    try {
-      await transporter.sendMail(mailer);
-      console.log("mailed!!");
-      res.status(201).json({ message: "Please check your email for OTP pin." });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      res.status(500).json({ error: "Error sending verification email." });
-    }
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-});
-
 app.get("/wards", async (req, res) => {
   try {
     const wards = await Ward.find();
@@ -544,11 +468,31 @@ app.post("/patientsinfo", async (req, res) => {
 // Fetch users with role "user"
 app.get("/getdoctors", async (req, res) => {
   try {
-    const users = await User.find({ role: "doctor" }).select("-password");
-    res.status(200).json(users);
+    const doctors = await User.find({ role: "doctor" }).select("-password");
+    res.status(200).json(doctors);
+  } catch (error) {
+    console.error("Error fetching doctors:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/getpathologists", async (req, res) => {
+  try {
+    const pathologists = await User.find({ role: "pathologist" }).select("-password");
+    res.status(200).json(pathologists);
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/getdepartments", async (req, res) => {
+  try {
+    const departments = await Department.find();
+    res.json(departments);
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    res.status(500).json({ error: "Internal Server departments" });
   }
 });
 
@@ -562,5 +506,21 @@ app.post("/checkpatient", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+app.get('/getgender', async (req, res) => {
+  try {
+    // Query the database to get gender distribution
+    const maleCount = await Patient.countDocuments({ gender: 'Male' });
+    const femaleCount = await Patient.countDocuments({ gender: 'Female' });
+    const otherCount = await Patient.countDocuments({ gender: { $nin: ['Male', 'Female'] } });
+
+    // Send the data as JSON
+    res.json({ male: maleCount, female: femaleCount, other: otherCount });
+  } catch (error) {
+    console.error('Error fetching gender distribution:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });

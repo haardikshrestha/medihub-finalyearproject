@@ -1,5 +1,5 @@
 // PatientsPage.js
-import WardTable from "@/components/admin/WardTable";
+import WardTable from "@/components/admin/crud/WardTable";
 
 const WardsPage = () => {
   return (
