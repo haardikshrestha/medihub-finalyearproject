@@ -1,5 +1,5 @@
 // PatientsPage.js
-import UserTable from '@/components/admin/UserTable';
+import UserTable from '@/components/admin/crud/UserTable';
 import React from 'react';
 
 const PatientsPage = () => {

@@ -1,4 +1,4 @@
-import RevenueTable from "@/components/admin/RevenueTable";
+import RevenueTable from "@/components/admin/crud/RevenueTable";
 
 const RevenuePage = () => {
     return(
