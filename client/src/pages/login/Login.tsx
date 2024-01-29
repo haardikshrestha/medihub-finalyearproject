@@ -1,41 +1,38 @@
-import { setIsAuthenticated } from "@/app/authSlice";
-import { useAppDispatch } from "@/app/store";
-import { HiAtSymbol, HiEye, HiEyeOff } from "react-icons/hi";
-import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { HiAtSymbol, HiEye, HiEyeOff } from "react-icons/hi";
+import { Link, NavLink } from "react-router-dom";
+import { setIsAuthenticated } from "@/app/authSlice";
+import { useAppDispatch } from "@/app/store";
+
+import backgroundImage from "src/assets/doc2.svg"; // Update the path accordingly
 
 const Login = () => {
   const dispatch = useAppDispatch();
-
-  //const notifySuccess = (message: string) => toast.success(message);
-  //const notifyError = (message: string) => toast.error(message);
-
-  // const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   dispatch(setIsAuthenticated(true));
-  // };
+  const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = () => {
-    axios.get("http://localhost:5173/register").then((res) => {
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5173/register");
       console.log(res.data);
-    });
+    } catch (error) {
+      console.error("Error fetching users", error);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,55 +42,51 @@ const Login = () => {
         email,
         password,
       });
+
       const response1 = await axios.post("http://localhost:5173/checkpatient", {
         email,
       });
-      console.log(response.data);
-      const token = response.data.token;
+
+      const { token, role } = response.data;
       localStorage.setItem("token", token);
-      const role = response.data.role;
 
-      if (role == "admin") {
-        alert("Admin login Sucessful");
+      if (role === "admin" || role === "user") {
+        const successMessage = role === "admin" ? "Admin" : "User";
+        alert(`${successMessage} login successful`);
+
         dispatch(setIsAuthenticated(true));
         setEmail("");
         setPassword("");
         fetchUsers();
-        console.log("Going to the homepage");
-        navigate("/admin");
-        window.location.reload();
-      } else if (role == "user") {
-        alert("User login Sucessful");
-        dispatch(setIsAuthenticated(true));
-        setEmail("");
-        setPassword("");
-        fetchUsers();
-        console.log("Going to the homepage");
-        const emailExists = response1.data.emailExists;
 
-        if (emailExists) {
-          navigate(`/patient?email=${email}`);
+        if (role === "admin") {
+          navigate("/admin");
         } else {
-          navigate(`/in?email=${email}`);
+          const emailExists = response1.data.emailExists;
+          navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
         }
 
         window.location.reload();
       }
-    } catch (error: any) {
-      if (error.response && error.response.data) {
-        const { data } = error.response;
+    } catch (error) {
+      handleLoginError(error);
+    }
+  };
 
-        if (data.error) {
-          toast.error(data.error);
-        } else if (data.errors) {
-          const errors = data.errors;
-          errors.forEach((err: { msg: string }) => alert(err.msg));
-        } else {
-          console.error("Login Error!", error);
-        }
+  const handleLoginError = (error: any) => {
+    if (error.response && error.response.data) {
+      const { data } = error.response;
+
+      if (data.error) {
+        toast.error(data.error);
+      } else if (data.errors) {
+        const errors = data.errors;
+        errors.forEach((err: { msg: string }) => alert(err.msg));
       } else {
         console.error("Login Error!", error);
       }
+    } else {
+      console.error("Login Error!", error);
     }
   };
 
@@ -101,7 +94,7 @@ const Login = () => {
     <div className="flex h-screen">
       {/* Left Panel */}
       <div className="bg-lime-300 w-1/2 relative overflow-hidden flex items-center justify-center">
-        <img src="src/assets/doc2.svg" alt="" className="h-full w-full object-cover" />
+        <img src={backgroundImage} alt="" className="h-full w-full object-cover" />
       </div>
 
       {/* Right Panel */}
@@ -122,12 +115,11 @@ const Login = () => {
               <input
                 type="text"
                 name="email"
-                id=""
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400 "
+                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
               />
               <span className="icon flex items-center px-4">
                 <HiAtSymbol />
@@ -139,7 +131,6 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                id=""
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -163,11 +154,12 @@ const Login = () => {
                 Log In
               </button>
             </div>
+
             {/* Forgot Password Link */}
-            <p className="text-right text-gray-400 text-sm ">
+            <p className="text-right text-gray-400 text-sm">
               <NavLink to={"/resetask"} className="text-lime-700 underline">
                 <button
-                  className="w-full border border-lime-500 rounded-xl py-2 px-4 text-lime-500 text-sm "
+                  className="w-full border border-lime-500 rounded-xl py-2 px-4 text-lime-500 text-sm"
                   style={{ background: "white" }}
                 >
                   Forgot Password?
@@ -177,12 +169,10 @@ const Login = () => {
           </form>
 
           {/* Additional Info Section */}
-          <p className="text-center text-gray-400 text-sm ">
+          <p className="text-center text-gray-400 text-sm">
             Don't have an account?{" "}
-            <Link to={"/signup"}>
-              <a href="" className="text-lime-700 underline">
-                Sign Up
-              </a>
+            <Link to={"/signup"} className="text-lime-700 underline">
+              Sign Up
             </Link>
           </p>
         </section>
