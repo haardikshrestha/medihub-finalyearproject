@@ -11,6 +11,8 @@ interface User {
 
 const DoctorTable = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -25,7 +27,25 @@ const DoctorTable = () => {
     fetchUsers();
   }, []);
 
+  const handleDeleteClick = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsDeleteModalOpen(true);
+  };
 
+  const handleDeleteConfirm = () => {
+    // Call your delete user API or function here using the selectedUserId
+    // ...
+
+    // After successful deletion, close the modal
+    setIsDeleteModalOpen(false);
+    setSelectedUserId(null);
+  };
+
+  const handleDeleteCancel = () => {
+    // Cancel the delete action, close the modal
+    setIsDeleteModalOpen(false);
+    setSelectedUserId(null);
+  };
   
 
   return (
@@ -84,7 +104,7 @@ const DoctorTable = () => {
                   </button>
                   <button
                     className="text-red-600 hover:text-red-900"
-                    
+                    onClick={() => handleDeleteClick(user._id)}
                   >
                     Delete
                   </button>

@@ -7,9 +7,6 @@ const InitialForm = () => {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
 
-  const patientpage = () => {
-    navigate(`/patient?email=${email}`);
-  }
 
   const handleregister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,6 +42,7 @@ const InitialForm = () => {
 
       if (response.status === 201) {
         alert("Patient registered successfully");
+        navigate(`/patient?email=${email}`);
       } else {
         alert("Failed to register patient");
       }
@@ -182,7 +180,7 @@ const InitialForm = () => {
         <button
           type="submit"
           className="col-span-2 w-2/4 bg-lime-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
-          onClick={patientpage}        
+                 
         >
           Submit
         </button>

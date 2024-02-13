@@ -10,7 +10,6 @@ import { useAppDispatch } from "@/app/store";
 import backgroundImage from "src/assets/doc2.svg"; // Update the path accordingly
 
 const Login = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
@@ -49,21 +48,26 @@ const Login = () => {
 
       const { token, role } = response.data;
       localStorage.setItem("token", token);
+      console.log("hey");
 
-      if (role === "admin" || role === "user") {
+      if (role === "admin" || role === "user" || role === "doctor") {
         const successMessage = role === "admin" ? "Admin" : "User";
-        alert(`${successMessage} login successful`);
+        alert(`Doctor login successful`);
 
-        dispatch(setIsAuthenticated(true));
         setEmail("");
         setPassword("");
         fetchUsers();
+        console.log("hi");
 
         if (role === "admin") {
+          
           navigate("/admin");
-        } else {
+        } else if (role === "user") {
           const emailExists = response1.data.emailExists;
           navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
+        } else if (role === "doctor") {
+          console.log("doc");
+          navigate("/ind?email=" + email);
         }
 
         window.location.reload();

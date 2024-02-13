@@ -1,4 +1,4 @@
-import DoctorTable from "@/components/admin/crud/DoctorTable";
+import DoctorTable from "@/components/admin/crud/Doctor/DoctorTable";
 
 const DoctorsPage = () => {
   return (

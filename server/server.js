@@ -5,8 +5,10 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
+const Doctors = require("./models/doctorschema")
 const Patient = require("./models/patientSchema");
 const Ward = require("./models/wardSchema");
+const Pathologists = require("./models/pathologistSchema");
 const Department = require("./models/departmentSchema");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
@@ -195,6 +197,7 @@ app.get("/users", async (req, res) => {
   }
 });
 
+//resent code
 app.post("/resend-code", async (req, res) => {
   try {
     const { email } = req.body;
@@ -422,6 +425,7 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
+//get wards
 app.get("/wards", async (req, res) => {
   try {
     const wards = await Ward.find();
@@ -432,6 +436,7 @@ app.get("/wards", async (req, res) => {
   }
 });
 
+//getpatient
 app.post("/patientsinfo", async (req, res) => {
   try {
     const {
@@ -463,9 +468,9 @@ app.post("/patientsinfo", async (req, res) => {
     console.error("Error registering patient:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-});
+})
 
-// Fetch users with role "user"
+// Fetch users with role "doctors"
 app.get("/getdoctors", async (req, res) => {
   try {
     const doctors = await User.find({ role: "doctor" }).select("-password");
@@ -476,6 +481,7 @@ app.get("/getdoctors", async (req, res) => {
   }
 });
 
+//get pathologists
 app.get("/getpathologists", async (req, res) => {
   try {
     const pathologists = await User.find({ role: "pathologist" }).select("-password");
@@ -486,6 +492,7 @@ app.get("/getpathologists", async (req, res) => {
   }
 });
 
+//get departments
 app.get("/getdepartments", async (req, res) => {
   try {
     const departments = await Department.find();
@@ -496,6 +503,7 @@ app.get("/getdepartments", async (req, res) => {
   }
 });
 
+//check if patient exists
 app.post("/checkpatient", async (req, res) => {
   try {
     const { email } = req.body;
@@ -509,7 +517,7 @@ app.post("/checkpatient", async (req, res) => {
   }
 });
 
-
+//get gender of patient
 app.get('/getgender', async (req, res) => {
   try {
     // Query the database to get gender distribution
@@ -524,3 +532,110 @@ app.get('/getgender', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// Route to save doctor details
+// Route to get all doctors
+app.get("/api/doctors", async (req, res) => {
+  try {
+    const allDoctors = await Doctor.find();
+    res.status(200).json(allDoctors);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post("/newdoctor", async (req, res) => {
+  try {
+    // Destructure values from the request body
+    const { fullname, email, phonenumber, password } = req.body;
+
+    // You may want to add validation and error handling here
+
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email is already registered." });
+    }
+
+    // Create a new user (doctor) instance
+    const newDoctor = new User({
+      email,
+      username: fullname, // Assuming username is used for fullname
+      number: phonenumber,
+      password, // You should hash the password before saving it
+      role: 'doctor', // Set the role for a doctor
+    });
+
+    // Save the new doctor to the database
+    await newDoctor.save();
+
+    // Respond with success message
+    res.status(201).json({ message: "Doctor created successfully." });
+  } catch (error) {
+    console.error("Error creating doctor:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+app.post("/doctorregister", async (req, res) => {
+  try {
+    const {
+      nmc,
+      email,
+      role,
+      expertise,
+      degree,
+      school,
+      workingHours,
+      apptDuration,
+      daysAvailable,
+      fees,
+      verified,
+    } = req.body;
+
+    // You can add validation logic here if needed
+
+    // Create a new doctor instance
+    const newDoctor = new Doctors({
+      nmc,
+      email,
+      role,
+      expertise,
+      degree,
+      school,
+      workingHours,
+      apptDuration,
+      daysAvailable,
+      fees,
+      verified,
+    });
+
+    // Save the doctor to the database
+    await newDoctor.save();
+
+    // Respond with a success message
+    res.status(201).json({ message: "Doctor registered successfully" });
+  } catch (error) {
+    console.error("Error registering doctor:", error);
+    res.status(500).json({ error: "An unexpected error occurred. Please try again later." });
+  }
+});
+
+app.get("/getNumberInfo", async (req, res) => {
+  try {
+    const totalDoctors = await Doctor.countDocuments();
+    const totalPatients = await Patient.countDocuments();
+    const totalPathologists = await Pathologists.countDocuments();
+    const totalDepartments = await Department.countDocuments();
+    const totalWards = await Ward.countDocuments();
+
+    const numberInfo = Patient.find();
+
+    res.status(200).json(numberInfo);
+  } catch (error) {
+    console.error("Error in /getNumberInfo:", error);
+    res.status(500).json({ error: "Cannot retrieve number of data." });
+  }
+});
+

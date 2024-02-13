@@ -1,5 +1,5 @@
 interface CardProps {
-  number: string;
+  number: number;
   title: string;
   imageUrl: string; 
 }
