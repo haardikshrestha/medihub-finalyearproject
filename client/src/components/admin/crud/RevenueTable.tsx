@@ -11,7 +11,7 @@ interface Revenue {
 const RevenueTable = () => {
   const [revenues, setRevenues] = useState<Revenue[]>([
     {
-      payerName: "Abhinav Thapa",
+      payerName: "Harry Potter",
       email: "companyA@example.com",
       date: "2024-01-25",
       day: "Monday",
@@ -50,6 +50,19 @@ const RevenueTable = () => {
             ${revenues.reduce((sum, revenue) => sum + revenue.totalAmount, 0)}
           </span>
         </div>
+
+        <button
+          onClick={() => window.open("https://esewa.com.np/", "_blank")}
+          className="flex items-center text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:outline-none focus:ring-lime-300 font-medium rounded-lg text-sm px-3 py-2.5"
+          type="button"
+        >
+          <img
+            src="/src/assets/esewa.png" // Adjust the path based on your project structure
+            alt="Esewa Logo"
+            className="w-6 h-6 mr-2"
+          />
+          <span>Check in esewa</span>
+        </button>
       </div>
 
       <div className="overflow-x-auto">

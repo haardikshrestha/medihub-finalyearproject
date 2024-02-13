@@ -16,6 +16,17 @@ import PatientsPage from '@/pages/adminPages/PatientsPage';
 import WardsPage from '@/pages/adminPages/WardsPage';
 import RevenuePage from '@/pages/adminPages/RevenuePage';
 import Initial from '@/pages/patientPages/Initial';
+import DoctorLayout from '@/layouts/DoctorLayout';
+import DoctorDashboard from '@/pages/doctorPages/DoctorDashboard';
+import DoctorForm from '@/components/doctor/DoctorForm';
+import PatientDashboard from '@/pages/patientPages/PatientDashboard';
+import PatientDoctors from '@/pages/patientPages/PatientDoctors';
+import PatientAppointments from '@/pages/patientPages/PatientAppointments';
+import AppointmentDoctors from '@/pages/patientPages/AppointmentDoctors';
+import PatientProfile from '@/pages/patientPages/patientProfile';
+import CalendarPage from '@/pages/patientPages/Appointment_1';
+import PatientTests from '@/pages/patientPages/PatientTests';
+import PatientHealth from '@/pages/patientPages/PatientHealth';
 
 const AppRouter = () => {
   return (
@@ -31,14 +42,35 @@ const AppRouter = () => {
             <Route path="/admin/wards" element={<WardsPage />} />
             <Route path="/admin/revenue" element={<RevenuePage />} />
           </Route>
+        </Route>
+        <Route path='/'>
+          <Route element={<DoctorLayout/>}>
+            <Route path='/doctor' element={<DoctorDashboard/>} />
+          </Route>
+        </Route>
+        <Route path='/'>
+          <Route element={<PatientLayout/>}>
+            <Route path='/patient' element={<PatientDashboard/>} />
+            <Route path='/patient/doctors' element={<PatientDoctors/>} />
+            <Route path='/patient/appointments' element={<PatientAppointments/>} />
+            <Route path='/patient/adoctors' element={<AppointmentDoctors/>} />
+            <Route path='/patient/profile' element={<PatientProfile/>} />
+            <Route path='/patient/calendar' element={<CalendarPage/>} />
+            <Route path='/patient/pathology' element={<PatientTests/>} />
+            <Route path='/patient/packages' element={<PatientHealth/>} />
+          </Route>
+        </Route>
           <Route path="/in" element={<Initial />} />
+          <Route path="/ind" element={<DoctorForm />} />
           <Route path="/patient" element={<PatientLayout />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/otp" element={<OTP />} />
           <Route path="/reset" element={<ResetPassword />} />
           <Route path="/resetask" element={<ResetAsk />} />
-        </Route>
+          <Route path="/doctor" element={<DoctorLayout />} />
+
+
       </Routes>
     </Router>
   );

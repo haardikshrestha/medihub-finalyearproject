@@ -11,17 +11,33 @@ const CreateDoctor = () => {
   const [password, setPassword] = useState("");
 
   const generateRandomPassword = () => {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
-    const passwordLength = 8;
-  
-    const newPassword = Array.from({ length: passwordLength }, () => {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      return characters[randomIndex];
-    }).join("");
-  
-    setPassword(newPassword);
+    const lowercaseChars: string = "abcdefghijklmnopqrstuvwxyz";
+    const uppercaseChars: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numberChars: string = "0123456789";
+    const specialChars: string = "!@#$%^&*()_+";
+
+    const getRandomChar = (charSet: string) => {
+      const randomIndex = Math.floor(Math.random() * charSet.length);
+      return charSet[randomIndex];
+    };
+
+    const newPassword: string =
+      getRandomChar(lowercaseChars) +
+      getRandomChar(uppercaseChars) +
+      getRandomChar(numberChars) +
+      getRandomChar(specialChars) +
+      Array.from({ length: 4 }, () =>
+        getRandomChar(lowercaseChars + uppercaseChars + numberChars + specialChars),
+      ).join("");
+
+    // Shuffle the password characters to make it more random
+    const shuffledPassword: string = newPassword
+      .split("")
+      .sort(() => Math.random() - 0.5)
+      .join("");
+
+    setPassword(shuffledPassword);
   };
-  
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -31,10 +47,9 @@ const CreateDoctor = () => {
     e.preventDefault();
 
     axios
-      .post("http://localhost:5173/doctorregister", {
+      .post("http://localhost:5173/newdoctor", {
         fullname,
         email,
-        nmcnumber,
         phonenumber,
         password,
       })
@@ -105,30 +120,16 @@ const CreateDoctor = () => {
                   />
                 </div>
 
-                <div className="mb-6 flex">
-                  {/* Phone Number */}
-                  <div className="mr-4 w-1/2">
-                    <input
-                      className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="phonenumber"
-                      type="text"
-                      placeholder="Phone Number"
-                      value={phonenumber}
-                      onChange={(e) => setPhonenumber(e.target.value)}
-                    />
-                  </div>
-
-                  {/* NMC Number */}
-                  <div className="w-1/2">
-                    <input
-                      className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="nmcnumber"
-                      type="text"
-                      placeholder="NMC Number"
-                      value={nmcnumber}
-                      onChange={(e) => setNmcnumber(e.target.value)}
-                    />
-                  </div>
+                {/* Phone Number */}
+                <div className="mb-6">
+                  <input
+                    className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="phonenumber"
+                    type="text"
+                    placeholder="Phone Number"
+                    value={phonenumber}
+                    onChange={(e) => setPhonenumber(e.target.value)}
+                  />
                 </div>
 
                 <div className="mb-6">

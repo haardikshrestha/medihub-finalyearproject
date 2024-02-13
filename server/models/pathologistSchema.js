@@ -11,6 +11,6 @@ const pathologistSchema = new mongoose.Schema({
   role: {type: String, default: 'user'},
 });
 
-const Pathologist = mongoose.model("User", pathologistSchema);
+const Pathologists = mongoose.model("Pathologist", pathologistSchema);
 
-module.exports = Pathologist;
+module.exports = Pathologists;
