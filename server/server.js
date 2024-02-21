@@ -16,6 +16,8 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const dotenv = require("dotenv");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/"})
 dotenv.config();
 
 const dbURI = process.env.MONGODB_URI;
@@ -547,18 +549,13 @@ app.get("/api/doctors", async (req, res) => {
 
 app.post("/newdoctor", async (req, res) => {
   try {
-    // Destructure values from the request body
     const { fullname, email, phonenumber, password } = req.body;
 
-    // You may want to add validation and error handling here
-
-    // Check if the email is already registered
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email is already registered." });
     }
 
-    // Create a new user (doctor) instance
     const newDoctor = new User({
       email,
       username: fullname, // Assuming username is used for fullname
@@ -622,20 +619,53 @@ app.post("/doctorregister", async (req, res) => {
   }
 });
 
-app.get("/getNumberInfo", async (req, res) => {
+// app.get("/getNumberInfo", async (req, res) => {
+//   try {
+//     const totalDoctors = await Doctors.countDocuments();
+//     const totalPatients = await Patient.countDocuments();
+//     const totalPathologists = await Pathologists.countDocuments();
+//     const totalDepartments = await Department.countDocuments();
+//     const totalWards = await Ward.countDocuments();
+
+//     const numberInfo = Patient.find();
+
+//     res.status(200).json(numberInfo);
+//   } catch (error) {
+//     console.error("Error in /getNumberInfo:", error);
+//     res.status(500).json({ error: "Cannot retrieve number of data." });
+//   }
+// });
+
+app.post("/addDepartment", async (req, res) => {
   try {
-    const totalDoctors = await Doctor.countDocuments();
-    const totalPatients = await Patient.countDocuments();
-    const totalPathologists = await Pathologists.countDocuments();
-    const totalDepartments = await Department.countDocuments();
-    const totalWards = await Ward.countDocuments();
+    const { depID, depName } = req.body; // Assuming these values come from the request body
 
-    const numberInfo = Patient.find();
+    const existingDepartment = await Department.findOne({ depID });
 
-    res.status(200).json(numberInfo);
+    if (existingDepartment) {
+      return res.status(400).json({ error: "Department already exists." });
+    }
+
+    const newDepartment = new Department({
+      depID,
+      depName,
+      // ... other fields ...
+    });
+
+    await newDepartment.save();
+
+    res.status(201).json({ message: "Department added successfully." });
   } catch (error) {
-    console.error("Error in /getNumberInfo:", error);
-    res.status(500).json({ error: "Cannot retrieve number of data." });
+    console.error("Error adding department:", error);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
+
+app.use(express.urlencoded({ extended: false}));
+
+// app.post('/upload', upload.single("image"), async (req, res) => {
+//   console.log(req.body);
+//   console.log(req)
+//   //res.status(201).json({ message: "Uploaded sucessfully!"});
+// })
 

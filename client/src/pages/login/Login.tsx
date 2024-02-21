@@ -95,93 +95,96 @@ const Login = () => {
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Left Panel */}
-      <div className="bg-lime-300 w-1/2 relative overflow-hidden flex items-center justify-center">
-        <img src={backgroundImage} alt="" className="h-full w-full object-cover" />
-      </div>
+    <section className="bg-[#D6E3C8] min-h-screen flex items-center justify-center">
+      {/* Login container */}
+      <div className="bg-gray-100 flex rounded-2xl max-w-3xl p-3 items-center">
+        {/* Image */}
+        <div className="md:block hidden">
+          <img
+            className=""
+            src="/src/assets/Signin.png"
+            alt="Login Image"
+          />
+        </div>
+        {/* Form */}
+        <div className="md:w-4/5 mx-auto px-8 md:px-10 text-center">
+          <h2 className="font-bold text-xl text-black">Login</h2>
 
-      {/* Right Panel */}
-      <div className="bg-slate-50 w-1/2 flex flex-col justify-evenly py-10 text-center">
-        <section className="w-3/4 mx-auto flex flex-col gap-10">
-          {/* Title Section */}
-          <div className="title">
-            <h3 className="text-gray-800 text-2xl font-bold py-4">Log In</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">
-              Please login to your account.
-            </p>
-          </div>
-
-          {/* Form Section */}
-          <form className="flex flex-col gap-5" onSubmit={handleLogin}>
-            {/* Email Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
+          <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+            <input
+              className="p-2 mt-8 rounded-xl border text-sm w-full" // Adjusted width to full width
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <div className="relative">
               <input
-                type="text"
-                name="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
-              />
-              <span className="icon flex items-center px-4">
-                <HiAtSymbol />
-              </span>
-            </div>
-
-            {/* Password Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
-              <input
+                className="p-2 rounded-xl border w-full text-sm" // Adjusted width to full width
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
               />
-              <span
-                className="icon flex items-center px-4 cursor-pointer"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="gray"
+                className="bi bi-eye absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+                viewBox="0 0 16 16"
                 onClick={togglePasswordVisibility}
               >
-                {showPassword ? <HiEyeOff /> : <HiEye />}
-              </span>
+                {showPassword ? (
+                  <path d="M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+                ) : (
+                  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+                  )}
+              </svg>
             </div>
-
-            {/* Submit Button */}
-            <div className="input-button">
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-xl py-2 text-gray-50 text-sm"
-              >
-                Log In
-              </button>
-            </div>
-
-            {/* Forgot Password Link */}
-            <p className="text-right text-gray-400 text-sm">
-              <NavLink to={"/resetask"} className="text-lime-700 underline">
-                <button
-                  className="w-full border border-lime-500 rounded-xl py-2 px-4 text-lime-500 text-sm"
-                  style={{ background: "white" }}
-                >
-                  Forgot Password?
-                </button>
-              </NavLink>
-            </p>
+            <button
+              className="bg-[#ACE86C] rounded-xl text-white py-2 text-sm"
+              type="submit"
+            >
+              Login
+            </button>
+            <button
+              className="bg-gray-100 border border-[#ACE86C] rounded-xl text-[#ACE86C] py-2 text-sm"
+              type="submit"
+            >
+              Forgot Password?
+            </button>
           </form>
 
-          {/* Additional Info Section */}
-          <p className="text-center text-gray-400 text-sm">
-            Don't have an account?{" "}
-            <Link to={"/signup"} className="text-lime-700 underline">
-              Sign Up
-            </Link>
-          </p>
-        </section>
+          <div className="mt-6 grid grid-cols-3 items-center text-gray-400">
+            <hr className="border-gray-400" />
+            <p className="text-center text-sm">OR</p>
+            <hr className="border-gray-400" />
+          </div>
+
+          <button className="bg-white border py-2 w-full rounded-xl mt-5 flex justify-center items-center text-sm hover:scale-105 duration-300 text-[#002D74]">
+            <svg
+              className="mr-3"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="25px"
+            >
+              {/* SVG Path for Google icon */}
+            </svg>
+            Login with Google
+          </button>
+
+          <div className="mt-3 text-xs flex justify-between items-center text-[#002D74]">
+            <p>Don't have an account?</p>
+            <button className="py-2 px-5 bg-white text-[#ACE86C] border rounded-xl hover:scale-110 duration-300">
+              Register
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
