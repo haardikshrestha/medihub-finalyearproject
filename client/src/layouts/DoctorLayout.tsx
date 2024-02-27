@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/store";
 import Sidebar from "@/components/patient/Sidebar";
 import DoctorSidebar from "@/components/doctor/DoctorSidebar";
+import DoctorHeader from "@/components/doctor/DoctorHeader";
 
 const DoctorLayout = () => {
   const navigate = useNavigate();
@@ -14,10 +15,11 @@ const DoctorLayout = () => {
   };
   return (
     <div>
+      <DoctorHeader/>
       <div className="drawer drawer-mobile">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
-        <div className="drawer-content bg-gray-100 p-8">
+        <div className="drawer-content bg-white  rounded-2xl p-8 mr-4 mt-16">
           <div>
             <label
               htmlFor="my-drawer-2"
@@ -43,6 +45,7 @@ const DoctorLayout = () => {
             <Outlet />
           </main>
         </div>
+        
         <DoctorSidebar />
       </div>
     </div>
