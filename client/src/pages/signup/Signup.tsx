@@ -5,42 +5,42 @@ import axios from "axios";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [number, setNumber] = useState("");
+  // const [username, setUsername] = useState("");
+  // const [number, setNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const [isMounted, setIsMounted] = useState(true);
+  // const [isMounted, setIsMounted] = useState(true);
 
-  useEffect(() => {
-    return () => {
-      // Component will unmount, set isMounted to false
-      setIsMounted(false);
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     // Component will unmount, set isMounted to false
+  //     setIsMounted(false);
+  //   };
+  // }, []);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, []);
 
-  const fetchUsers = () => {
-    axios
-      .get("http://localhost:5173/register")
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((error) => {
-        console.error("Fetch Users Error:", error);
-      });
-  };
+  // const fetchUsers = () => {
+  //   axios
+  //     .get("http://localhost:5173/register")
+  //     .then((res) => {
+  //       console.log(res.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Fetch Users Error:", error);
+  //     });
+  // };
 
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  // const isValidEmail = (email: string) => {
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   return emailRegex.test(email);
+  // };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -50,170 +50,122 @@ export default function Signup() {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
 
-    if (!isValidEmail(email)) {
-      alert("Invalid email address");
-      return;
-    }
+  //   if (!isValidEmail(email)) {
+  //     alert("Invalid email address");
+  //     return;
+  //   }
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
+  //   if (password !== confirmPassword) {
+  //     alert("Passwords do not match");
+  //     return;
+  //   }
 
-    axios
-      .post("http://localhost:5173/register", { email, number, username, password })
-      .then(() => {
-        alert("Check your email for OTP verification.");
-        setEmail("");
-        setUsername("");
-        setNumber("");
-        setPassword("");
-        setConfirmPassword("");
-        fetchUsers();
-        navigate(`/otp?email=${email}`);
-      })
-      .catch((error) => {
-        if (error.response && error.response.data && error.response.data.error) {
-          alert(error.response.data.error);
-        } else if (error.response && error.response.data && error.response.data.errors) {
-          const errors = error.response.data.errors;
-          errors.forEach((err: { msg: string }) => alert(err.msg));
-        } else {
-          console.error("Unable to register!", error);
-        }
-      });
-  };
+  //   axios
+  //     .post("http://localhost:5173/register", { email, number, username, password })
+  //     .then(() => {
+  //       alert("Check your email for OTP verification.");
+  //       setEmail("");
+  //       setUsername("");
+  //       setNumber("");
+  //       setPassword("");
+  //       setConfirmPassword("");
+  //       fetchUsers();
+  //       navigate(`/otp?email=${email}`);
+  //     })
+  //     .catch((error) => {
+  //       if (error.response && error.response.data && error.response.data.error) {
+  //         alert(error.response.data.error);
+  //       } else if (error.response && error.response.data && error.response.data.errors) {
+  //         const errors = error.response.data.errors;
+  //         errors.forEach((err: { msg: string }) => alert(err.msg));
+  //       } else {
+  //         console.error("Unable to register!", error);
+  //       }
+  //     });
+  // };
 
   return (
-    <div className="flex h-screen">
-      {/* Left Panel */}
-      <div className="bg-lime-300 w-1/2 relative overflow-hidden flex items-center justify-center">
-        <img src="src/assets/doc2.svg" alt="" className="h-full w-full object-cover" />
-      </div>
+    <section className="bg-[#D6E3C8] min-h-screen flex items-center justify-center">
+      {/* Login container */}
+      <div className="bg-gray-100 flex rounded-2xl max-w-3xl p-3 items-center">
+        {/* Image */}
+        <div className="md:block hidden">
+          <img
+            className=""
+            src="/src/assets/Signin.png"
+            alt="Login Image"
+          />
+        </div>
+        {/* Form */}
+        <div className="md:w-4/5 mx-auto px-8 md:px-10 text-center">
+          <h2 className="font-bold text-xl text-black">Sign Up</h2>
 
-      {/* Right Panel */}
-      <div className="bg-slate-50 w-1/2 flex flex-col justify-evenly py-8 text-center">
-        <section className="w-3/4 mx-auto flex flex-col gap-10">
-          {/* Title Section */}
-          <div className="title">
-            <h3 className="text-gray-800 text-2xl font-bold py-4">Sign Up</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">
-              Please sign up for your account.
-            </p>
-          </div>
-
-          {/* Form Section */}
-          <form className="flex flex-col gap-5" onSubmit={handleRegister}>
-            {/* Email Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
+          <form className="flex flex-col gap-4" >
+            <input
+              className="p-2 mt-8 rounded-xl border text-sm w-full" // Adjusted width to full width
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <div className="relative">
               <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400 "
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <span className="icon flex items-center px-4">
-                <HiAtSymbol />
-              </span>
+                className="p-2 rounded-xl border w-full text-sm" // Adjusted width to full width
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              /> 
             </div>
-
-            {/* Number Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
+            <div className="relative">
               <input
-                type="text"
-                name="number"
-                placeholder="Phone number"
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-                value={number}
-                onChange={(e) => setNumber(e.target.value)}
+                className="p-2 rounded-xl border w-full text-sm" // Adjusted width to full width
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Confirm Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
-              <span className="icon flex items-center px-4">
-                <HiPhone />
-              </span>
             </div>
-
-            {/* Username Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-              <span className="icon flex items-center px-4">
-                <HiIdentification />
-              </span>
-            </div>
-
-            <div>
-              {/* Password Input */}
-              <div className="flex border rounded-xl relative hover:border-lime-500 mb-5">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  required
-                  className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <span
-                  className="icon flex items-center px-4 cursor-pointer"
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? <HiEyeOff /> : <HiEye />}
-                </span>
-              </div>
-
-              {/* Confirm Password Input */}
-              <div className="flex border rounded-xl relative hover:border-lime-500">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  required
-                  className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <span
-                  className="icon flex items-center px-4 cursor-pointer"
-                  onClick={toggleConfirmPasswordVisibility}
-                >
-                  {showConfirmPassword ? <HiEyeOff /> : <HiEye />}
-                </span>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="input-button">
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-xl py-2 text-gray-50 text-sm"
-              >
-                Sign Up
-              </button>
-            </div>
+            <button
+              className="bg-[#ACE86C] rounded-xl text-white py-2 text-sm"
+              type="submit"
+            >
+              Register
+            </button>
           </form>
 
-          {/* Additional Info Section */}
-          <p className="text-center text-gray-400 text-sm mt-1">
-            Already have an account?{" "}
-            <Link to="/login" className="text-lime-700 underline">
-              Log In
-            </Link>
-          </p>
-        </section>
+          <div className="mt-6 grid grid-cols-3 items-center text-gray-400">
+            <hr className="border-gray-400" />
+            <p className="text-center text-sm">OR</p>
+            <hr className="border-gray-400" />
+          </div>
+
+          <button className="bg-white border py-2 w-full rounded-xl mt-5 flex justify-center items-center text-sm hover:scale-105 duration-300 text-[#002D74]">
+            <svg
+              className="mr-3"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="25px"
+            >
+              {/* SVG Path for Google icon */}
+            </svg>
+            Sign up with Google
+          </button>
+
+          <div className="mt-3 text-xs flex items-center text-[#002D74]">
+            <p>Already have an account?</p>
+            <button className="py-2 px-5 bg-white text-[#ACE86C] border rounded-xl hover:scale-110 duration-300">
+              Login
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
