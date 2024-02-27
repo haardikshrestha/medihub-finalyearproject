@@ -120,7 +120,7 @@ export default function Signup() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-              />
+              /> 
             </div>
             <div className="relative">
               <input
