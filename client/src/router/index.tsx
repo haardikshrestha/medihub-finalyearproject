@@ -27,6 +27,7 @@ import PatientProfile from '@/pages/patientPages/patientProfile';
 import CalendarPage from '@/pages/patientPages/Appointment_1';
 import PatientTests from '@/pages/patientPages/PatientTests';
 import PatientHealth from '@/pages/patientPages/PatientHealth';
+import PathologistForm from '@/components/admin/pathology/PathologistForm';
 
 const AppRouter = () => {
   return (
@@ -69,7 +70,7 @@ const AppRouter = () => {
           <Route path="/reset" element={<ResetPassword />} />
           <Route path="/resetask" element={<ResetAsk />} />
           <Route path="/doctor" element={<DoctorLayout />} />
-
+          <Route path="/inp" element={<PathologistForm />} />
 
       </Routes>
     </Router>

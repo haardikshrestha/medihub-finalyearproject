@@ -1,4 +1,4 @@
-import DepartmentsTable from "@/components/admin/crud/DepartmentsTable";
+import DepartmentsTable from "@/components/admin/crud/Department/DepartmentsTable";
 
 const DepartmentsPage = () => {
   return (
