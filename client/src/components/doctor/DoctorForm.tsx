@@ -6,6 +6,7 @@ const DoctorForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
+  const [password, setPassword] = useState("");
 
   const [selectedDays, setSelectedDays] = useState([
     false,
@@ -16,6 +17,35 @@ const DoctorForm = () => {
     false,
     false,
   ]);
+
+  const generateRandomPassword = () => {
+    const lowercaseChars: string = "abcdefghijklmnopqrstuvwxyz";
+    const uppercaseChars: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numberChars: string = "0123456789";
+    const specialChars: string = "!@#$%^&*()_+";
+
+    const getRandomChar = (charSet: string) => {
+      const randomIndex = Math.floor(Math.random() * charSet.length);
+      return charSet[randomIndex];
+    };
+
+    const newPassword: string =
+      getRandomChar(lowercaseChars) +
+      getRandomChar(uppercaseChars) +
+      getRandomChar(numberChars) +
+      getRandomChar(specialChars) +
+      Array.from({ length: 4 }, () =>
+        getRandomChar(lowercaseChars + uppercaseChars + numberChars + specialChars),
+      ).join("");
+
+    // Shuffle the password characters to make it more random
+    const shuffledPassword: string = newPassword
+      .split("")
+      .sort(() => Math.random() - 0.5)
+      .join("");
+
+    setPassword(shuffledPassword);
+  };
 
   const handleDayClick = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
@@ -95,7 +125,7 @@ const DoctorForm = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-lime-300"
+      className="min-h-screen flex items-center justify-center bg-[#D6E3C8]"
       style={{ backdropFilter: "blur(20px)" }}
     >
       <form
@@ -105,6 +135,42 @@ const DoctorForm = () => {
         <h2 className="text-2xl font-bold mb-4 col-span-2 text-gray-800">
           Doctor Information
         </h2>
+
+        <div className="mb-4">
+          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
+            Full Name
+          </label>
+          <input
+            type="text"
+            name="fullname"
+            id="fullname"
+            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
+            Email Address
+          </label>
+          <input
+            type="text"
+            name="emailaddress"
+            id="emailaddress"
+            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
+            Phone Number
+          </label>
+          <input
+            type="text"
+            name="phonenumber"
+            id="phonenumber"
+            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+          />
+        </div>
 
         <div className="mb-4">
           <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
@@ -214,9 +280,30 @@ const DoctorForm = () => {
           />
         </div>
 
+        <div className="mb-4">
+        <label htmlFor="fees" className="block text-sm font-medium text-gray-600">
+            Password
+          </label>
+          <input
+            className="mt-1 p-2.5 border border-gray-300 rounded-md w-2/3 focus:outline-none focus:ring focus:border-blue-300"
+            id="password"
+            type="password"
+            placeholder="Password"
+            value={password}
+            //readOnly
+          />
+          <button
+            className="ml-3 bg-white text-[#ACE86C] hover:bg-[#ACE86C] hover:text-white py-2 px-3 border border-lime-500 focus:outline-none focus:shadow-outline transition duration-300"
+            type="button"
+            onClick={generateRandomPassword}
+          >
+            Generate
+          </button>
+        </div>
+
         <button
           type="submit"
-          className="col-span-2 w-2/4 bg-lime-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
+          className="col-span-2 w-2/4 bg-[#ACE86C] text-white p-2 rounded-md hover:bg-[#93d34d] focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
         >
           Submit
         </button>

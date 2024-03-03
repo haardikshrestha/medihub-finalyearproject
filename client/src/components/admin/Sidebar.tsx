@@ -9,7 +9,7 @@ const Sidebar = () => {
       <ul className="menu p-4 w-56 bg-base-100 text-base-content">
         <div className="mb-4 flex items-center">
           <img
-            src="/src/assets/logo-l.png"
+            src="/src/assets/logo-images/logo-l.png"
             alt="Logo"
             className="w-3/4 h-auto object-cover mx-auto px-3 pb-3"
           />

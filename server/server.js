@@ -8,7 +8,7 @@ const User = require("./models/userSchema");
 const Doctors = require("./models/doctorschema")
 const Patient = require("./models/patientSchema");
 const Ward = require("./models/wardSchema");
-const Pathologists = require("./models/pathologistSchema");
+const Pathologist = require("./models/pathologistSchema");
 const Department = require("./models/departmentSchema");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
@@ -619,23 +619,6 @@ app.post("/doctorregister", async (req, res) => {
   }
 });
 
-// app.get("/getNumberInfo", async (req, res) => {
-//   try {
-//     const totalDoctors = await Doctors.countDocuments();
-//     const totalPatients = await Patient.countDocuments();
-//     const totalPathologists = await Pathologists.countDocuments();
-//     const totalDepartments = await Department.countDocuments();
-//     const totalWards = await Ward.countDocuments();
-
-//     const numberInfo = Patient.find();
-
-//     res.status(200).json(numberInfo);
-//   } catch (error) {
-//     console.error("Error in /getNumberInfo:", error);
-//     res.status(500).json({ error: "Cannot retrieve number of data." });
-//   }
-// });
-
 app.post("/addDepartment", async (req, res) => {
   try {
     const { depID, depName } = req.body; // Assuming these values come from the request body
@@ -668,4 +651,50 @@ app.use(express.urlencoded({ extended: false}));
 //   console.log(req)
 //   //res.status(201).json({ message: "Uploaded sucessfully!"});
 // })
+
+
+// app.get("/getNumberInfo", async (req, res) => {
+//   try {
+//     const totalDoctors = await Doctors.countDocuments();
+//     const totalPatients = await Patient.countDocuments();
+//     const totalPathologists = await Pathologists.countDocuments();
+//     const totalDepartments = await Department.countDocuments();
+//     const totalWards = await Ward.countDocuments();
+
+//     const numberInfo = Patient.find();
+
+//     res.status(200).json(numberInfo);
+//   } catch (error) {
+//     console.error("Error in /getNumberInfo:", error);
+//     res.status(500).json({ error: "Cannot retrieve number of data." });
+//   }
+// });
+
+{
+  /* --- ADMIN --- */
+}
+
+app.get("/numberOfData", async (req, res) => {
+  try {
+    const totalDoctors = await Doctors.countDocuments();
+    const totalPatients = await Patient.countDocuments();
+    const totalPathologists = await Pathologist.countDocuments();
+    const totalDepartments = await Department.countDocuments();
+    const totalWards = await Ward.countDocuments();
+
+    const dataCounts = {
+      doctors: totalDoctors,
+      patients: totalPatients,
+      pathologists: totalPathologists,
+      departments: totalDepartments,
+      wards: totalWards
+    };
+
+    res.status(200).json(dataCounts);
+  } catch (error) {
+    console.error("Error in counting:", error);
+    res.status(500).json({ error: "Error in counting", details: error.message });
+  }
+});
+
 
