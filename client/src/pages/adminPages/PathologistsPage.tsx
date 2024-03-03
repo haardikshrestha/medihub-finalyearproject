@@ -1,4 +1,4 @@
-import PathologistTable from "@/components/admin/crud/PathologistTable";
+import PathologistTable from "@/components/admin/crud/Pathology/PathologistTable";
 
 const PathologistsPage = () => {
   return (
