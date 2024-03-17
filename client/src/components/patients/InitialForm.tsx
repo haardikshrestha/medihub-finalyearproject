@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useState } from "react";
 import { useSearchParams,  } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -6,7 +7,26 @@ const InitialForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
+  const [dob, setDob] = useState<Date | null>(null);
+  const [ageError, setAgeError] = useState(false);
 
+  const handleDobChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedDob = new Date(event.target.value);
+    setDob(selectedDob);
+    validateAge(selectedDob);
+  };
+
+  const validateAge = (selectedDob: Date) => {
+    const today = new Date();
+    let age = today.getFullYear() - selectedDob.getFullYear();
+    const monthDiff = today.getMonth() - selectedDob.getMonth();
+  
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < selectedDob.getDate())) {
+      age--;
+    }
+  
+    setAgeError(age < 18);
+  };
 
   const handleregister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -112,17 +132,19 @@ const InitialForm = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="dob" className="block text-sm font-medium text-gray-600">
-            Date of Birth
-          </label>
-          <input
-            type="date"
-            name="dob"
-            id="dob"
-            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-            required
-          />
-        </div>
+      <label htmlFor="dob" className="block text-sm font-medium text-gray-600">
+        Date of Birth
+      </label>
+      <input
+        type="date"
+        name="dob"
+        id="dob"
+        className={`mt-1 p-2.5 border ${ageError ? 'border-red-500' : 'border-gray-300'} rounded-md w-full focus:outline-none focus:ring focus:border-blue-300`}
+        onChange={handleDobChange}
+        required
+      />
+      {ageError && <span className="text-red-500 text-sm ml-2">! Patient must be over 18 years old.</span>}
+    </div>
 
         <div className="mb-4">
           <label

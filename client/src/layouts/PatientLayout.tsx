@@ -4,8 +4,11 @@ import { logout } from "@/app/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/store";
 import Sidebar from "@/components/patient/Sidebar";
+import PatientHeader from "@/components/patient/PatientHeader";
+import PatientSidebar from "@/components/patient/PatientSidebar";
 
-const PatientLayout = () => {
+
+const DoctorLayout = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const handlelogout = () => {
@@ -13,10 +16,11 @@ const PatientLayout = () => {
   };
   return (
     <div>
+      <PatientHeader/>
       <div className="drawer drawer-mobile">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
-        <div className="drawer-content bg-gray-100 p-8">
+        <div className="drawer-content bg-white  rounded-2xl p-8 mr-4 mt-16">
           <div>
             <label
               htmlFor="my-drawer-2"
@@ -42,10 +46,11 @@ const PatientLayout = () => {
             <Outlet />
           </main>
         </div>
-        <Sidebar />
+        
+        <PatientSidebar />
       </div>
     </div>
   );
 };
 
-export default PatientLayout;
+export default DoctorLayout;

@@ -5,11 +5,12 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
-const Doctors = require("./models/doctorschema")
+const Doctors = require("./models/doctorschema");
 const Patient = require("./models/patientSchema");
 const Ward = require("./models/wardSchema");
 const Pathologist = require("./models/pathologistSchema");
 const Department = require("./models/departmentSchema");
+const Appointment = require("./models/appointmentsSchema");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
 const crypto = require("crypto");
@@ -17,7 +18,7 @@ const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const dotenv = require("dotenv");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/"})
+const upload = multer({ dest: "uploads/" });
 dotenv.config();
 
 const dbURI = process.env.MONGODB_URI;
@@ -105,86 +106,166 @@ async function comparePassword(inputPassword, storedHash) {
 {
   /* REGISTER POST */
 }
-app.post("/register", async (req, res) => {
-  try {
-    const { email, username, number, password } = req.body;
+// app.post("/register", async (req, res) => {
+//   try {
+//     const { email, username, number, password } = req.body;
 
-    //email validation
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      console.log("hi");
-      return res.status(400).json({ error: "Email is already taken!" });
-    }
+//     //email validation
+//     const existingEmail = await User.findOne({ email });
+//     if (existingEmail) {
+//       console.log("hi");
+//       return res.status(400).json({ error: "Email is already taken!" });
+//     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Invalid email address!" });
-    }
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!emailRegex.test(email)) {
+//       return res.status(400).json({ error: "Invalid email address!" });
+//     }
 
-    //numbervalidation
-    const phoneNumberRegex = /^\d{10}$/;
-    if (!phoneNumberRegex.test(number)) {
-      return res.status(400).json({
-        error: "Invalid phone number! It should be 10 digits and all numbers.",
-      });
-    }
+//     //numbervalidation
+//     const phoneNumberRegex = /^\d{10}$/;
+//     if (!phoneNumberRegex.test(number)) {
+//       return res.status(400).json({
+//         error: "Invalid phone number! It should be 10 digits and all numbers.",
+//       });
+//     }
 
-    //username validation
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username is already taken!" });
-    }
+//     //username validation
+//     const existingUser = await User.findOne({ username });
+//     if (existingUser) {
+//       return res.status(400).json({ error: "Username is already taken!" });
+//     }
 
-    // Username validation: No white spaces allowed
-    const usernameRegex = /^\S*$/;
-    if (!usernameRegex.test(username)) {
-      return res
-        .status(400)
-        .json({ error: "Username should not contain white spaces." });
-    }
+//     // Username validation: No white spaces allowed
+//     const usernameRegex = /^\S*$/;
+//     if (!usernameRegex.test(username)) {
+//       return res
+//         .status(400)
+//         .json({ error: "Username should not contain white spaces." });
+//     }
 
-    // Password validation
-    const passwordRegex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        error:
-          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-      });
-    }
+//     // Password validation
+//     const passwordRegex =
+//       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+//     if (!passwordRegex.test(password)) {
+//       return res.status(400).json({
+//         error:
+//           "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+//       });
+//     }
 
-    const otp = generateOTP();
-    const otpExpiresAt = Date.now() + 15 * 60 * 1000;
-    console.log(otp);
+//     const otp = generateOTP();
+//     const otpExpiresAt = Date.now() + 15 * 60 * 1000;
+//     console.log(otp);
 
-    const hashedPassword = await hashPassword(password); // Hash the password using bcrypt
-    const newUser = new User({
-      email,
-      username,
-      number,
-      password: hashedPassword,
-      otp,
-      otpExpiresAt,
+//     const hashedPassword = await hashPassword(password); // Hash the password using bcrypt
+//     const newUser = new User({
+//       email,
+//       username,
+//       number,
+//       password: hashedPassword,
+//       otp,
+//       otpExpiresAt,
+//     });
+//     await newUser.save();
+
+//     const mailer = {
+//       from: process.env.USER,
+//       to: email,
+//       subject: "OTP Verification",
+//       text: `Your OTP for verification is: ${otp}`,
+//     };
+
+//     try {
+//       await transporter.sendMail(mailer);
+//       console.log("mailed!!");
+//       res.status(201).json({ message: "Please check your email for OTP pin." });
+//     } catch (error) {
+//       console.error("Error sending email:", error);
+//       res.status(500).json({ error: "Error sending verification email." });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ error });
+//   }
+// });
+
+app.post("/postregister", async (req, res) => {
+  const { email, password } = req.body;
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ error: "Email already exists" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Invalid email address!" });
+  }
+
+  const passwordRegex =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      error:
+        "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
     });
+  }
+
+  // Validate password
+  if (!passwordRegex.test(password)) {
+    return res
+      .status(400)
+      .json({
+        error:
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character",
+      });
+  }
+
+  // Validate email
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Invalid email address" });
+  }
+
+  // Hash the password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Generate OTP
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  const otpExpiresAt = Date.now() + 15 * 60 * 1000;
+
+  // Create a new user
+  const newUser = new User({
+    email,
+    password: hashedPassword,
+    otp,
+    otpExpiresAt
+  });
+
+  try {
+    // Save the new user to the database
     await newUser.save();
 
-    const mailer = {
-      from: process.env.USER,
+    // Send OTP to user's email
+    const mailOptions = {
+      from: "your-email@gmail.com", // Replace with your email address
       to: email,
-      subject: "OTP Verification",
-      text: `Your OTP for verification is: ${otp}`,
+      subject: "OTP for Registration",
+      text: `Your OTP for registration is: ${otp}`,
     };
 
-    try {
-      await transporter.sendMail(mailer);
-      console.log("mailed!!");
-      res.status(201).json({ message: "Please check your email for OTP pin." });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      res.status(500).json({ error: "Error sending verification email." });
-    }
-  } catch (error) {
-    res.status(500).json({ error });
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    res.status(201).json({ message: "User created successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -240,69 +321,69 @@ app.post("/resend-code", async (req, res) => {
 {
   /* REGISTER GET */
 }
-app.get("/register", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(201).json(users);
-  } catch (error) {
-    res.status(500).json({ error: "Unable to get users!" });
-  }
-});
+// app.get("/register", async (req, res) => {
+//   try {
+//     const users = await User.find();
+//     res.status(201).json(users);
+//   } catch (error) {
+//     res.status(500).json({ error: "Unable to get users!" });
+//   }
+// });
 
 {
   /* lOGIN POST */
 }
-app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+// app.post("/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ email });
 
-    // email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Invalid email address!" });
-    }
+//     // email validation
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!emailRegex.test(email)) {
+//       return res.status(400).json({ error: "Invalid email address!" });
+//     }
 
-    // password validation
-    const passwordRegex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        error:
-          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-      });
-    }
+//     // password validation
+//     const passwordRegex =
+//       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+//     if (!passwordRegex.test(password)) {
+//       return res.status(400).json({
+//         error:
+//           "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+//       });
+//     }
 
-    if (!user) {
-      return res.status(401).json({ error: "Invalid Credentials!" });
-    }
+//     if (!user) {
+//       return res.status(401).json({ error: "Invalid Credentials!" });
+//     }
 
-    // Check if the user is verified
-    if (!user.verified) {
-      return res.status(401).json({
-        error:
-          "Your account is not verified. Please check your email for verification instructions.",
-      });
-    }
+//     // Check if the user is verified
+//     if (!user.verified) {
+//       return res.status(401).json({
+//         error:
+//           "Your account is not verified. Please check your email for verification instructions.",
+//       });
+//     }
 
-    const isPasswordValid = await comparePassword(password, user.password); // Compare passwords using bcrypt
+//     const isPasswordValid = await comparePassword(password, user.password); // Compare passwords using bcrypt
 
-    if (isPasswordValid) {
-      // Password is valid, you can generate and send a token here
+//     if (isPasswordValid) {
+//       // Password is valid, you can generate and send a token here
 
-      const token = jwt.sign({ userID: user._id }, SECRET_KEY, {
-        expiresIn: "1h",
-      });
-      const role = user.role;
-      res.json({ message: "Login successful!", token, role });
-    } else {
-      res.status(401).json({ error: "Invalid Credentials!" });
-    }
-  } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+//       const token = jwt.sign({ userID: user._id }, SECRET_KEY, {
+//         expiresIn: "1h",
+//       });
+//       const role = user.role;
+//       res.json({ message: "Login successful!", token, role });
+//     } else {
+//       res.status(401).json({ error: "Invalid Credentials!" });
+//     }
+//   } catch (error) {
+//     console.error("Login Error:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
 
 {
   /* VERIFY OTP POST */
@@ -470,7 +551,7 @@ app.post("/patientsinfo", async (req, res) => {
     console.error("Error registering patient:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 // Fetch users with role "doctors"
 app.get("/getdoctors", async (req, res) => {
@@ -486,7 +567,9 @@ app.get("/getdoctors", async (req, res) => {
 //get pathologists
 app.get("/getpathologists", async (req, res) => {
   try {
-    const pathologists = await User.find({ role: "pathologist" }).select("-password");
+    const pathologists = await User.find({ role: "pathologist" }).select(
+      "-password"
+    );
     res.status(200).json(pathologists);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -520,18 +603,20 @@ app.post("/checkpatient", async (req, res) => {
 });
 
 //get gender of patient
-app.get('/getgender', async (req, res) => {
+app.get("/getgender", async (req, res) => {
   try {
     // Query the database to get gender distribution
-    const maleCount = await Patient.countDocuments({ gender: 'Male' });
-    const femaleCount = await Patient.countDocuments({ gender: 'Female' });
-    const otherCount = await Patient.countDocuments({ gender: { $nin: ['Male', 'Female'] } });
+    const maleCount = await Patient.countDocuments({ gender: "Male" });
+    const femaleCount = await Patient.countDocuments({ gender: "Female" });
+    const otherCount = await Patient.countDocuments({
+      gender: { $nin: ["Male", "Female"] },
+    });
 
     // Send the data as JSON
     res.json({ male: maleCount, female: femaleCount, other: otherCount });
   } catch (error) {
-    console.error('Error fetching gender distribution:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching gender distribution:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -561,7 +646,7 @@ app.post("/newdoctor", async (req, res) => {
       username: fullname, // Assuming username is used for fullname
       number: phonenumber,
       password, // You should hash the password before saving it
-      role: 'doctor', // Set the role for a doctor
+      role: "doctor", // Set the role for a doctor
     });
 
     // Save the new doctor to the database
@@ -615,7 +700,9 @@ app.post("/doctorregister", async (req, res) => {
     res.status(201).json({ message: "Doctor registered successfully" });
   } catch (error) {
     console.error("Error registering doctor:", error);
-    res.status(500).json({ error: "An unexpected error occurred. Please try again later." });
+    res
+      .status(500)
+      .json({ error: "An unexpected error occurred. Please try again later." });
   }
 });
 
@@ -644,7 +731,7 @@ app.post("/addDepartment", async (req, res) => {
   }
 });
 
-app.use(express.urlencoded({ extended: false}));
+app.use(express.urlencoded({ extended: false }));
 
 // app.post('/upload', upload.single("image"), async (req, res) => {
 //   console.log(req.body);
@@ -652,27 +739,107 @@ app.use(express.urlencoded({ extended: false}));
 //   //res.status(201).json({ message: "Uploaded sucessfully!"});
 // })
 
-
-// app.get("/getNumberInfo", async (req, res) => {
-//   try {
-//     const totalDoctors = await Doctors.countDocuments();
-//     const totalPatients = await Patient.countDocuments();
-//     const totalPathologists = await Pathologists.countDocuments();
-//     const totalDepartments = await Department.countDocuments();
-//     const totalWards = await Ward.countDocuments();
-
-//     const numberInfo = Patient.find();
-
-//     res.status(200).json(numberInfo);
-//   } catch (error) {
-//     console.error("Error in /getNumberInfo:", error);
-//     res.status(500).json({ error: "Cannot retrieve number of data." });
-//   }
-// });
-
 {
-  /* --- ADMIN --- */
+  /* --- APPOINTMENT --- */
 }
+
+app.post("/appointments", async (req, res) => {
+  try {
+    // Create a new appointment instance based on the request body
+    const newAppointment = new Appointment({
+      apptID: req.body.apptID,
+      apptDate: req.body.apptDate,
+      apptPatient: req.body.apptPatient,
+      apptTime: req.body.apptTime,
+      apptDoctor: req.body.apptDoctor,
+      apptStatus: req.body.apptStatus,
+      apptDisease: req.body.apptDisease,
+      paymentStatus: req.body.paymentStatus,
+      transactionID: req.body.transactionID,
+    });
+
+    // Save the appointment to the database
+    const savedAppointment = await newAppointment.save();
+
+    res.status(201).json(savedAppointment); // Return the saved appointment as JSON
+  } catch (err) {
+    res.status(400).json({ message: err.message }); // Return an error message if something goes wrong
+  }
+});
+
+app.get("/getappointments", async (req, res) => {
+  try {
+    // Fetch all appointments from the database
+    const appointments = await Appointment.find();
+
+    res.status(200).json(appointments); // Return the appointments as JSON
+  } catch (err) {
+    res.status(500).json({ message: err.message }); // Return an error message if something goes wrong
+  }
+});
+
+app.get("/appointments/count", async (req, res) => {
+  try {
+    // Count all appointments in the database
+    const appointmentCount = await Appointment.countDocuments();
+
+    res.status(200).json({ count: appointmentCount });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/doctors/findexpertise", async (req, res) => {
+  try {
+    const { expertise } = req.body;
+
+    const doctors = await Doctors.find({ expertise });
+
+    res.status(200).json(doctors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post("/patientsinfo", async (req, res) => {
+  try {
+    // Extract patient information from the request body
+    const {
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+    } = req.body;
+
+    // Create a new patient instance
+    const newPatient = new Patient({
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+    });
+
+    // Save the patient information to the database
+    await newPatient.save();
+
+    res.status(201).json({ message: "Patient information saved successfully" });
+  } catch (error) {
+    console.error("Error saving patient information:", error);
+    res
+      .status(500)
+      .json({
+        message: "An unexpected error occurred. Please try again later.",
+      });
+  }
+});
 
 app.get("/numberOfData", async (req, res) => {
   try {
@@ -681,20 +848,114 @@ app.get("/numberOfData", async (req, res) => {
     const totalPathologists = await Pathologist.countDocuments();
     const totalDepartments = await Department.countDocuments();
     const totalWards = await Ward.countDocuments();
+    const totalAppointments = await Appointment.countDocuments();
 
     const dataCounts = {
       doctors: totalDoctors,
       patients: totalPatients,
       pathologists: totalPathologists,
       departments: totalDepartments,
-      wards: totalWards
+      wards: totalWards,
+      appointments: totalAppointments,
     };
 
     res.status(200).json(dataCounts);
   } catch (error) {
     console.error("Error in counting:", error);
-    res.status(500).json({ error: "Error in counting", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Error in counting", details: error.message });
   }
 });
 
+app.get("/getDepartments", async (req, res) => {
+  try {
+    const departmentNames = await Department.distinct("depName");
+    res.status(200).json(departmentNames);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
+app.post("/addDoctors", async (req, res) => {
+  try {
+  } catch (error) {}
+});
+
+app.get("/getpatients", async (req, res) => {
+  try {
+    const patients = await Patient.find();
+
+    res.status(200).json(patients);
+  } catch (err) {
+    console.error("Error fetching patients:", err);
+    res
+      .status(500)
+      .json({
+        message: "An unexpected error occurred. Please try again later.",
+      });
+  }
+});
+
+app.get("/doctor/viewpatients", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const patient = await Patient.findOne({ email });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    res.json(patient);
+  } catch (error) {
+    console.error("Error fetching patient:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post('/newdoctor', async (req, res) => {
+  try {
+    // Extract data from request body
+    const {
+      nmc,
+      email,
+      role,
+      expertise,
+      degree,
+      school,
+      startTime,
+      endTime,
+      daysAvailable,
+      fees
+    } = req.body;
+
+    // Create a new doctor instance
+    const newDoctor = new Doctors({
+      nmc,
+      email,
+      role,
+      expertise,
+      degree,
+      school,
+      startTime,
+      endTime,
+      daysAvailable,
+      fees
+    });
+
+    // Save the new doctor to the database
+    const savedDoctor = await newDoctor.save();
+
+    // Respond with the saved doctor object
+    res.status(201).json(savedDoctor);
+  } catch (error) {
+    // Handle errors
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
