@@ -93,6 +93,10 @@ const Login = () => {
     }
   };
 
+  const goRegister = () =>{
+    navigate("/signup")
+  }
+
   return (
     <section className="bg-[#D6E3C8] min-h-screen flex items-center justify-center">
       {/* Login container */}
@@ -177,7 +181,8 @@ const Login = () => {
 
           <div className="mt-4 text-xs  items-center text-[#002D74]">
             <p>Don't have an account?</p>
-            <button className="mt-2 py-2 px-5 bg-white text-[#ACE86C] border rounded-xl transition-all duration-300 hover:bg-[#ACE86C] hover:text-white">
+            <button className="mt-2 py-2 px-5 bg-white text-[#ACE86C] border rounded-xl transition-all duration-300 hover:bg-[#ACE86C] hover:text-white"
+            onClick={goRegister}>
               Register
             </button>
           </div>

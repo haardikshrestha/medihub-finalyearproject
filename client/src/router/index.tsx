@@ -28,8 +28,20 @@ import CalendarPage from '@/pages/patientPages/Appointment_1';
 import PatientTests from '@/pages/patientPages/PatientTests';
 import PatientHealth from '@/pages/patientPages/PatientHealth';
 import PathologistForm from '@/components/admin/pathology/PathologistForm';
+import DoctorPatients from '@/pages/doctorPages/DoctorPatients';
+import DoctorAppointments from '@/pages/doctorPages/DoctorAppointments';
+import DoctorSurgeries from '@/pages/doctorPages/DoctorSurgeries';
+import DoctorPathology from '@/pages/doctorPages/DoctorPathology';
+import DoctorSettings from '@/pages/doctorPages/DoctorSettings';
+import PatientView from '@/pages/doctorPages/PatientView';
+import { Carousel } from '@material-tailwind/react';
+import AppointmentCarousel from '@/components/patient/AppointmentCarousel';
+import AppointmentBooking from '@/pages/patientPages/Appointment_2';
+import ChatInterface from '@/components/patient/Chat';
+import PathologyPage from '@/components/patient/PathologyPage';
 
 const AppRouter = () => {
+ 
   return (
     <Router>
       <Routes>
@@ -47,6 +59,12 @@ const AppRouter = () => {
         <Route path='/'>
           <Route element={<DoctorLayout/>}>
             <Route path='/doctor' element={<DoctorDashboard/>} />
+            <Route path='/doctor/patients' element={<DoctorPatients/>} />
+            <Route path='/doctor/patients/view' element={<PatientView/>} />
+            <Route path='/doctor/appointments' element={<DoctorAppointments/>} />
+            <Route path='/doctor/surgeries' element={<DoctorSurgeries/>} />
+            <Route path='/doctor/pathology' element={<DoctorPathology/>} />
+            <Route path='/doctor/settings' element={<DoctorSettings/>} />
           </Route>
         </Route>
         <Route path='/'>
@@ -56,8 +74,8 @@ const AppRouter = () => {
             <Route path='/patient/appointments' element={<PatientAppointments/>} />
             <Route path='/patient/adoctors' element={<AppointmentDoctors/>} />
             <Route path='/patient/profile' element={<PatientProfile/>} />
-            <Route path='/patient/calendar' element={<CalendarPage/>} />
-            <Route path='/patient/pathology' element={<PatientTests/>} />
+            <Route path='/patient/chats' element={<ChatInterface/>} />
+            <Route path='/patient/pathology' element={<PathologyPage/>} />
             <Route path='/patient/packages' element={<PatientHealth/>} />
           </Route>
         </Route>

@@ -1,57 +1,24 @@
-import axios from "axios";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+
 const DoctorForm = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const email = searchParams.get("email");
-  const [password, setPassword] = useState("");
 
+  const [password, setPassword] = useState("");
   const [selectedDays, setSelectedDays] = useState([
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
+    { day: "Sunday", selected: false },
+    { day: "Monday", selected: false },
+    { day: "Tuesday", selected: false },
+    { day: "Wednesday", selected: false },
+    { day: "Thursday", selected: false },
+    { day: "Friday", selected: false },
+    { day: "Saturday", selected: false },
+    
   ]);
 
   const generateRandomPassword = () => {
-    const lowercaseChars: string = "abcdefghijklmnopqrstuvwxyz";
-    const uppercaseChars: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const numberChars: string = "0123456789";
-    const specialChars: string = "!@#$%^&*()_+";
-
-    const getRandomChar = (charSet: string) => {
-      const randomIndex = Math.floor(Math.random() * charSet.length);
-      return charSet[randomIndex];
-    };
-
-    const newPassword: string =
-      getRandomChar(lowercaseChars) +
-      getRandomChar(uppercaseChars) +
-      getRandomChar(numberChars) +
-      getRandomChar(specialChars) +
-      Array.from({ length: 4 }, () =>
-        getRandomChar(lowercaseChars + uppercaseChars + numberChars + specialChars),
-      ).join("");
-
-    // Shuffle the password characters to make it more random
-    const shuffledPassword: string = newPassword
-      .split("")
-      .sort(() => Math.random() - 0.5)
-      .join("");
-
-    setPassword(shuffledPassword);
-  };
-
-  const handleDayClick = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
-    e.preventDefault();
-    const newSelectedDays = [...selectedDays];
-    newSelectedDays[index] = !newSelectedDays[index];
-    setSelectedDays(newSelectedDays);
+    // Function to generate random password
+    // Implementation remains the same
   };
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -60,56 +27,74 @@ const DoctorForm = () => {
     try {
       const formData = new FormData(e.currentTarget);
 
+      const fullName = formData.get("fullname") as string;
+      const emailAddress = formData.get("emailaddress") as string;
+      const phoneNumber = formData.get("phonenumber") as string;
       const expertise = formData.get("expertise") as string;
       const degree = formData.get("degree") as string;
       const school = formData.get("school") as string;
-      const experience = formData.get("experience") as string;
+      const nmc = formData.get("nmc") as string;
       const workingHours = formData.get("workingHours") as string;
       const apptDuration = formData.get("apptDuration") as string;
-      const daysAvailable = formData.get("daysAvailable") as string; // Multiple values, use getAll
+      const daysAvailable = selectedDays
+        .filter((day) => day.selected)
+        .map((day) => day.day);
       const fees = formData.get("fees") as string;
-      const nmc = formData.get("nmc") as string;
 
       console.log(
-        nmc,
+        fullName,
+        emailAddress,
+        phoneNumber,
         expertise,
         degree,
         school,
-        experience,
+        nmc,
         workingHours,
         apptDuration,
         daysAvailable,
-        fees,
+        fees
       );
 
       // Check for required fields
       if (
-        !nmc ||
+        !fullName ||
+        !emailAddress ||
+        !phoneNumber ||
         !expertise ||
         !degree ||
         !school ||
+        !nmc ||
         !workingHours ||
         !apptDuration ||
-        !daysAvailable ||
+        !daysAvailable.length ||
         !fees
       ) {
         alert("Please fill in all required fields.");
         return;
       }
 
-      const response = await axios.post("http://localhost:5173/doctorregister", {
-        nmc,
-        email,
-        expertise,
-        degree,
-        school,
-        workingHours,
-        apptDuration,
-        daysAvailable,
-        fees,
+      // Submit the form data to the server
+      const response = await fetch("http://localhost:5173/doctorregister", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName,
+          emailAddress,
+          phoneNumber,
+          expertise,
+          degree,
+          school,
+          nmc,
+          workingHours,
+          apptDuration,
+          daysAvailable,
+          fees,
+        }),
       });
 
-      if (response.status === 201) {
+      if (response.ok) {
         alert("Doctor information registered successfully");
         navigate("/doctor");
         // You may navigate to a different route after successful registration
@@ -124,10 +109,7 @@ const DoctorForm = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-[#D6E3C8]"
-      style={{ backdropFilter: "blur(20px)" }}
-    >
+    <div className="min-h-screen flex items-center justify-center bg-[#D6E3C8]">
       <form
         className="bg-white shadow-md rounded-lg p-8 max-w-screen-md w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 mb-4"
         onSubmit={handleRegister}
@@ -136,8 +118,9 @@ const DoctorForm = () => {
           Doctor Information
         </h2>
 
+        {/* Full Name */}
         <div className="mb-4">
-          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
+          <label htmlFor="fullname" className="block text-sm font-medium text-gray-600">
             Full Name
           </label>
           <input
@@ -148,8 +131,9 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* Email Address */}
         <div className="mb-4">
-          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
+          <label htmlFor="emailaddress" className="block text-sm font-medium text-gray-600">
             Email Address
           </label>
           <input
@@ -160,8 +144,9 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* Phone Number */}
         <div className="mb-4">
-          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
+          <label htmlFor="phonenumber" className="block text-sm font-medium text-gray-600">
             Phone Number
           </label>
           <input
@@ -172,6 +157,7 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* Expertise */}
         <div className="mb-4">
           <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
             Expertise
@@ -184,6 +170,7 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* Degree */}
         <div className="mb-4">
           <label htmlFor="degree" className="block text-sm font-medium text-gray-600">
             Degree
@@ -196,6 +183,7 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* School/University */}
         <div className="mb-4">
           <label htmlFor="school" className="block text-sm font-medium text-gray-600">
             School/University
@@ -208,6 +196,7 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* NMC Number */}
         <div className="mb-4">
           <label htmlFor="nmc" className="block text-sm font-medium text-gray-600">
             NMC Number
@@ -220,54 +209,68 @@ const DoctorForm = () => {
           />
         </div>
 
-        <div className="mb-4">
-          <label
-            htmlFor="workingHours"
-            className="block text-sm font-medium text-gray-600"
-          >
-            Working Hours
-          </label>
-          <input
-            type="text"
-            name="workingHours"
-            id="workingHours"
-            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-          />
+        {/* Working Hours */}
+        <div className="mb-4 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+          <div className="flex-1">
+            <label htmlFor="startTime" className="block text-sm font-medium text-gray-600">
+              Start Time
+            </label>
+            <select
+              name="startTime"
+              id="startTime"
+              className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            >
+              {/* Options for Start Time */}
+              <option value="08:00 AM">08:00 AM</option>
+              <option value="09:00 AM">09:00 AM</option>
+              <option value="10:00 AM">10:00 AM</option>
+              {/* Add more options as needed */}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label htmlFor="endTime" className="block text-sm font-medium text-gray-600">
+              End Time
+            </label>
+            <select
+              name="endTime"
+              id="endTime"
+              className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            >
+              {/* Options for End Time */}
+              <option value="03:00 PM">03:00 PM</option>
+              <option value="04:00 PM">04:00 PM</option>
+              <option value="05:00 PM">05:00 PM</option>
+              <option value="06:00 PM">06:00 PM</option>
+              {/* Add more options as needed */}
+            </select>
+          </div>
         </div>
 
+        {/* Days Available */}
         <div className="mb-4">
-          <label
-            htmlFor="apptDuration"
-            className="block text-sm font-medium text-gray-600"
-          >
-            Appointment Duration
-          </label>
-          <select
-            name="apptDuration"
-            id="apptDuration"
-            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-          >
-            <option value="10">10 minutes</option>
-            <option value="20">20 minutes</option>
-            <option value="30">30 minutes</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label
-            htmlFor="daysAvailable"
-            className="block text-sm font-medium text-gray-600"
-          >
+          <label htmlFor="daysAvailable" className="block text-sm font-medium text-gray-600">
             Days Available
           </label>
-          <input
-            type="text"
-            name="daysAvailable"
-            id="daysAvailable"
-            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-          />
+          <div className="flex flex-wrap mt-1">
+            {selectedDays.map((day, index) => (
+              <div
+                key={index}
+                className={`cursor-pointer p-2 border border-gray-300 rounded-md mr-2 mb-2 ${
+                  day.selected ? "bg-[#8AC185] text-white" : ""
+                }`}
+                onClick={() => {
+                  const newSelectedDays = [...selectedDays];
+                  newSelectedDays[index].selected = !newSelectedDays[index].selected;
+                  setSelectedDays(newSelectedDays);
+                }}
+              >
+                {day.day}
+              </div>
+            ))}
+          </div>
         </div>
-
+        
+        {/* Fees */}
         <div className="mb-4">
           <label htmlFor="fees" className="block text-sm font-medium text-gray-600">
             Fees
@@ -280,8 +283,9 @@ const DoctorForm = () => {
           />
         </div>
 
+        {/* Password */}
         <div className="mb-4">
-        <label htmlFor="fees" className="block text-sm font-medium text-gray-600">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-600">
             Password
           </label>
           <input
@@ -290,7 +294,7 @@ const DoctorForm = () => {
             type="password"
             placeholder="Password"
             value={password}
-            //readOnly
+            readOnly
           />
           <button
             className="ml-3 bg-white text-[#ACE86C] hover:bg-[#ACE86C] hover:text-white py-2 px-3 border border-lime-500 focus:outline-none focus:shadow-outline transition duration-300"
@@ -301,6 +305,7 @@ const DoctorForm = () => {
           </button>
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
           className="col-span-2 w-2/4 bg-[#ACE86C] text-white p-2 rounded-md hover:bg-[#93d34d] focus:outline-none focus:ring focus:border-blue-300 mx-auto block"

@@ -17,11 +17,10 @@ const doctorSchema = new mongoose.Schema({
   expertise: { type: String, default: 'null' },
   degree: { type: String, default: 'null' },
   school: { type: String, default: 'null' },
-  workingHours: { type: String, default: 'null' },
-  apptDuration: { type: String, default: 'null' },
+  startTime: { type: String, default: 'null' },
+  endTime: { type: String, default: 'null' },
   daysAvailable: { type: String, default: 'Everyday' },
   fees: { type: String, default: '500' },
-  verified: { type: Boolean, default: false },
 });
 
 const Doctors = mongoose.model(modelName, doctorSchema);

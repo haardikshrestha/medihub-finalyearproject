@@ -9,7 +9,6 @@ const patientSchema = new mongoose.Schema({
     chronicillness: { type: String, default: "None"},
     address: { type: String, required: true},
     bloodgroup: { type: String, required: true},
-    
 });
 
 const Patient = mongoose.model("Doctor", patientSchema, "patients");
