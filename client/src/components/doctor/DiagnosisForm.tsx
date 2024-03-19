@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaClock, FaUtensils } from "react-icons/fa";
 
 interface DiagnosisFormProps {
   onCancel: () => void;
@@ -6,8 +7,8 @@ interface DiagnosisFormProps {
 
 const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
   const [diagnosis, setDiagnosis] = useState("");
-  const [medications, setMedications] = useState<{ name: string; dosage: string }[]>([
-    { name: "", dosage: "" },
+  const [medications, setMedications] = useState<{ name: string; dosage: string; timeOfDay: string; beforeOrAfterEating: string }[]>([
+    { name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" },
   ]);
   const [notes, setNotes] = useState("");
 
@@ -22,7 +23,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
   };
 
   const handleAddMedication = () => {
-    setMedications([...medications, { name: "", dosage: "" }]);
+    setMedications([...medications, { name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" }]);
   };
 
   const handleRemoveMedication = (index: number) => {
@@ -35,7 +36,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
     e.preventDefault();
     console.log("Submitting Diagnosis:", { diagnosis, medications, notes });
     setDiagnosis("");
-    setMedications([{ name: "", dosage: "" }]);
+    setMedications([{ name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" }]);
     setNotes("");
   };
 
@@ -85,6 +86,26 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
                 <option value="100">100 mg</option>
                 <option value="250">250 mg</option>
                 <option value="500">500 mg</option>
+              </select>
+              <select
+                value={medication.timeOfDay}
+                onChange={(e) => handleMedicationChange(index, "timeOfDay", e.target.value)}
+                className="mt-1 ml-2 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              >
+                <option value="">Time of the day</option>
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Evening">Evening</option>
+                <option value="Night">Night</option>
+              </select>
+              <select
+                value={medication.beforeOrAfterEating}
+                onChange={(e) => handleMedicationChange(index, "beforeOrAfterEating", e.target.value)}
+                className="mt-1 ml-2 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              >
+                <option value="">Before or after eating</option>
+                <option value="Before">Before</option>
+                <option value="After">After</option>
               </select>
               {index === medications.length - 1 ? (
                 <button
