@@ -1,3 +1,6 @@
+import Calendar from "@/components/doctor/Calendar";
+import StatsCard from "@/components/doctor/Dashboard/StatsCard";
+import Events from "@/components/doctor/Events";
 import { useState, useEffect } from "react";
 
 const DoctorDashboard = () => {
@@ -58,26 +61,21 @@ const DoctorDashboard = () => {
         <p>{formattedDate}</p>
       </div>
 
-      <div className="flex flex-row gap-5">
-        <div className="mt-5 flex">
-          <div className="bg-gray-200 p-5 rounded-xl w-48">
-            <p className="text-2xl font-bold flex justify-center">{info.appointments}</p>
-            <p className="mt-2 flex justify-center text-sm">Appointments Today</p>
-          </div>
-        </div>
-        <div className="mt-5 flex">
-          <div className="bg-gray-200 p-5 rounded-xl w-48">
-            <p className="text-2xl font-bold flex justify-center">{info.patients}</p>
-            <p className=" mt-2 text-sm flex justify-center">Total Patients</p>
-          </div>
-        </div>
-        <div className="mt-5 flex">
-          <div className="bg-gray-200 p-5 rounded-xl w-48">
-            <p className="text-2xl font-bold flex justify-center">रु. 100</p>
-            <p className=" mt-2 text-sm flex justify-center">Total Earnings</p>
+      <div className="flex flex-row gap-5 mt-2">
+      <StatsCard color="blue" title="Appointments" number={784} percentage="+41%" />
+
+        <StatsCard color="red" title="Total Patients" number={784} percentage="+41%" />
+
+        <StatsCard color="green" title="Total Earnings" number={784} percentage="+41%" />
+
+        <div className="mt-5">
+          <div style={{ height: "calc(100% - 30px)" }}> {/* Adjust the height as needed */}
+            <Calendar />
           </div>
         </div>
       </div>
+      <Events/>
+      
     </>
   );
 };

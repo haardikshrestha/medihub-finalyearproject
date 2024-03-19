@@ -3,7 +3,7 @@ import { TbSearch, TbMoon, TbBell } from "react-icons/tb";
 const DoctorHeader = () => {
   return (
     <>
-      <div className=" justify-end bg-gray-100 flex items-center p-3 fixed top-0 w-full z-10">
+      <div className=" justify-end bg-[#F2F2F2] flex items-center p-3 fixed top-0 w-full z-10">
         <div className="bg-white flex items-center p-2 mr-40 w-1/2 rounded-full justify-between focus:outline-none">
           <input type="text" placeholder="Search" className="ml-2 flex-grow" />
           <TbSearch className="mr-2" />
