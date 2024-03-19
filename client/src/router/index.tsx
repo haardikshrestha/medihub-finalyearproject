@@ -72,6 +72,7 @@ const AppRouter = () => {
             <Route path='/patient' element={<PatientDashboard/>} />
             <Route path='/patient/doctors' element={<PatientDoctors/>} />
             <Route path='/patient/appointments' element={<PatientAppointments/>} />
+            
             <Route path='/patient/adoctors' element={<AppointmentDoctors/>} />
             <Route path='/patient/profile' element={<PatientProfile/>} />
             <Route path='/patient/chats' element={<ChatInterface/>} />

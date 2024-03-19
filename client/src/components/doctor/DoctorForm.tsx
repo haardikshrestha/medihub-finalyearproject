@@ -13,98 +13,36 @@ const DoctorForm = () => {
     { day: "Thursday", selected: false },
     { day: "Friday", selected: false },
     { day: "Saturday", selected: false },
-    
   ]);
 
   const generateRandomPassword = () => {
-    // Function to generate random password
-    // Implementation remains the same
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let generatedPassword = "";
+    for (let i = 0; i < 8; i++) {
+      generatedPassword += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    setPassword(generatedPassword);
   };
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
-      const formData = new FormData(e.currentTarget);
-
-      const fullName = formData.get("fullname") as string;
-      const emailAddress = formData.get("emailaddress") as string;
-      const phoneNumber = formData.get("phonenumber") as string;
-      const expertise = formData.get("expertise") as string;
-      const degree = formData.get("degree") as string;
-      const school = formData.get("school") as string;
-      const nmc = formData.get("nmc") as string;
-      const workingHours = formData.get("workingHours") as string;
-      const apptDuration = formData.get("apptDuration") as string;
-      const daysAvailable = selectedDays
-        .filter((day) => day.selected)
-        .map((day) => day.day);
-      const fees = formData.get("fees") as string;
-
-      console.log(
-        fullName,
-        emailAddress,
-        phoneNumber,
-        expertise,
-        degree,
-        school,
-        nmc,
-        workingHours,
-        apptDuration,
-        daysAvailable,
-        fees
-      );
-
-      // Check for required fields
-      if (
-        !fullName ||
-        !emailAddress ||
-        !phoneNumber ||
-        !expertise ||
-        !degree ||
-        !school ||
-        !nmc ||
-        !workingHours ||
-        !apptDuration ||
-        !daysAvailable.length ||
-        !fees
-      ) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
-      // Submit the form data to the server
-      const response = await fetch("http://localhost:5173/doctorregister", {
-        method: "POST",
+      const response = await fetch('http://localhost:5173/newdoctor', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          fullName,
-          emailAddress,
-          phoneNumber,
-          expertise,
-          degree,
-          school,
-          nmc,
-          workingHours,
-          apptDuration,
-          daysAvailable,
-          fees,
-        }),
+        body: JSON.stringify(FormData),
       });
-
       if (response.ok) {
-        alert("Doctor information registered successfully");
-        navigate("/doctor");
-        // You may navigate to a different route after successful registration
-        // navigate(`/some-other-route?email=${email}`);
+        alert('Doctor information registered successfully');
+        navigate('/doctor');
       } else {
-        alert("Failed to register doctor information");
+        alert('Failed to register doctor information');
       }
     } catch (error) {
-      console.error("Error registering doctor information:", error);
-      alert("An unexpected error occurred. Please try again later.");
+      console.error('Error registering doctor information:', error);
+      alert('An unexpected error occurred. Please try again later.');
     }
   };
 
@@ -112,7 +50,7 @@ const DoctorForm = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#D6E3C8]">
       <form
         className="bg-white shadow-md rounded-lg p-8 max-w-screen-md w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 mb-4"
-        onSubmit={handleRegister}
+        onSubmit={handleSubmit}
       >
         <h2 className="text-2xl font-bold mb-4 col-span-2 text-gray-800">
           Doctor Information
@@ -133,7 +71,10 @@ const DoctorForm = () => {
 
         {/* Email Address */}
         <div className="mb-4">
-          <label htmlFor="emailaddress" className="block text-sm font-medium text-gray-600">
+          <label
+            htmlFor="emailaddress"
+            className="block text-sm font-medium text-gray-600"
+          >
             Email Address
           </label>
           <input
@@ -146,7 +87,10 @@ const DoctorForm = () => {
 
         {/* Phone Number */}
         <div className="mb-4">
-          <label htmlFor="phonenumber" className="block text-sm font-medium text-gray-600">
+          <label
+            htmlFor="phonenumber"
+            className="block text-sm font-medium text-gray-600"
+          >
             Phone Number
           </label>
           <input
@@ -212,7 +156,10 @@ const DoctorForm = () => {
         {/* Working Hours */}
         <div className="mb-4 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
           <div className="flex-1">
-            <label htmlFor="startTime" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="startTime"
+              className="block text-sm font-medium text-gray-600"
+            >
               Start Time
             </label>
             <select
@@ -248,7 +195,10 @@ const DoctorForm = () => {
 
         {/* Days Available */}
         <div className="mb-4">
-          <label htmlFor="daysAvailable" className="block text-sm font-medium text-gray-600">
+          <label
+            htmlFor="daysAvailable"
+            className="block text-sm font-medium text-gray-600"
+          >
             Days Available
           </label>
           <div className="flex flex-wrap mt-1">
@@ -269,7 +219,7 @@ const DoctorForm = () => {
             ))}
           </div>
         </div>
-        
+
         {/* Fees */}
         <div className="mb-4">
           <label htmlFor="fees" className="block text-sm font-medium text-gray-600">

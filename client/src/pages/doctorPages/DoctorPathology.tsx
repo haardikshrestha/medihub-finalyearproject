@@ -1,7 +1,9 @@
+import PathologyRequestForm from "@/components/doctor/PathologyRequestForm"
+
 const DoctorPathology = () => {
     return(
         <>
-        Pathology
+        <PathologyRequestForm/>
         </>
     )
 }

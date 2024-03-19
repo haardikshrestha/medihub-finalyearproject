@@ -3,16 +3,38 @@ import { HiX } from 'react-icons/hi';
 
 const CreateWard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [wardNumber, setWardNumber] = useState('');
+  const [wardID, setWardID] = useState('');
   const [departmentName, setDepartmentName] = useState('');
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
 
-  const handleAddWard = () => {
-    // Implement your logic for adding ward with wardNumber and departmentName
-    console.log('Adding ward:', wardNumber, 'in department:', departmentName);
+  const handleAddWard = async () => {
+    try {
+      const response = await fetch('/newward', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          wardId: wardID,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorMessage = await response.json();
+        throw new Error(errorMessage.message);
+      }
+  
+      console.log('Ward added successfully!');
+      
+      // Close modal or perform any other necessary actions upon successful addition
+      toggleModal();
+    } catch (error) {
+      console.error('Error adding ward:', error);
+      // Handle error: display error message to the user or perform other actions
+    }
   };
 
   return (
@@ -50,26 +72,16 @@ const CreateWard = () => {
               </div>
               <form className="p-4 md:p-5">
                 <div className="mb-6 flex">
-                  {/* Department Name */}
-                  <div className="w-1/2 mr-4">
-                    <input
-                      className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="departmentname"
-                      type="text"
-                      placeholder="Department"
-                      value={departmentName}
-                      onChange={(e) => setDepartmentName(e.target.value)}
-                    />
-                  </div>
+                  
                   {/* Ward Number */}
                   <div className="w-1/2 ">
                     <input
                       className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="wardnumber"
+                      id="wardid"
                       type="text"
-                      placeholder="Ward Number"
-                      value={wardNumber}
-                      onChange={(e) => setWardNumber(e.target.value)}
+                      placeholder="Ward ID"
+                      value={wardID}
+                      onChange={(e) => setWardID(e.target.value)}
                     />
                   </div>
 

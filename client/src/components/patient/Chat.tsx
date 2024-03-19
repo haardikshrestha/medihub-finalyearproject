@@ -15,17 +15,17 @@ interface Contact {
 const contacts: Contact[] = [
   {
     id: "1",
-    name: "John Doe",
+    name: "Hardik Shrestha",
     avatar: "",
   },
   {
     id: "2",
-    name: "Jane Smith",
+    name: "Prekshya Dali",
     avatar: "",
   },
   {
     id: "3",
-    name: "Michael Johnson",
+    name: "Sushma Shrestha",
     avatar: "",
   },
 ];
@@ -90,14 +90,14 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/4 bg-gray-800 text-white p-4 rounded-l-lg">
+      <div className="w-1/4 bg-[#8AC185] text-white p-4 rounded-l-lg">
         <h2 className="text-md  mb-4">Doctors</h2>
         <ul>
           {contacts.map((contact) => (
             <li
               key={contact.id}
               className={`flex items-center mb-4 cursor-pointer ${
-                activeContact?.id === contact.id ? "bg-gray-700 rounded-md" : ""
+                activeContact?.id === contact.id ? "bg-[#6ca666] rounded-md p-3" : ""
               }`}
               onClick={() => setActiveContact(contact)}
             >

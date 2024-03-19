@@ -11,6 +11,7 @@ const Ward = require("./models/wardSchema");
 const Pathologist = require("./models/pathologistSchema");
 const Department = require("./models/departmentSchema");
 const Appointment = require("./models/appointmentsSchema");
+const Surgery = require("./models/surgerySchema");
 const PasswordResetToken = require("./models/resettoken");
 const app = express();
 const crypto = require("crypto");
@@ -18,6 +19,8 @@ const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const dotenv = require("dotenv");
 const multer = require("multer");
+const { isErrored } = require("nodemailer/lib/xoauth2");
+const { appendFile } = require("fs/promises");
 const upload = multer({ dest: "uploads/" });
 dotenv.config();
 
@@ -53,7 +56,6 @@ const checkAdmin = async () => {
       const adminHashedPassword = await bcrypt.hash("Admin#123", 10);
       const newUser = new User({
         email: "admin@admin.com",
-        username: "admin",
         number: "9876543212",
         password: adminHashedPassword,
         verified: true,
@@ -519,6 +521,47 @@ app.get("/wards", async (req, res) => {
   }
 });
 
+//add ward - working
+app.post('/newward', async (req, res) => {
+  try {
+    const { wardId } = req.body;
+
+    const existingWard = await Ward.findOne({ wardId });
+    if (existingWard) {
+      return res.status(400).json({ message: 'Ward ID already exists' });
+    }
+
+    const newWard = new Ward({
+      wardId
+    });
+
+    const savedWard = await newWard.save();
+
+    res.status(201).json(savedWard);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(error);
+  }
+});
+
+//delete ward - working
+app.post('/deleteward', async (req, res) => {
+  try {
+    const { wardId } = req.body;
+
+    const deletedWard = await Ward.findOneAndDelete({ wardId });
+
+    if (!deletedWard) {
+      return res.status(404).json({ message: 'Ward not found' });
+    }
+
+    res.status(200).json({ message: 'Ward deleted successfully', deletedWard });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(error);
+  }
+});
+
 //getpatient
 app.post("/patientsinfo", async (req, res) => {
   try {
@@ -632,33 +675,33 @@ app.get("/api/doctors", async (req, res) => {
   }
 });
 
-app.post("/newdoctor", async (req, res) => {
-  try {
-    const { fullname, email, phonenumber, password } = req.body;
+// app.post("/newdoctor", async (req, res) => {
+//   try {
+//     const { fullname, email, phonenumber, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: "Email is already registered." });
-    }
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({ error: "Email is already registered." });
+//     }
 
-    const newDoctor = new User({
-      email,
-      username: fullname, // Assuming username is used for fullname
-      number: phonenumber,
-      password, // You should hash the password before saving it
-      role: "doctor", // Set the role for a doctor
-    });
+//     const newDoctor = new User({
+//       email,
+//       username: fullname, // Assuming username is used for fullname
+//       number: phonenumber,
+//       password, // You should hash the password before saving it
+//       role: "doctor", // Set the role for a doctor
+//     });
 
-    // Save the new doctor to the database
-    await newDoctor.save();
+//     // Save the new doctor to the database
+//     await newDoctor.save();
 
-    // Respond with success message
-    res.status(201).json({ message: "Doctor created successfully." });
-  } catch (error) {
-    console.error("Error creating doctor:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
+//     // Respond with success message
+//     res.status(201).json({ message: "Doctor created successfully." });
+//   } catch (error) {
+//     console.error("Error creating doctor:", error);
+//     res.status(500).json({ error: "Internal server error." });
+//   }
+// });
 
 app.post("/doctorregister", async (req, res) => {
   try {
@@ -917,10 +960,29 @@ app.get("/doctor/viewpatients", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// Function to send email
+async function sendEmail(email, password) {
+  try {
+    // Send mail with defined transport object
+    let info = await transporter.sendMail({
+      from: '"Your Name" <your-email@example.com>',
+      to: email,
+      subject: 'Your Account Details',
+      text: `Your account password is: ${password}`,
+      // You can also include HTML content in the email
+      // html: `<p>Your account password is: <strong>${password}</strong></p>`
+    });
+
+    console.log('Email sent: %s', info.messageId);
+  } catch (error) {
+    // Handle email sending errors
+    console.error('Error sending email:', error);
+    throw error; // Re-throw the error to be caught by the caller
+  }
+}
 
 app.post('/newdoctor', async (req, res) => {
   try {
-    // Extract data from request body
     const {
       nmc,
       email,
@@ -933,6 +995,9 @@ app.post('/newdoctor', async (req, res) => {
       daysAvailable,
       fees
     } = req.body;
+
+    // Generate a random password
+    const password = generateRandomPassword(); // You need to implement this function
 
     // Create a new doctor instance
     const newDoctor = new Doctors({
@@ -951,11 +1016,36 @@ app.post('/newdoctor', async (req, res) => {
     // Save the new doctor to the database
     const savedDoctor = await newDoctor.save();
 
+    // Send email to the doctor
+    await sendEmail(email, password);
+
     // Respond with the saved doctor object
-    res.status(201).json(savedDoctor);
+    res.status(201).json("done");
   } catch (error) {
     // Handle errors
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json(error);
   }
 });
+
+app.post('/surgeries', async (req, res) => {
+  try {
+    const newSurgery = new Surgery(req.body);
+    await newSurgery.save();
+    res.status(201).send({ message: 'Surgery information saved successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(error);
+  }
+});
+
+app.get('/getsurgeries', async (req, res) => {
+  try {
+    const surgeries = await Surgery.find();
+    res.status(200).json(surgeries);
+  } catch (error) {
+    console.error('Error retrieving surgeries:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+

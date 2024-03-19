@@ -1,15 +1,5 @@
 const mongoose = require('mongoose');
 
-// Assuming 'Doctors' is the new name for your model
-const modelName = 'Doctors';
-
-// Check if the model is already defined
-if (mongoose.connection.models[modelName]) {
-  // If yes, delete the existing model
-  delete mongoose.connection.models[modelName];
-}
-
-// Define your Doctors model here
 const doctorSchema = new mongoose.Schema({
   nmc: { type: String, required: true, unique: true },
   email: { type: String, required: true },
@@ -19,10 +9,11 @@ const doctorSchema = new mongoose.Schema({
   school: { type: String, default: 'null' },
   startTime: { type: String, default: 'null' },
   endTime: { type: String, default: 'null' },
-  daysAvailable: { type: String, default: 'Everyday' },
+  daysAvailable: { type: [String], default: ['Everyday'] }, // Changed to array type
   fees: { type: String, default: '500' },
+  verified: { type: Boolean, default: false },
 });
 
-const Doctors = mongoose.model(modelName, doctorSchema);
+const Doctors = mongoose.model('Doctors', doctorSchema);
 
 module.exports = Doctors;
