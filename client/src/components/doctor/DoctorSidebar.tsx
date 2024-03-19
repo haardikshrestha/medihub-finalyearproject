@@ -6,7 +6,7 @@ const DoctorSidebar = () => {
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-      <ul className="menu p-4 w-52 bg-gray-100 text-base-content">
+      <ul className="menu p-4 w-52 bg-[#F2F2F2] text-base-content">
         <div className="mb-4 flex items-center">
           <img
             src="/src/assets/logo-images/logo-l.png"
