@@ -87,7 +87,7 @@ const Calendar: React.FC = () => {
               key={dateString}
               className={`w-10 h-10 flex items-center justify-center text-center cursor-pointer text-sm hover:bg-gray-200 hover:rounded-full ${
                 isSelected
-                  ? "bg-[#91BF77] text-white rounded-full hover:bg-[#91BF77]"
+                  ? "bg-[#91BF77] text-white rounded-full hover:bg-[#87b46f]"
                   : ""
               }`}
               onClick={() => setSelectedDate(new Date(dateString))}

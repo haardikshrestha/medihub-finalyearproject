@@ -1,7 +1,10 @@
 import Calendar from "@/components/doctor/Calendar";
 import StatsCard from "@/components/doctor/Dashboard/StatsCard";
 import Events from "@/components/doctor/Events";
+import { FaUserInjured } from 'react-icons/fa';
 import { useState, useEffect } from "react";
+import PatientDashboard from "@/components/doctor/Patients/PatientDashboard";
+import Attendance from "@/components/doctor/Patients/AttendanceProps";
 
 const DoctorDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -54,6 +57,22 @@ const DoctorDashboard = () => {
     fetchData();
   }, []);
 
+  const events = [
+    { title: 'Consultation', start: '8:00', end: '9:15' },
+    { title: 'Analysis', start: '11:00', end: '12:00', icon: <FaUserInjured />, description: '(6 items)' },
+    { title: 'Consultation', start: '13:00', end: '14:15' },
+    { title: 'Consultation', start: '14:00', end: '15:15' },
+    { title: 'Operation', start: '9:00', end: '11:40', description: '+3 nurses' },
+    { title: 'Analysis', start: '9:00', end: '10:30', icon: <FaUserInjured /> },
+    { title: 'Consultation', start: '11:00', end: '12:15' },
+    { title: 'Rehabilitation', start: '12:00', end: '13:30', icon: <FaUserInjured /> },
+    { title: 'Rehabilitation', start: '14:00', end: '15:30', icon: <FaUserInjured /> },
+  ];
+  const attended = 7;
+  const total = 11;
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
   return (
     <>
       <div className="flex justify-between font-semibold">
@@ -75,7 +94,8 @@ const DoctorDashboard = () => {
         </div>
       </div>
       <Events/>
-      
+      <PatientDashboard/>
+      <Attendance attended={attended} total={total} />
     </>
   );
 };
