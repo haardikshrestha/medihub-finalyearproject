@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 
 interface Appointment {
@@ -16,15 +16,16 @@ const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  useEffect(() => {
+    setSelectedDate(new Date());
+  }, []);
+
   const appointments: { [date: string]: Appointment[] } = {
-    "2020-12-10": [
-      { title: "Pulmonologist", time: "9:00-10:00", doctor: "Dr. Cameron Williamson" },
-      { title: "Dentist", time: "15:00-15:30", doctor: "Dr. Diane Russell" },
-    ],
+    // Appointments data
   };
 
   const treatments: { [date: string]: Treatment[] } = {
-    "2020-12-10": [{ title: "Antibiotic", description: "1 tablet after a meal" }],
+    // Treatments data
   };
 
   const handlePrevMonth = () => {
@@ -36,16 +37,8 @@ const Calendar: React.FC = () => {
   };
 
   const renderCalendar = () => {
-    const startDay = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1,
-    ).getDay();
-    const daysInMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0,
-    ).getDate();
+    const startDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
 
     const calendar = [];
     let day = 1;
@@ -87,7 +80,7 @@ const Calendar: React.FC = () => {
               key={dateString}
               className={`w-10 h-10 flex items-center justify-center text-center cursor-pointer text-sm hover:bg-gray-200 hover:rounded-full ${
                 isSelected
-                  ? "bg-[#91BF77] text-white rounded-full hover:bg-[#87b46f]"
+                  ? "bg-[#91BF77] text-white rounded-full hover:bg-[#83ac6b]"
                   : ""
               }`}
               onClick={() => setSelectedDate(new Date(dateString))}
@@ -109,7 +102,7 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <div className="p-4 border border-gray-200 rounded-xl ml-6">
+    <div className="p-4 border border-gray-200 rounded-xl h-[481px]">
       <div className="flex justify-between items-center mb-4">
         <div
           className="bg-gray-200 text-gray-800 p-2 rounded-full cursor-pointer hover:bg-gray-300"
@@ -120,7 +113,6 @@ const Calendar: React.FC = () => {
         <div className="text-lg font-bold">
           {currentDate.toLocaleString("default", { month: "long", year: "numeric" })}
         </div>
-
         <div
           className="bg-gray-200 text-gray-800 p-2 rounded-full cursor-pointer hover:bg-gray-300"
           onClick={handleNextMonth}
@@ -142,15 +134,7 @@ const Calendar: React.FC = () => {
               </div>
             ),
           ) || <div>No appointments for this date.</div>}
-          <div className="text-lg font-bold mb-2 mt-4">Your treatment</div>
-          {treatments[selectedDate.toISOString().split("T")[0]]?.map(
-            (treatment, index) => (
-              <div key={index} className="bg-green-100 p-2 rounded mb-2">
-                <div>{treatment.title}</div>
-                <div className="text-sm text-gray-500">{treatment.description}</div>
-              </div>
-            ),
-          ) || <div>No treatments for this date.</div>}
+          
         </div>
       )}
     </div>

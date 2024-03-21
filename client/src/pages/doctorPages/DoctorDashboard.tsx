@@ -1,10 +1,11 @@
 import Calendar from "@/components/doctor/Calendar";
 import StatsCard from "@/components/doctor/Dashboard/StatsCard";
 import Events from "@/components/doctor/Events";
-import { FaUserInjured } from 'react-icons/fa';
 import { useState, useEffect } from "react";
 import PatientDashboard from "@/components/doctor/Patients/PatientDashboard";
-import Attendance from "@/components/doctor/Patients/AttendanceProps";
+import Attendance from "@/components/doctor/Patients/GenderStats";
+import Gender from "@/components/doctor/Patients/GenderStats";
+import AppointmentCard from "@/components/doctor/Dashboard/AppointmentCard";
 
 const DoctorDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -12,7 +13,7 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDate(new Date());
-    }, 1000); 
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -55,47 +56,64 @@ const DoctorDashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, []); // July 8th, 2022
 
-  const events = [
-    { title: 'Consultation', start: '8:00', end: '9:15' },
-    { title: 'Analysis', start: '11:00', end: '12:00', icon: <FaUserInjured />, description: '(6 items)' },
-    { title: 'Consultation', start: '13:00', end: '14:15' },
-    { title: 'Consultation', start: '14:00', end: '15:15' },
-    { title: 'Operation', start: '9:00', end: '11:40', description: '+3 nurses' },
-    { title: 'Analysis', start: '9:00', end: '10:30', icon: <FaUserInjured /> },
-    { title: 'Consultation', start: '11:00', end: '12:15' },
-    { title: 'Rehabilitation', start: '12:00', end: '13:30', icon: <FaUserInjured /> },
-    { title: 'Rehabilitation', start: '14:00', end: '15:30', icon: <FaUserInjured /> },
-  ];
-  const attended = 7;
-  const total = 11;
-
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const genderData = {
+    male: 30,
+    female: 40,
+    others: 5,
+    total: 75,
+  };
 
   return (
     <>
-      <div className="flex justify-between font-semibold">
+      <div className="flex justify-between font-semibold px-4">
         <p>{`${greeting}, Dr. John Doe`}</p>
         <p>{formattedDate}</p>
       </div>
 
-      <div className="flex flex-row gap-5 mt-2">
-      <StatsCard color="blue" title="Appointments" number={784} percentage="+41%" />
+      
+        <div className="flex flex-row space-x-5 p-4">
+          <div>
+            {/* stats div */}
+            <div className=" flex flex-row gap-5">
+              <StatsCard
+                color="blue"
+                title="Appointments"
+                number={784}
+                percentage="+41%"
+              />
+              <StatsCard
+                color="red"
+                title="Total Patients"
+                number={784}
+                percentage="+41%"
+              />
+              <StatsCard
+                color="green"
+                title="Total Earnings"
+                number={784}
+                percentage="+41%"
+              />
+            </div>
 
-        <StatsCard color="red" title="Total Patients" number={784} percentage="+41%" />
-
-        <StatsCard color="green" title="Total Earnings" number={784} percentage="+41%" />
-
-        <div className="mt-5">
-          <div style={{ height: "calc(100% - 30px)" }}> {/* Adjust the height as needed */}
-            <Calendar />
+            <div className=" mt-4 flex gap-4">
+              {/* gender div */}
+              <Gender />
+              <div className="ml-[5px] flex-1">
+                <AppointmentCard />
+              </div>
+            </div>
+          </div>
+          <div className="">
+            <div style={{ height: "calc(100% - 30px)" }}>
+              <Calendar />
+            </div>
           </div>
         </div>
-      </div>
-      <Events/>
-      <PatientDashboard/>
-      <Attendance attended={attended} total={total} />
+      
+      {/* <Events/>
+      <PatientDashboard/> */}
     </>
   );
 };

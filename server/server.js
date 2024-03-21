@@ -46,34 +46,34 @@ app.use(bodyParser.json());
 app.use(cors());
 
 console.log("Adding admin....")
-const checkAdmin = async () => {
-  try {
-    const adminExists = await User.findOne({ role: "admin" });
-    if (adminExists) {
-      console.log("Admin already exists");
-      return;
-    } else {
-      const adminHashedPassword = await bcrypt.hash("Admin#123", 10);
-      const newUser = new User({
-        email: "admin@admin.com",
-        number: "9876543212",
-        password: adminHashedPassword,
-        verified: true,
-        otp: "abcded",
-        otpExpiresAt: "2024-01-07T02:51:36.395+00:00",
-        role: "admin",
-      });
+// const checkAdmin = async () => {
+//   try {
+//     const adminExists = await User.findOne({ role: "admin" });
+//     if (adminExists) {
+//       console.log("Admin already exists");
+//       return;
+//     } else {
+//       const adminHashedPassword = await bcrypt.hash("Admin#123", 10);
+//       const newUser = new User({
+//         email: "admin@admin.com",
+//         number: "9876543212",
+//         password: adminHashedPassword,
+//         verified: true,
+//         otp: "abcded",
+//         otpExpiresAt: "2024-01-07T02:51:36.395+00:00",
+//         role: "admin",
+//       });
 
-      const created = await newUser.save();
-      console.log("ADMIN CREATED!");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
+//       const created = await newUser.save();
+//       console.log("ADMIN CREATED!");
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 
-checkAdmin();
+// checkAdmin();
 
 {
   /* Send email */
@@ -865,3 +865,71 @@ app.get('/getsurgeries', async (req, res) => {
   }
 });
 
+//add patient infro through from -> /in
+app.post('/patients/addInfo', async (req, res) => {
+  try {
+    const { email, firstName, lastName, gender, dateofbirth, chronicillness, address, bloodgroup } = req.body;
+
+    // Create a new instance of the Patient model
+    const newPatient = new Patient({
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness: chronicillness || 'None', // Default value if not provided
+      address,
+      bloodgroup,
+    });
+
+    // Save the new patient to the database
+    const savedPatient = await newPatient.save();
+
+    res.status(201).json(savedPatient); // Respond with the saved patient data
+  } catch (error) {
+    console.error('Error adding patient:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//delete patient through email
+app.post('/patients/delete', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const deletedPatient = await Patient.findOneAndDelete({ email });
+
+    if (!deletedPatient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    return res.status(200).json({ message: "Patient deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting patient:", error);
+    return res.status(500).json({ message: "Error deleting patient", error: error.message });
+  }
+});
+
+app.get('/patients/genderCount', async (req, res) => {
+  try {
+    const genderCounts = await Patient.aggregate([
+      { $group: { _id: '$gender', count: { $sum: 1 } } },
+      {
+        $group: {
+          _id: null,
+          male: { $sum: { $cond: [{ $eq: ["$_id", "male"] }, "$count", 0] } },
+          female: { $sum: { $cond: [{ $eq: ["$_id", "female"] }, "$count", 0] } },
+          other: { $sum: { $cond: [{ $eq: ["$_id", "other"] }, "$count", 0] } },
+          total: { $sum: "$count" }
+        }
+      }
+    ]);
+
+    const result = genderCounts.length > 0 ? genderCounts[0] : { male: 0, female: 0, other: 0, total: 0 };
+
+    res.json(result);
+  } catch (err) {
+    console.error('Error finding gender counts:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
