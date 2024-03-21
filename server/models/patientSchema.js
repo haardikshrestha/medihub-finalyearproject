@@ -11,6 +11,6 @@ const patientSchema = new mongoose.Schema({
     bloodgroup: { type: String, required: true},
 });
 
-const Patient = mongoose.model("Doctor", patientSchema, "patients");
+const Patient = mongoose.model("Patient", patientSchema, "patients");
 
 module.exports = Patient;
