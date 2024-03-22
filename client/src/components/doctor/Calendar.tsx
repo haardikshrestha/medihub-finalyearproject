@@ -102,7 +102,7 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <div className="p-4 border border-gray-200 rounded-xl h-[481px]">
+    <div className="p-4 border border-gray-200 rounded-xl h-[490px]">
       <div className="flex justify-between items-center mb-4">
         <div
           className="bg-gray-200 text-gray-800 p-2 rounded-full cursor-pointer hover:bg-gray-300"

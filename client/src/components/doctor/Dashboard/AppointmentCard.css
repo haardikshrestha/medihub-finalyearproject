@@ -1,0 +1,17 @@
+/* Custom Scrollbar Styles */
+.appointment-container::-webkit-scrollbar {
+    width: 6px; /* Width of the scrollbar */
+  }
+  
+  .appointment-container::-webkit-scrollbar-track {
+    background-color: #f7fafc; /* Color of the scrollbar track */
+  }
+  
+  .appointment-container::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0; /* Color of the scrollbar thumb */
+    border-radius: 3px; /* Rounded corners of the scrollbar thumb */
+  }
+  
+  .appointment-container::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0; /* Color of the scrollbar thumb on hover */
+  }
