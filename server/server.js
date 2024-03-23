@@ -13,6 +13,9 @@ const Department = require("./models/departmentSchema");
 const Appointment = require("./models/appointmentsSchema");
 const Surgery = require("./models/surgerySchema");
 const PasswordResetToken = require("./models/resettoken");
+const LabTest = require("./models/labtestSchema");
+
+
 const app = express();
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
@@ -933,3 +936,46 @@ app.get('/patients/genderCount', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+app.post("/labtests", async (req, res) => {
+  try {
+    const newLabTest = new LabTest({
+      testName: req.body.testName,
+      testDetails: req.body.testDetails 
+    });
+    const savedLabTest = await newLabTest.save();
+
+    res.status(201).json(savedLabTest);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.post('/add/appointments', async (req, res) => {
+  try {
+      const newAppointment = new Appointment(req.body);
+      await newAppointment.save();
+      res.status(201).json({ message: 'Appointment created successfully', appointment: newAppointment });
+  } catch (error) {
+      res.status(400).json({ error: 'Failed to create appointment', message: error.message });
+  }
+});
+
+// GET route to retrieve appointments for a specific doctor
+app.get('/appointments/getdoctor', async (req, res) => {
+  const doctorName = "Dr. Jane Smith";
+  const appointmentDate = "2024-03-23"; 
+  const appointmentDate1 = "2024-03-22";
+  try {
+      const appointments = await Appointment.find({ apptDoctor: doctorName, apptDate: appointmentDate });
+      const appointments1 = await Appointment.find({ apptDoctor: doctorName, apptDate: appointmentDate1 });
+      const appointmentCount = appointments.length;
+      const appointmentCount1 = 9;
+      const difference = appointmentCount - appointmentCount1;
+      const percentage = (difference / appointmentCount) * 100;
+      res.status(200).json({ appointments, appointmentCount,  appointmentCount1, percentage});
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve appointments', message: error.message });
+  }
+});
+
