@@ -19,7 +19,7 @@ const DoctorLayout = () => {
       <div className="drawer drawer-mobile">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
-        <div className="drawer-content bg-white  rounded-2xl p-8 mr-4 mt-16">
+        <div className="drawer-content bg-white  rounded-2xl py-6 px-6 mr-4 mt-16">
           <div>
             <label
               htmlFor="my-drawer-2"
