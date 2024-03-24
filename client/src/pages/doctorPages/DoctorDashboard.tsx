@@ -3,9 +3,8 @@ import StatsCard from "@/components/doctor/Dashboard/StatsCard";
 import { useState, useEffect } from "react";
 import Gender from "@/components/doctor/Patients/GenderStats";
 import AppointmentCard from "@/components/doctor/Dashboard/AppointmentCard";
-import TimeSlotPicker from "@/components/doctor/Dashboard/TimeSlotPicker";
+import TimeSlotPicker from "@/components/doctor/Appointments/TimeSlotPicker";
 import ProfileCard from "@/components/doctor/Dashboard/ProfileCard";
-
 
 const DoctorDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
