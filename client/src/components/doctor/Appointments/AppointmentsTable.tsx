@@ -34,7 +34,6 @@ const AppointmentsTable: React.FC = () => {
 
   return (
     <div className="overflow-x-auto">
-      <h2 className="text-xl font-bold mb-4">Appointments</h2>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>

@@ -1,10 +1,9 @@
-import AppointmentsTable from "@/components/doctor/AppointmentsTable"
-
+import AppointentsContainer from "@/components/doctor/Appointments/AppointmentsContainer";
 const DoctorAppointments = () => {
     return(
         
         <div>
-            <AppointmentsTable/>
+            <AppointentsContainer/>
         </div>
         
     )
