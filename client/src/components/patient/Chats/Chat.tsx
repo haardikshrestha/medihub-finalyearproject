@@ -89,7 +89,7 @@ const ChatInterface: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-[457px]">
       <div className="w-1/4 bg-[#8AC185] text-white p-4 rounded-l-lg">
         <h2 className="text-md  mb-4">Doctors</h2>
         <ul>
