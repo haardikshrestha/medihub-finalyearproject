@@ -1,5 +1,5 @@
-import AppointmentCarousel from "@/components/patient/AppointmentCarousel";
-import AppointmentForm from "@/components/patient/AppointmentForm";
+import AppointmentCarousel from "@/components/patient/Appointments/AppointmentCarousel";
+import AppointmentForm from "@/components/patient/Appointments/AppointmentForm";
 
 
 const AppointmentBooking = () => {

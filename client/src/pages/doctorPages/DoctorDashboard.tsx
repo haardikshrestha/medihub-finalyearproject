@@ -127,13 +127,13 @@ const DoctorDashboard = () => {
 
       {/* <Events/>
       <PatientDashboard/> */}
-      <TimeSlotPicker/>
+      {/* <TimeSlotPicker/>
       <ProfileCard
         profileImage="/profile-image.jpg"
         name="Jane Cooper"
         description="Dr. Jane Cooper is an emerging surgeon with over 5 years of experience in cardiology."
         commitment="Dr. Cooper is committed to providing the best treatment and care to her patients."
-      />
+      /> */}
     </>
   );
 };

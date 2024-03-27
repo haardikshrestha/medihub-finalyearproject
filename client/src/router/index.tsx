@@ -35,10 +35,10 @@ import DoctorPathology from '@/pages/doctorPages/DoctorPathology';
 import DoctorSettings from '@/pages/doctorPages/DoctorSettings';
 import PatientView from '@/pages/doctorPages/PatientView';
 import { Carousel } from '@material-tailwind/react';
-import AppointmentCarousel from '@/components/patient/AppointmentCarousel';
+import AppointmentCarousel from '@/components/patient/Appointments/AppointmentCarousel';
 import AppointmentBooking from '@/pages/patientPages/Appointment_2';
-import ChatInterface from '@/components/patient/Chat';
-import PathologyPage from '@/components/patient/PathologyPage';
+import ChatInterface from '@/components/patient/Chats/Chat';
+import PathologyPage from '@/components/patient/Pathology/PathologyPage';
 
 const AppRouter = () => {
  
@@ -72,7 +72,6 @@ const AppRouter = () => {
             <Route path='/patient' element={<PatientDashboard/>} />
             <Route path='/patient/doctors' element={<PatientDoctors/>} />
             <Route path='/patient/appointments' element={<PatientAppointments/>} />
-            
             <Route path='/patient/adoctors' element={<AppointmentDoctors/>} />
             <Route path='/patient/profile' element={<PatientProfile/>} />
             <Route path='/patient/chats' element={<ChatInterface/>} />
