@@ -39,6 +39,7 @@ import AppointmentCarousel from '@/components/patient/Appointments/AppointmentCa
 import AppointmentBooking from '@/pages/patientPages/Appointment_2';
 import ChatInterface from '@/components/patient/Chats/Chat';
 import PathologyPage from '@/components/patient/Pathology/PathologyPage';
+import AppointmentDetails from '@/components/patient/Appointments/AppointmentDetails';
 
 const AppRouter = () => {
  
@@ -77,6 +78,7 @@ const AppRouter = () => {
             <Route path='/patient/chats' element={<ChatInterface/>} />
             <Route path='/patient/pathology' element={<PathologyPage/>} />
             <Route path='/patient/packages' element={<PatientHealth/>} />
+            <Route path='/patient/appointmentdetails' element={<AppointmentDetails/>} />
           </Route>
         </Route>
           <Route path="/in" element={<Initial />} />

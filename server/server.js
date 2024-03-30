@@ -49,34 +49,34 @@ app.use(bodyParser.json());
 app.use(cors());
 
 console.log("Adding admin....")
-// const checkAdmin = async () => {
-//   try {
-//     const adminExists = await User.findOne({ role: "admin" });
-//     if (adminExists) {
-//       console.log("Admin already exists");
-//       return;
-//     } else {
-//       const adminHashedPassword = await bcrypt.hash("Admin#123", 10);
-//       const newUser = new User({
-//         email: "admin@admin.com",
-//         number: "9876543212",
-//         password: adminHashedPassword,
-//         verified: true,
-//         otp: "abcded",
-//         otpExpiresAt: "2024-01-07T02:51:36.395+00:00",
-//         role: "admin",
-//       });
+const checkAdmin = async () => {
+  try {
+    const adminExists = await User.findOne({ role: "admin" });
+    if (adminExists) {
+      console.log("Admin already exists");
+      return;
+    } else {
+      const adminHashedPassword = await bcrypt.hash("Admin#123", 10);
+      const newUser = new User({
+        email: "admin@admin.com",
+        number: "9876543212",
+        password: adminHashedPassword,
+        verified: true,
+        otp: "abcded",
+        otpExpiresAt: "2024-01-07T02:51:36.395+00:00",
+        role: "admin",
+      });
 
-//       const created = await newUser.save();
-//       console.log("ADMIN CREATED!");
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+      const created = await newUser.save();
+      console.log("ADMIN CREATED!");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 
-// checkAdmin();
+checkAdmin();
 
 {
   /* Send email */
@@ -110,7 +110,7 @@ async function comparePassword(inputPassword, storedHash) {
 }
 
 
-
+//SIGN UP - POST
 app.post("/postregister", async (req, res) => {
   const { email, password } = req.body;
 
@@ -202,6 +202,54 @@ app.get("/users", async (req, res) => {
   }
 });
 
+// Fetch users with role "doctor"
+app.get("/doctors", async (req, res) => {
+  try {
+    const users = await User.find({ role: "doctor" }).select("-password");
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Fetch users with role "pathologist"
+app.get("/pathologists", async (req, res) => {
+  try {
+    const users = await User.find({ role: "pathologist" }).select("-password");
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//LOGIN - POST
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ token, role: user.role });
+  } catch (error) {
+    console.error('Login Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 //resent code
 app.post("/resend-code", async (req, res) => {
   try {
@@ -239,8 +287,6 @@ app.post("/resend-code", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
 
 {
   /* VERIFY OTP POST */
@@ -417,39 +463,7 @@ app.post('/deleteward', async (req, res) => {
   }
 });
 
-//getpatient
-app.post("/patientsinfo", async (req, res) => {
-  try {
-    const {
-      email,
-      firstName,
-      lastName,
-      gender,
-      dateofbirth,
-      chronicillness,
-      address,
-      bloodgroup,
-    } = req.body;
 
-    const newPatient = new Patient({
-      email,
-      firstName,
-      lastName,
-      gender,
-      dateofbirth,
-      chronicillness,
-      address,
-      bloodgroup,
-    });
-
-    await newPatient.save();
-
-    res.status(201).json({ message: "Patient registered successfully" });
-  } catch (error) {
-    console.error("Error registering patient:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
 
 // Fetch users with role "doctors"
 app.get("/getdoctors", async (req, res) => {
@@ -531,49 +545,59 @@ app.get("/api/doctors", async (req, res) => {
 });
 
 
-app.post("/doctorregister", async (req, res) => {
-  try {
-    const {
-      nmc,
-      email,
-      role,
-      expertise,
-      degree,
-      school,
-      workingHours,
-      apptDuration,
-      daysAvailable,
-      fees,
-      verified,
-    } = req.body;
+app.post('/newdoctor', async (req, res) => {
+  const {
+    fullname,
+    emailaddress,
+    phonenumber,
+    expertise,
+    degree,
+    school,
+    nmc,
+    startTime,
+    endTime,
+    daysAvailable,
+    fees,
+    password,
+  } = req.body;
 
-    // You can add validation logic here if needed
+  try {
+    // Check if the email already exists in the users collection
+    let existingUser = await User.findOne({ email: emailaddress });
+
+    // If the user doesn't exist, create a new user
+    if (!existingUser) {
+      // Create a new user instance
+      existingUser = new User({
+        email: emailaddress,
+        password: password, // Note: Password should be hashed before saving, for production use
+        role: 'doctor', // Set the user's role to 'doctor'
+      });
+
+      // Save the new user to the database
+      await existingUser.save();
+    }
 
     // Create a new doctor instance
-    const newDoctor = new Doctors({
+    const newDoctor = new Doctor({
       nmc,
-      email,
-      role,
+      email: emailaddress,
       expertise,
       degree,
       school,
-      workingHours,
-      apptDuration,
+      startTime,
+      endTime,
       daysAvailable,
       fees,
-      verified,
     });
 
-    // Save the doctor to the database
+    // Save the new doctor to the database
     await newDoctor.save();
 
-    // Respond with a success message
-    res.status(201).json({ message: "Doctor registered successfully" });
+    res.status(201).json({ message: 'Doctor information saved successfully' });
   } catch (error) {
-    console.error("Error registering doctor:", error);
-    res
-      .status(500)
-      .json({ error: "An unexpected error occurred. Please try again later." });
+    console.error('Error saving doctor information:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -800,52 +824,7 @@ async function sendEmail(email, password) {
   }
 }
 
-app.post('/newdoctor', async (req, res) => {
-  try {
-    const {
-      nmc,
-      email,
-      role,
-      expertise,
-      degree,
-      school,
-      startTime,
-      endTime,
-      daysAvailable,
-      fees
-    } = req.body;
 
-    // Generate a random password
-    const password = generateRandomPassword(); // You need to implement this function
-
-    // Create a new doctor instance
-    const newDoctor = new Doctors({
-      nmc,
-      email,
-      role,
-      expertise,
-      degree,
-      school,
-      startTime,
-      endTime,
-      daysAvailable,
-      fees
-    });
-
-    // Save the new doctor to the database
-    const savedDoctor = await newDoctor.save();
-
-    // Send email to the doctor
-    await sendEmail(email, password);
-
-    // Respond with the saved doctor object
-    res.status(201).json("done");
-  } catch (error) {
-    // Handle errors
-    console.error(error);
-    res.status(500).json(error);
-  }
-});
 
 app.post('/surgeries', async (req, res) => {
   try {
@@ -976,6 +955,88 @@ app.get('/appointments/getdoctor', async (req, res) => {
       res.status(200).json({ appointments, appointmentCount,  appointmentCount1, percentage});
   } catch (error) {
       res.status(500).json({ error: 'Failed to retrieve appointments', message: error.message });
+  }
+});
+
+// ---------------------------------- ADMIN -------------------------------------------------------------
+
+// ---------------------------------- PATIENTS -------------------------------------------------------------
+app.post("/patientsinfo", async (req, res) => {
+  try {
+    
+    const {
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup
+    } = req.body;
+
+    const newPatient = new Patient({
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup
+    });
+    await newPatient.save();
+    res.status(201).send("Patient registered successfully");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Failed to register patient");
+  }
+});
+
+// ---------------------------------- DOCTORS -------------------------------------------------------------
+app.post("/newdoctor", async (req, res) => {
+  try {
+    // Extract data from request body
+    const {
+      fullname,
+      emailaddress,
+      phonenumber,
+      expertise,
+      degree,
+      school,
+      nmc,
+      startTime,
+      endTime,
+      daysAvailable,
+      fees,
+      password
+    } = req.body;
+
+    // Create a new doctor instance
+    const newDoctor = new Doctor({
+      fullname,
+      email: emailaddress, // Assuming 'emailaddress' is the field name for email
+      nmc,
+      role: 'doctor', // Assuming 'role' is always 'doctor'
+      expertise,
+      degree,
+      school,
+      startTime,
+      endTime,
+      daysAvailable,
+      fees,
+      verified: false, // Assuming newly registered doctors are not verified by default
+    });
+
+    // Save the doctor to the database
+    await newDoctor.save();
+
+    // Respond with success status
+    res.status(201).send("Doctor information registered successfully");
+  } catch (error) {
+    // Handle errors
+    console.error("Error registering doctor information:", error);
+    res.status(500).send("Failed to register doctor information");
   }
 });
 

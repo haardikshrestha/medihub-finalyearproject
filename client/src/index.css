@@ -1,3 +1,6 @@
+/* Import scrollbar styles */
+@import 'scrollbar.css';
+
 /* index.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
@@ -13,6 +16,3 @@ body{
     --tw-bg-opacity: 1;
     background-color: #F2F2F2;
 }
-
-/* Import scrollbar styles */
-@import 'scrollbar.css';

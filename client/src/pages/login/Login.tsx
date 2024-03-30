@@ -11,8 +11,6 @@ import backgroundImage from "src/assets/doc2.svg"; // Update the path accordingl
 
 const Login = () => {
   const navigate = useNavigate();
-
-  const [users, setUsers] = useState([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +29,7 @@ const Login = () => {
   };
 
   const togglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
+    setShowPassword(!showPassword);
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -52,21 +50,24 @@ const Login = () => {
 
       if (role === "admin" || role === "user" || role === "doctor") {
         const successMessage = role === "admin" ? "Admin" : "User";
-        alert(`Doctor login successful`);
+        
 
         setEmail("");
         setPassword("");
         fetchUsers();
-        console.log("hi");
 
         if (role === "admin") {
           navigate("/admin");
         } else if (role === "user") {
+          alert(`User login successful`);
           const emailExists = response1.data.emailExists;
           navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
         } else if (role === "doctor") {
           console.log("doc");
-          navigate("/ind?email=" + email);
+          navigate("/doctor?email=" + email);
+        } else if (role == "pathologist"){
+          console.log("pathologist");
+          navigate("/pathologist?email=" + email);
         }
 
         window.location.reload();
@@ -137,20 +138,26 @@ const Login = () => {
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? (
-                  <path d="M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
-                ) : (
-                  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
-                )}
+                    <HiEyeOff
+                      className="h-6 text-gray-400 cursor-pointer"
+                      onClick={togglePasswordVisibility}
+                    />
+                  ) : (
+                    <HiEye
+                      className="h-6 text-gray-400 cursor-pointer"
+                      onClick={togglePasswordVisibility}
+                    />
+                  )}
               </svg>
             </div>
             <button
-              className="bg-[#ACE86C] rounded-xl text-white py-2 text-sm"
+              className="bg-[#91BF77] rounded-xl text-white py-2 text-sm"
               type="submit"
             >
               Login
             </button>
             <button
-              className="bg-gray-100 border border-[#ACE86C] rounded-xl text-[#ACE86C] py-2 text-sm"
+              className="bg-gray-100 border border-[#91BF77] rounded-xl text-[#91BF77] py-2 text-sm"
               type="submit"
             >
               Forgot Password?
@@ -181,7 +188,7 @@ const Login = () => {
 
           <div className="mt-4 text-xs  items-center text-[#002D74]">
             <p>Don't have an account?</p>
-            <button className="mt-2 py-2 px-5 bg-white text-[#ACE86C] border rounded-xl transition-all duration-300 hover:bg-[#ACE86C] hover:text-white"
+            <button className="mt-2 py-2 px-5 bg-white text-[#91BF77] border rounded-xl transition-all duration-300 hover:bg-[#91BF77] hover:text-white"
             onClick={goRegister}>
               Register
             </button>
