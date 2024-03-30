@@ -61,11 +61,11 @@ export default function Signup() {
 
     try {
       await axios.post("http://localhost:5173/postregister", { email, password });
-      toast.success("User registered successfully");
+      
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-      navigate(`/otp?email={$email}`);
+      navigate(`/otp?email=${email}`);
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response && error.response.data) {
         const errorResponse = error.response.data as ErrorResponse;
@@ -154,7 +154,7 @@ export default function Signup() {
                 </div>
               </div>
               <button
-                className="bg-[#ACE86C] rounded-xl text-white py-2 text-sm"
+                className="bg-[#91BF77] rounded-xl text-white py-2 text-sm"
                 type="submit"
               >
                 Register
@@ -171,7 +171,7 @@ export default function Signup() {
 
             <div className="mt-3 text-xs flex items-center justify-center text-gray-500 gap-5">
               <p>Already have an account?</p>
-              <button className="py-2 px-5 bg-white text-[#ACE86C] border rounded-xl hover:bg-[#ACE86C] hover:text-white"
+              <button className="py-2 px-5 bg-white text-[#91BF77] border rounded-xl hover:bg-[#91BF77] hover:text-white"
               onClick={goLogin}>
                 Login
               </button>

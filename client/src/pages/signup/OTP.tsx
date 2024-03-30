@@ -1,5 +1,7 @@
-import { ReactHTMLElement, useState } from "react";
+import { ReactHTMLElement, useState, useEffect } from "react";
 import axios from "axios";
+
+import { toast } from 'react-toastify';
 import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
 
 export default function OTP() {
@@ -7,6 +9,11 @@ export default function OTP() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Show toast when component mounts
+    toast.success("User registered successfully");
+  }, []);
 
   const handleVerify = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
