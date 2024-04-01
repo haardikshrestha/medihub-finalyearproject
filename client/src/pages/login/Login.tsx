@@ -21,7 +21,7 @@ const Login = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5173/register");
+      const res = await axios.get("http://localhost:5173/users");
       console.log(res.data);
     } catch (error) {
       console.error("Error fetching users", error);
@@ -44,14 +44,16 @@ const Login = () => {
         email,
       });
 
+      const verified = await axios.post("http://localhost:5173/checkverify", {
+        email,
+      });
+
       const { token, role } = response.data;
       localStorage.setItem("token", token);
       console.log("hey");
 
-      if (role === "admin" || role === "user" || role === "doctor") {
+      if (role === "admin" || role === "user" || role === "doctor" || role == "pathologist") {
         const successMessage = role === "admin" ? "Admin" : "User";
-        
-
         setEmail("");
         setPassword("");
         fetchUsers();
@@ -63,11 +65,20 @@ const Login = () => {
           const emailExists = response1.data.emailExists;
           navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
         } else if (role === "doctor") {
-          console.log("doc");
-          navigate("/doctor?email=" + email);
-        } else if (role == "pathologist"){
-          console.log("pathologist");
-          navigate("/pathologist?email=" + email);
+          if (verified.data.verified) {
+            navigate("/doctor?email=" + email);
+          } else {
+            navigate(`/reset?email=${email}`);
+          }
+        } else if (role === "pathologist") {
+          console.log("entered")
+          if (verified.data.verified) {
+            console.log("yes")
+            navigate("/pathologist?email=" + email);
+          } else {
+            console.log("no")
+            navigate(`/reset?email=${email}`);
+          }
         }
 
         window.location.reload();

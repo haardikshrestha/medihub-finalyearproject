@@ -3,12 +3,11 @@ import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const ResetPassword = () => {
+const FirstLogin = () => {
   const [isMounted, setIsMounted] = useState(true);
 
   useEffect(() => {
     return () => {
-      // Component will unmount, set isMounted to false
       setIsMounted(false);
     };
   }, []);
@@ -16,9 +15,7 @@ const ResetPassword = () => {
   const notifySuccess = (message: string) => isMounted && toast.success(message);
   const notifyError = (message: string) => isMounted && toast.error(message);
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
-
-  console.log(token);
+  const email = searchParams.get("email");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,7 +30,7 @@ const ResetPassword = () => {
       }
       console.log("ok");
       // Call the server endpoint to update the password
-      await axios.post("http://localhost:5173/update-password", { token, newPassword });
+      await axios.post("http://localhost:5173/update-password", { email, newPassword });
       
       notifySuccess("Password updated successfully!");
       // Redirect the user to the login page or any other appropriate page
@@ -106,4 +103,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default FirstLogin;

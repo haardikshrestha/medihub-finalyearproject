@@ -15,7 +15,6 @@ const Surgery = require("./models/surgerySchema");
 const PasswordResetToken = require("./models/resettoken");
 const LabTest = require("./models/labtestSchema");
 
-
 const app = express();
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
@@ -48,7 +47,7 @@ mongoose
 app.use(bodyParser.json());
 app.use(cors());
 
-console.log("Adding admin....")
+console.log("Adding admin....");
 const checkAdmin = async () => {
   try {
     const adminExists = await User.findOne({ role: "admin" });
@@ -74,7 +73,6 @@ const checkAdmin = async () => {
     console.log(error);
   }
 };
-
 
 checkAdmin();
 
@@ -109,7 +107,6 @@ async function comparePassword(inputPassword, storedHash) {
   return isPasswordValid;
 }
 
-
 //SIGN UP - POST
 app.post("/postregister", async (req, res) => {
   const { email, password } = req.body;
@@ -135,12 +132,10 @@ app.post("/postregister", async (req, res) => {
 
   // Validate password
   if (!passwordRegex.test(password)) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character",
-      });
+    return res.status(400).json({
+      error:
+        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character",
+    });
   }
 
   // Validate email
@@ -161,7 +156,7 @@ app.post("/postregister", async (req, res) => {
     email,
     password: hashedPassword,
     otp,
-    otpExpiresAt
+    otpExpiresAt,
   });
 
   try {
@@ -194,7 +189,7 @@ app.post("/postregister", async (req, res) => {
 // Fetch users with role "user"
 app.get("/users", async (req, res) => {
   try {
-    const users = await User.find({ role: "user" }).select("-password");
+    const users = await User.find().select("-password");
     res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -225,28 +220,48 @@ app.get("/pathologists", async (req, res) => {
 });
 
 //LOGIN - POST
-app.post('/login', async (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ error: "Invalid credentials" });
     }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ error: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     res.json({ token, role: user.role });
   } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Login Error:", error);
+    res.status(500).json(error);
+  }
+});
+
+app.post("/checkverify", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+
+    res.json({ verified: user.verified});
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json(error);
   }
 });
 
@@ -411,6 +426,41 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
+app.post("/doctor/resetpassword", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the saltRounds
+
+    // Update the user's password in the database
+    await User.findOneAndUpdate({ email }, { password: hashedPassword });
+
+    const mailOptions = {
+      from: process.env.USER,
+      to: email,
+      subject: "Your new password",
+      text: `Dear User,
+
+Your password has been reset successfully. Here is your new password:
+
+Password: ${newPassword}
+
+Please change your password after logging in for security reasons.
+
+Regards,
+Your Application Team`,
+    };
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Password reset successfully. Check your email for the new password." });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json(error);
+  }
+});
 //get wards
 app.get("/wards", async (req, res) => {
   try {
@@ -423,17 +473,17 @@ app.get("/wards", async (req, res) => {
 });
 
 //add ward - working
-app.post('/newward', async (req, res) => {
+app.post("/newward", async (req, res) => {
   try {
     const { wardId } = req.body;
 
     const existingWard = await Ward.findOne({ wardId });
     if (existingWard) {
-      return res.status(400).json({ message: 'Ward ID already exists' });
+      return res.status(400).json({ message: "Ward ID already exists" });
     }
 
     const newWard = new Ward({
-      wardId
+      wardId,
     });
 
     const savedWard = await newWard.save();
@@ -446,24 +496,22 @@ app.post('/newward', async (req, res) => {
 });
 
 //delete ward - working
-app.post('/deleteward', async (req, res) => {
+app.post("/deleteward", async (req, res) => {
   try {
     const { wardId } = req.body;
 
     const deletedWard = await Ward.findOneAndDelete({ wardId });
 
     if (!deletedWard) {
-      return res.status(404).json({ message: 'Ward not found' });
+      return res.status(404).json({ message: "Ward not found" });
     }
 
-    res.status(200).json({ message: 'Ward deleted successfully', deletedWard });
+    res.status(200).json({ message: "Ward deleted successfully", deletedWard });
   } catch (error) {
     console.error(error);
     res.status(500).json(error);
   }
 });
-
-
 
 // Fetch users with role "doctors"
 app.get("/getdoctors", async (req, res) => {
@@ -544,8 +592,7 @@ app.get("/api/doctors", async (req, res) => {
   }
 });
 
-
-app.post('/newdoctor', async (req, res) => {
+app.post("/newdoctor", async (req, res) => {
   const {
     fullname,
     emailaddress,
@@ -571,7 +618,7 @@ app.post('/newdoctor', async (req, res) => {
       existingUser = new User({
         email: emailaddress,
         password: password, // Note: Password should be hashed before saving, for production use
-        role: 'doctor', // Set the user's role to 'doctor'
+        role: "doctor", // Set the user's role to 'doctor'
       });
 
       // Save the new user to the database
@@ -594,10 +641,10 @@ app.post('/newdoctor', async (req, res) => {
     // Save the new doctor to the database
     await newDoctor.save();
 
-    res.status(201).json({ message: 'Doctor information saved successfully' });
+    res.status(201).json({ message: "Doctor information saved successfully" });
   } catch (error) {
-    console.error('Error saving doctor information:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error saving doctor information:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -627,7 +674,6 @@ app.post("/addDepartment", async (req, res) => {
 });
 
 app.use(express.urlencoded({ extended: false }));
-
 
 {
   /* --- APPOINTMENT --- */
@@ -723,11 +769,9 @@ app.post("/patientsinfo", async (req, res) => {
     res.status(201).json({ message: "Patient information saved successfully" });
   } catch (error) {
     console.error("Error saving patient information:", error);
-    res
-      .status(500)
-      .json({
-        message: "An unexpected error occurred. Please try again later.",
-      });
+    res.status(500).json({
+      message: "An unexpected error occurred. Please try again later.",
+    });
   }
 });
 
@@ -767,7 +811,6 @@ app.get("/getDepartments", async (req, res) => {
   }
 });
 
-
 app.get("/getpatients", async (req, res) => {
   try {
     const patients = await Patient.find();
@@ -775,11 +818,9 @@ app.get("/getpatients", async (req, res) => {
     res.status(200).json(patients);
   } catch (err) {
     console.error("Error fetching patients:", err);
-    res
-      .status(500)
-      .json({
-        message: "An unexpected error occurred. Please try again later.",
-      });
+    res.status(500).json({
+      message: "An unexpected error occurred. Please try again later.",
+    });
   }
 });
 
@@ -810,47 +851,56 @@ async function sendEmail(email, password) {
     let info = await transporter.sendMail({
       from: '"Your Name" <your-email@example.com>',
       to: email,
-      subject: 'Your Account Details',
+      subject: "Your Account Details",
       text: `Your account password is: ${password}`,
       // You can also include HTML content in the email
       // html: `<p>Your account password is: <strong>${password}</strong></p>`
     });
 
-    console.log('Email sent: %s', info.messageId);
+    console.log("Email sent: %s", info.messageId);
   } catch (error) {
     // Handle email sending errors
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
     throw error; // Re-throw the error to be caught by the caller
   }
 }
 
-
-
-app.post('/surgeries', async (req, res) => {
+app.post("/surgeries", async (req, res) => {
   try {
     const newSurgery = new Surgery(req.body);
     await newSurgery.save();
-    res.status(201).send({ message: 'Surgery information saved successfully!' });
+    res
+      .status(201)
+      .send({ message: "Surgery information saved successfully!" });
   } catch (err) {
     console.error(err);
     res.status(500).send(error);
   }
 });
 
-app.get('/getsurgeries', async (req, res) => {
+app.get("/getsurgeries", async (req, res) => {
   try {
     const surgeries = await Surgery.find();
     res.status(200).json(surgeries);
   } catch (error) {
-    console.error('Error retrieving surgeries:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error retrieving surgeries:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 //add patient infro through from -> /in
-app.post('/patients/addInfo', async (req, res) => {
+app.post("/patients/addInfo", async (req, res) => {
   try {
-    const { email, firstName, lastName, gender, dateofbirth, chronicillness, address, bloodgroup } = req.body;
+    const {
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+    } = req.body;
 
     // Create a new instance of the Patient model
     const newPatient = new Patient({
@@ -859,7 +909,7 @@ app.post('/patients/addInfo', async (req, res) => {
       lastName,
       gender,
       dateofbirth,
-      chronicillness: chronicillness || 'None', // Default value if not provided
+      chronicillness: chronicillness || "None", // Default value if not provided
       address,
       bloodgroup,
     });
@@ -869,13 +919,13 @@ app.post('/patients/addInfo', async (req, res) => {
 
     res.status(201).json(savedPatient); // Respond with the saved patient data
   } catch (error) {
-    console.error('Error adding patient:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error adding patient:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 //delete patient through email
-app.post('/patients/delete', async (req, res) => {
+app.post("/patients/delete", async (req, res) => {
   const { email } = req.body;
 
   try {
@@ -888,31 +938,38 @@ app.post('/patients/delete', async (req, res) => {
     return res.status(200).json({ message: "Patient deleted successfully" });
   } catch (error) {
     console.error("Error deleting patient:", error);
-    return res.status(500).json({ message: "Error deleting patient", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error deleting patient", error: error.message });
   }
 });
 
-app.get('/patients/genderCount', async (req, res) => {
+app.get("/patients/genderCount", async (req, res) => {
   try {
     const genderCounts = await Patient.aggregate([
-      { $group: { _id: '$gender', count: { $sum: 1 } } },
+      { $group: { _id: "$gender", count: { $sum: 1 } } },
       {
         $group: {
           _id: null,
           male: { $sum: { $cond: [{ $eq: ["$_id", "male"] }, "$count", 0] } },
-          female: { $sum: { $cond: [{ $eq: ["$_id", "female"] }, "$count", 0] } },
+          female: {
+            $sum: { $cond: [{ $eq: ["$_id", "female"] }, "$count", 0] },
+          },
           other: { $sum: { $cond: [{ $eq: ["$_id", "other"] }, "$count", 0] } },
-          total: { $sum: "$count" }
-        }
-      }
+          total: { $sum: "$count" },
+        },
+      },
     ]);
 
-    const result = genderCounts.length > 0 ? genderCounts[0] : { male: 0, female: 0, other: 0, total: 0 };
+    const result =
+      genderCounts.length > 0
+        ? genderCounts[0]
+        : { male: 0, female: 0, other: 0, total: 0 };
 
     res.json(result);
   } catch (err) {
-    console.error('Error finding gender counts:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error finding gender counts:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -920,7 +977,7 @@ app.post("/labtests", async (req, res) => {
   try {
     const newLabTest = new LabTest({
       testName: req.body.testName,
-      testDetails: req.body.testDetails 
+      testDetails: req.body.testDetails,
     });
     const savedLabTest = await newLabTest.save();
 
@@ -930,31 +987,47 @@ app.post("/labtests", async (req, res) => {
   }
 });
 
-app.post('/add/appointments', async (req, res) => {
+app.post("/add/appointments", async (req, res) => {
   try {
-      const newAppointment = new Appointment(req.body);
-      await newAppointment.save();
-      res.status(201).json({ message: 'Appointment created successfully', appointment: newAppointment });
+    const newAppointment = new Appointment(req.body);
+    await newAppointment.save();
+    res.status(201).json({
+      message: "Appointment created successfully",
+      appointment: newAppointment,
+    });
   } catch (error) {
-      res.status(400).json({ error: 'Failed to create appointment', message: error.message });
+    res
+      .status(400)
+      .json({ error: "Failed to create appointment", message: error.message });
   }
 });
 
 // GET route to retrieve appointments for a specific doctor
-app.get('/appointments/getdoctor', async (req, res) => {
+app.get("/appointments/getdoctor", async (req, res) => {
   const doctorName = "Dr. Jane Smith";
-  const appointmentDate = "2024-03-23"; 
+  const appointmentDate = "2024-03-23";
   const appointmentDate1 = "2024-03-22";
   try {
-      const appointments = await Appointment.find({ apptDoctor: doctorName, apptDate: appointmentDate });
-      const appointments1 = await Appointment.find({ apptDoctor: doctorName, apptDate: appointmentDate1 });
-      const appointmentCount = appointments.length;
-      const appointmentCount1 = 9;
-      const difference = appointmentCount - appointmentCount1;
-      const percentage = (difference / appointmentCount) * 100;
-      res.status(200).json({ appointments, appointmentCount,  appointmentCount1, percentage});
+    const appointments = await Appointment.find({
+      apptDoctor: doctorName,
+      apptDate: appointmentDate,
+    });
+    const appointments1 = await Appointment.find({
+      apptDoctor: doctorName,
+      apptDate: appointmentDate1,
+    });
+    const appointmentCount = appointments.length;
+    const appointmentCount1 = 9;
+    const difference = appointmentCount - appointmentCount1;
+    const percentage = (difference / appointmentCount) * 100;
+    res
+      .status(200)
+      .json({ appointments, appointmentCount, appointmentCount1, percentage });
   } catch (error) {
-      res.status(500).json({ error: 'Failed to retrieve appointments', message: error.message });
+    res.status(500).json({
+      error: "Failed to retrieve appointments",
+      message: error.message,
+    });
   }
 });
 
@@ -963,7 +1036,6 @@ app.get('/appointments/getdoctor', async (req, res) => {
 // ---------------------------------- PATIENTS -------------------------------------------------------------
 app.post("/patientsinfo", async (req, res) => {
   try {
-    
     const {
       email,
       firstName,
@@ -972,7 +1044,7 @@ app.post("/patientsinfo", async (req, res) => {
       dateofbirth,
       chronicillness,
       address,
-      bloodgroup
+      bloodgroup,
     } = req.body;
 
     const newPatient = new Patient({
@@ -983,7 +1055,7 @@ app.post("/patientsinfo", async (req, res) => {
       dateofbirth,
       chronicillness,
       address,
-      bloodgroup
+      bloodgroup,
     });
     await newPatient.save();
     res.status(201).send("Patient registered successfully");
@@ -994,30 +1066,28 @@ app.post("/patientsinfo", async (req, res) => {
 });
 
 // ---------------------------------- DOCTORS -------------------------------------------------------------
-app.post("/newdoctor", async (req, res) => {
+app.post("/api/newdoctor", async (req, res) => {
   try {
-    // Extract data from request body
     const {
-      fullname,
-      emailaddress,
-      phonenumber,
+      nmc,
+      email,
       expertise,
       degree,
       school,
-      nmc,
       startTime,
       endTime,
       daysAvailable,
       fees,
-      password
+      password,
     } = req.body;
 
-    // Create a new doctor instance
-    const newDoctor = new Doctor({
-      fullname,
-      email: emailaddress, // Assuming 'emailaddress' is the field name for email
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the saltRounds
+
+    // Create a new doctor document
+    const newDoctor = new Doctors({
       nmc,
-      role: 'doctor', // Assuming 'role' is always 'doctor'
+      email,
       expertise,
       degree,
       school,
@@ -1025,18 +1095,108 @@ app.post("/newdoctor", async (req, res) => {
       endTime,
       daysAvailable,
       fees,
-      verified: false, // Assuming newly registered doctors are not verified by default
     });
 
-    // Save the doctor to the database
     await newDoctor.save();
 
-    // Respond with success status
-    res.status(201).send("Doctor information registered successfully");
+    // Create a new user with hashed password
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      role: "doctor",
+    });
+
+    await newUser.save();
+
+    const mailOptions = {
+      from: process.env.USER,
+      to: email,
+      subject: "Your account details",
+      text: `Dear Doctor,
+
+Your account has been created successfully. Here are your login credentials:
+
+Email: ${email}
+Password: ${password}
+
+Please change your password after logging in for security reasons.
+
+Regards,
+MediHub Team`,
+    };
+    console.log("sending mail nowwww");
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+    console.log("mailed!!");
+    res
+      .status(200)
+      .json({ message: "Doctor and user registered successfully" });
   } catch (error) {
-    // Handle errors
-    console.error("Error registering doctor information:", error);
-    res.status(500).send("Failed to register doctor information");
+    console.error("Error registering doctor and user:", error);
+    res.status(500).json(error);
   }
 });
 
+// ---------------------------------- PATHOLOGISTS -------------------------------------------------------------
+app.post("/api/newpathologist", async (req, res) => {
+  try {
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      expertise,
+      degree,
+      school,
+      nmcNumber,
+      password,
+    } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newPathologist = new Pathologist({
+      fullname: fullName,
+      email: email,
+      number: phoneNumber,
+      expertise: expertise,
+      degree: degree,
+      school: school,
+      nmc: nmcNumber,
+      password: hashedPassword,
+    });
+
+    await newPathologist.save();
+
+    const newUser = new User({
+      email: email,
+      password: hashedPassword,
+      role: "pathologist",
+    });
+
+    await newUser.save();
+
+    const mailOptions = {
+      from: process.env.USER,
+      to: email,
+      subject: "Your account details",
+      text: `Dear Pathologist,
+
+Your account has been created successfully. Here are your login credentials:
+
+Email: ${email}
+Password: ${password}
+
+Please change your password after logging in for security reasons.
+
+Regards,
+MediHub Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Pathologist information registered successfully" });
+  } catch (error) {
+    console.error("Error registering pathologist information:", error);
+    res.status(500).json(error);
+  }
+});

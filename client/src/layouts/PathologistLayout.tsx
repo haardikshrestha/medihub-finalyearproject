@@ -1,18 +1,11 @@
 import { Outlet } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "@/app/store";
-import DoctorSidebar from "@/components/doctor/DoctorSidebar";
-import DoctorHeader from "@/components/doctor/DoctorHeader";
+import PathologistSidebar from "@/components/pathologist/PathologistSidebar";
+import PathologistHeader from "@/components/pathologist/PathologistHeader";
 
-const DoctorLayout = () => {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const handlelogout = () => {
-    navigate("/login");
-  };
+const PathologistLayout = () => {
   return (
     <div>
-      <DoctorHeader/>
+      <PathologistHeader/>
       <div className="drawer drawer-mobile">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
@@ -43,10 +36,10 @@ const DoctorLayout = () => {
           </main>
         </div>
         
-        <DoctorSidebar />
+        <PathologistSidebar />
       </div>
     </div>
   );
 };
 
-export default DoctorLayout;
+export default PathologistLayout;

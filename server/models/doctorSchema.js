@@ -9,9 +9,8 @@ const doctorSchema = new mongoose.Schema({
   school: { type: String, default: 'null' },
   startTime: { type: String, default: 'null' },
   endTime: { type: String, default: 'null' },
-  daysAvailable: { type: [String], default: ['Everyday'] }, // Changed to array type
+  daysAvailable: { type: [String], default: ['Everyday'] }, 
   fees: { type: String, default: '500' },
-  verified: { type: Boolean, default: false },
 });
 
 const Doctors = mongoose.model('Doctors', doctorSchema);
