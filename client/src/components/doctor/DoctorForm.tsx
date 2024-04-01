@@ -4,8 +4,16 @@ import { useNavigate } from "react-router-dom";
 const DoctorForm = () => {
   const navigate = useNavigate();
 
-  const [password, setPassword] = useState("");
-  const [selectedDays, setSelectedDays] = useState([
+  const [fullName, setFullName] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [expertise, setExpertise] = useState("");
+  const [degree, setDegree] = useState("");
+  const [school, setSchool] = useState("");
+  const [nmcNumber, setNmcNumber] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [selectedDays, setSelectedDays] = useState<{ day: string; selected: boolean }[]>([
     { day: "Sunday", selected: false },
     { day: "Monday", selected: false },
     { day: "Tuesday", selected: false },
@@ -14,12 +22,16 @@ const DoctorForm = () => {
     { day: "Friday", selected: false },
     { day: "Saturday", selected: false },
   ]);
+  const [fees, setFees] = useState("");
+  const [password, setPassword] = useState("");
 
   const generateRandomPassword = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let generatedPassword = "";
     for (let i = 0; i < 8; i++) {
-      generatedPassword += characters.charAt(Math.floor(Math.random() * characters.length));
+      generatedPassword += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
     }
     setPassword(generatedPassword);
   };
@@ -27,23 +39,40 @@ const DoctorForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5173/newdoctor', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5173/api/newdoctor", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(FormData),
+        body: JSON.stringify({
+          nmc: nmcNumber,
+          email: emailAddress,
+          expertise,
+          degree,
+          school,
+          startTime,
+          endTime,
+          daysAvailable: selectedDays.filter((day) => day.selected).map((day) => day.day),
+          fees,
+          password, // Add the password field
+        }),
       });
       if (response.ok) {
-        alert('Doctor information registered successfully');
-        navigate('/doctor');
+        alert("Doctor and user information registered successfully");
+        navigate("/doctor");
       } else {
-        alert('Failed to register doctor information');
+        alert("Failed to register doctor and user information");
       }
     } catch (error) {
-      console.error('Error registering doctor information:', error);
-      alert('An unexpected error occurred. Please try again later.');
+      console.error("Error registering doctor and user information:", error);
+      alert("An unexpected error occurred. Please try again later.");
     }
+  };
+
+  const handleDaySelection = (index: number) => {
+    const newSelectedDays = [...selectedDays];
+    newSelectedDays[index].selected = !newSelectedDays[index].selected;
+    setSelectedDays(newSelectedDays);
   };
 
   return (
@@ -66,6 +95,8 @@ const DoctorForm = () => {
             name="fullname"
             id="fullname"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
           />
         </div>
 
@@ -82,6 +113,8 @@ const DoctorForm = () => {
             name="emailaddress"
             id="emailaddress"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={emailAddress}
+            onChange={(e) => setEmailAddress(e.target.value)}
           />
         </div>
 
@@ -98,6 +131,8 @@ const DoctorForm = () => {
             name="phonenumber"
             id="phonenumber"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
           />
         </div>
 
@@ -111,6 +146,8 @@ const DoctorForm = () => {
             name="expertise"
             id="expertise"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={expertise}
+            onChange={(e) => setExpertise(e.target.value)}
           />
         </div>
 
@@ -124,6 +161,8 @@ const DoctorForm = () => {
             name="degree"
             id="degree"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={degree}
+            onChange={(e) => setDegree(e.target.value)}
           />
         </div>
 
@@ -137,6 +176,8 @@ const DoctorForm = () => {
             name="school"
             id="school"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={school}
+            onChange={(e) => setSchool(e.target.value)}
           />
         </div>
 
@@ -150,47 +191,52 @@ const DoctorForm = () => {
             name="nmc"
             id="nmc"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={nmcNumber}
+            onChange={(e) => setNmcNumber(e.target.value)}
           />
         </div>
 
         {/* Working Hours */}
-        <div className="mb-4 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-          <div className="flex-1">
-            <label
-              htmlFor="startTime"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Start Time
-            </label>
-            <select
-              name="startTime"
-              id="startTime"
-              className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-            >
-              {/* Options for Start Time */}
-              <option value="08:00 AM">08:00 AM</option>
-              <option value="09:00 AM">09:00 AM</option>
-              <option value="10:00 AM">10:00 AM</option>
-              {/* Add more options as needed */}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label htmlFor="endTime" className="block text-sm font-medium text-gray-600">
-              End Time
-            </label>
-            <select
-              name="endTime"
-              id="endTime"
-              className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-            >
-              {/* Options for End Time */}
-              <option value="03:00 PM">03:00 PM</option>
-              <option value="04:00 PM">04:00 PM</option>
-              <option value="05:00 PM">05:00 PM</option>
-              <option value="06:00 PM">06:00 PM</option>
-              {/* Add more options as needed */}
-            </select>
-          </div>
+        {/* Start Time */}
+        <div className="mb-4">
+          <label
+            htmlFor="startTime"
+            className="block text-sm font-medium text-gray-600"
+          >
+            Start Time
+          </label>
+          <select
+            name="startTime"
+            id="startTime"
+            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+          >
+            <option value="08:00 AM">08:00 AM</option>
+            <option value="09:00 AM">09:00 AM</option>
+            <option value="10:00 AM">10:00 AM</option>
+            {/* Add more options as needed */}
+          </select>
+        </div>
+
+        {/* End Time */}
+        <div className="mb-4">
+          <label htmlFor="endTime" className="block text-sm font-medium text-gray-600">
+            End Time
+          </label>
+          <select
+            name="endTime"
+            id="endTime"
+            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          >
+            <option value="03:00 PM">03:00 PM</option>
+            <option value="04:00 PM">04:00 PM</option>
+            <option value="05:00 PM">05:00 PM</option>
+            <option value="06:00 PM">06:00 PM</option>
+            {/* Add more options as needed */}
+          </select>
         </div>
 
         {/* Days Available */}
@@ -202,19 +248,15 @@ const DoctorForm = () => {
             Days Available
           </label>
           <div className="flex flex-wrap mt-1">
-            {selectedDays.map((day, index) => (
+            {selectedDays.map(({ day, selected }, index) => (
               <div
                 key={index}
                 className={`cursor-pointer p-2 border border-gray-300 rounded-md mr-2 mb-2 ${
-                  day.selected ? "bg-[#8AC185] text-white" : ""
+                  selected ? "bg-[#8AC185] text-white" : ""
                 }`}
-                onClick={() => {
-                  const newSelectedDays = [...selectedDays];
-                  newSelectedDays[index].selected = !newSelectedDays[index].selected;
-                  setSelectedDays(newSelectedDays);
-                }}
+                onClick={() => handleDaySelection(index)}
               >
-                {day.day}
+                {day}
               </div>
             ))}
           </div>
@@ -230,6 +272,8 @@ const DoctorForm = () => {
             name="fees"
             id="fees"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            value={fees}
+            onChange={(e) => setFees(e.target.value)}
           />
         </div>
 
@@ -245,6 +289,7 @@ const DoctorForm = () => {
             placeholder="Password"
             value={password}
             readOnly
+            onChange={(e) => setPassword(e.target.value)}
           />
           <button
             className="ml-3 bg-white text-[#ACE86C] hover:bg-[#ACE86C] hover:text-white py-2 px-3 border border-lime-500 focus:outline-none focus:shadow-outline transition duration-300"
