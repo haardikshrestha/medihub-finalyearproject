@@ -8,12 +8,14 @@ const User = require("./models/userSchema");
 const Doctors = require("./models/doctorschema");
 const Patient = require("./models/patientSchema");
 const Ward = require("./models/wardSchema");
-const Pathologist = require("./models/pathologistSchema");
+const Pathologist = require("./models/pathology-models/pathologistSchema");
 const Department = require("./models/departmentSchema");
 const Appointment = require("./models/appointmentsSchema");
 const Surgery = require("./models/surgerySchema");
 const PasswordResetToken = require("./models/resettoken");
 const LabTest = require("./models/labtestSchema");
+const TestResult = require("./models/pathology-models/testResultSchema");
+const SampleCollection = require("./models/pathology-models/sampleCollectionSchema")
 
 const app = express();
 const crypto = require("crypto");
@@ -924,54 +926,9 @@ app.post("/patients/addInfo", async (req, res) => {
   }
 });
 
-//delete patient through email
-app.post("/patients/delete", async (req, res) => {
-  const { email } = req.body;
 
-  try {
-    const deletedPatient = await Patient.findOneAndDelete({ email });
 
-    if (!deletedPatient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
 
-    return res.status(200).json({ message: "Patient deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting patient:", error);
-    return res
-      .status(500)
-      .json({ message: "Error deleting patient", error: error.message });
-  }
-});
-
-app.get("/patients/genderCount", async (req, res) => {
-  try {
-    const genderCounts = await Patient.aggregate([
-      { $group: { _id: "$gender", count: { $sum: 1 } } },
-      {
-        $group: {
-          _id: null,
-          male: { $sum: { $cond: [{ $eq: ["$_id", "male"] }, "$count", 0] } },
-          female: {
-            $sum: { $cond: [{ $eq: ["$_id", "female"] }, "$count", 0] },
-          },
-          other: { $sum: { $cond: [{ $eq: ["$_id", "other"] }, "$count", 0] } },
-          total: { $sum: "$count" },
-        },
-      },
-    ]);
-
-    const result =
-      genderCounts.length > 0
-        ? genderCounts[0]
-        : { male: 0, female: 0, other: 0, total: 0 };
-
-    res.json(result);
-  } catch (err) {
-    console.error("Error finding gender counts:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
 
 app.post("/labtests", async (req, res) => {
   try {
@@ -1032,6 +989,56 @@ app.get("/appointments/getdoctor", async (req, res) => {
 });
 
 // ---------------------------------- ADMIN -------------------------------------------------------------
+
+//delete patient through email
+app.post("/patients/delete", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const deletedPatient = await Patient.findOneAndDelete({ email });
+
+    if (!deletedPatient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    return res.status(200).json({ message: "Patient deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting patient:", error);
+    return res
+      .status(500)
+      .json({ message: "Error deleting patient", error: error.message });
+  }
+});
+
+//count patients according to their gender
+app.get("/patients/genderCount", async (req, res) => {
+  try {
+    const genderCounts = await Patient.aggregate([
+      { $group: { _id: "$gender", count: { $sum: 1 } } },
+      {
+        $group: {
+          _id: null,
+          male: { $sum: { $cond: [{ $eq: ["$_id", "male"] }, "$count", 0] } },
+          female: {
+            $sum: { $cond: [{ $eq: ["$_id", "female"] }, "$count", 0] },
+          },
+          other: { $sum: { $cond: [{ $eq: ["$_id", "other"] }, "$count", 0] } },
+          total: { $sum: "$count" },
+        },
+      },
+    ]);
+
+    const result =
+      genderCounts.length > 0
+        ? genderCounts[0]
+        : { male: 0, female: 0, other: 0, total: 0 };
+
+    res.json(result);
+  } catch (err) {
+    console.error("Error finding gender counts:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 // ---------------------------------- PATIENTS -------------------------------------------------------------
 app.post("/patientsinfo", async (req, res) => {
@@ -1198,5 +1205,270 @@ MediHub Team`,
   } catch (error) {
     console.error("Error registering pathologist information:", error);
     res.status(500).json(error);
+  }
+});
+
+//add new test result:
+app.post('/testresult/add', async (req, res) => {
+  try {
+      const { patientName, doctorName, testResultsPdf, testType, comments, date } = req.body;
+
+      const newTestResult = new TestResult({
+          patientName,
+          doctorName,
+          testResultsPdf,
+          testType,
+          comments,
+          date
+      });
+
+      await newTestResult.save();
+
+      res.status(201).json({ message: 'Test result created successfully' });
+  } catch (error) {
+      console.error('Error creating test result:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get all test results
+app.get('/testresult/get/all', async (req, res) => {
+  try {
+      const testResults = await TestResult.find();
+
+      res.status(200).json(testResults);
+  } catch (error) {
+      console.error('Error fetching test results:', error);
+      res.status(500).json(error);
+  }
+});
+
+// get a specific patient's test results
+app.get('/testresult/get/patient', async (req, res) => {
+  try {
+      const patientName = req.query.patientName;
+
+      if (!patientName) {
+          return res.status(400).json({ error: 'Patient name is required in query parameters' });
+      }
+
+      const testResults = await TestResult.find({ patientName });
+
+      res.status(200).json(testResults);
+  } catch (error) {
+      console.error('Error fetching test results:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get all the test results within a certain date range
+app.get('/testresult/get/daterange', async (req, res) => {
+  try {
+      const startDate = req.query.startDate;
+      const endDate = req.query.endDate;
+
+      if (!startDate || !endDate) {
+          return res.status(400).json({ error: 'Both start date and end date are required in query parameters' });
+      }
+
+      const testResults = await TestResult.find({
+          date: {
+              $gte: new Date(startDate), 
+              $lte: new Date(endDate)    
+          }
+      });
+
+      res.status(200).json(testResults);
+  } catch (error) {
+      console.error('Error fetching test results:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get test results of the same type
+app.get('/testresult/get/type', async (req, res) => {
+  try {
+      const testType = req.query.testType;
+
+      if (!testType) {
+          return res.status(400).json({ error: 'Test type is required in query parameters' });
+      }
+
+      const testResults = await TestResult.find({ testType });
+
+      res.status(200).json(testResults);
+  } catch (error) {
+      console.error('Error fetching test results:', error);
+      res.status(500).json(error);
+  }
+});
+
+//add pathologist appointment.
+app.post('/samplecollections/add', async (req, res) => {
+  try {
+      const { patientName, doctorName, testType } = req.body;
+
+      const startHour = 9; 
+      const endHour = 16; 
+
+      const currentDate = new Date();
+      let appointmentDate = new Date(currentDate);
+      appointmentDate.setDate(currentDate.getDate() + (currentDate.getHours() >= endHour || currentDate.getHours() < startHour ? 1 : 0));
+      appointmentDate.setHours(startHour, 0, 0, 0);
+
+      while (appointmentDate.getHours() >= endHour || appointmentDate.getDay() === 0 || appointmentDate.getDay() === 6) {
+          appointmentDate.setDate(appointmentDate.getDate() + 1);
+          appointmentDate.setHours(startHour, 0, 0, 0);
+      }
+
+      const newSampleCollection = new SampleCollection({
+          patientName,
+          doctorName,
+          appointmentDateTime: appointmentDate,
+          testType
+      });
+
+      await newSampleCollection.save();
+
+      res.status(201).json({ message: 'Sample collection created successfully', appointmentDateTime: appointmentDate });
+  } catch (error) {
+      console.error('Error creating sample collection:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get all appointments
+app.get('/samplecollections/get/all', async (req, res) => {
+  try {
+      const sampleCollections = await SampleCollection.find();
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get according to patient
+app.get('/samplecollections/get/patient', async (req, res) => {
+  try {
+      const patientName = req.query.patientName;
+
+      if (!patientName) {
+          return res.status(400).json({ error: 'Patient name is required in query parameters' });
+      }
+
+      const sampleCollections = await SampleCollection.find({ patientName });
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get according to doctor
+app.get('/samplecollections/get/doctor', async (req, res) => {
+  try {
+      const doctorName = req.query.doctorName;
+
+      if (!doctorName) {
+          return res.status(400).json({ error: 'Doctor name is required in query parameters' });
+      }
+
+      const sampleCollections = await SampleCollection.find({ doctorName });
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json(error);
+  }
+});
+
+// get all sample collection according to status
+app.get('/samplecollections/get/status', async (req, res) => {
+  try {
+      const status = req.query.status;
+
+      if (!status) {
+          return res.status(400).json({ error: 'Status is required in query parameters' });
+      }
+
+      const sampleCollections = await SampleCollection.find({ status });
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json(error);
+  }
+});
+
+//get according to test type
+app.get('/samplecollections/get/testtype', async (req, res) => {
+  try {
+      const testType = req.query.testType;
+
+      if (!testType) {
+          return res.status(400).json({ error: 'Test type is required in query parameters' });
+      }
+
+      const sampleCollections = await SampleCollection.find({ testType });
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//get according to date range:
+app.get('/samplecollections/get/daterange', async (req, res) => {
+  try {
+      const startDate = req.query.startDate;
+      const endDate = req.query.endDate;
+
+      if (!startDate || !endDate) {
+          return res.status(400).json({ error: 'Both start date and end date are required in query parameters' });
+      }
+
+      const sampleCollections = await SampleCollection.find({
+          appointmentDateTime: {
+              $gte: new Date(startDate),
+              $lte: new Date(endDate)
+          }
+      });
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//get according to specific date
+app.get('/samplecollections/get/onedate', async (req, res) => {
+  try {
+      const date = req.query.date;
+
+      if (!date) {
+          return res.status(400).json({ error: 'Date is required in query parameters' });
+      }
+
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0); 
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999); 
+
+      const sampleCollections = await SampleCollection.find({
+          appointmentDateTime: {
+              $gte: startDate,
+              $lte: endDate
+          }
+      });
+
+      res.status(200).json(sampleCollections);
+  } catch (error) {
+      console.error('Error fetching sample collections:', error);
+      res.status(500).json({ error: 'Internal server error' });
   }
 });
