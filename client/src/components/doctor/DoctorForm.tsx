@@ -1,19 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { FaSpinner } from "react-icons/fa";
 
-const DoctorForm = () => {
+interface Day {
+  day: string;
+  selected: boolean;
+}
+
+const DoctorForm: React.FC = () => {
   const navigate = useNavigate();
-
-  const [fullName, setFullName] = useState("");
-  const [emailAddress, setEmailAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [expertise, setExpertise] = useState("");
-  const [degree, setDegree] = useState("");
-  const [school, setSchool] = useState("");
-  const [nmcNumber, setNmcNumber] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [selectedDays, setSelectedDays] = useState<{ day: string; selected: boolean }[]>([
+  const [loading, setLoading] = useState(false);
+  const [fullName, setFullName] = useState<string>("");
+  const [emailAddress, setEmailAddress] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [expertise, setExpertise] = useState<string>("");
+  const [degree, setDegree] = useState<string>("");
+  const [school, setSchool] = useState<string>("");
+  const [nmcNumber, setNmcNumber] = useState<string>("");
+  const [startTime, setStartTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
+  const [selectedDays, setSelectedDays] = useState<Day[]>([
     { day: "Sunday", selected: false },
     { day: "Monday", selected: false },
     { day: "Tuesday", selected: false },
@@ -22,21 +29,34 @@ const DoctorForm = () => {
     { day: "Friday", selected: false },
     { day: "Saturday", selected: false },
   ]);
-  const [fees, setFees] = useState("");
-  const [password, setPassword] = useState("");
+  const [fees, setFees] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [expertiseList, setExpertiseList] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchExpertiseList = async () => {
+      try {
+        const response = await axios.get<string[]>("http://localhost:5173/getdepartmentnames");
+        setExpertiseList(response.data);
+      } catch (error) {
+        console.error("Error fetching expertise list:", error);
+      }
+    };
+
+    fetchExpertiseList();
+  }, []);
 
   const generateRandomPassword = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let generatedPassword = "";
     for (let i = 0; i < 8; i++) {
-      generatedPassword += characters.charAt(
-        Math.floor(Math.random() * characters.length),
-      );
+      generatedPassword += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     setPassword(generatedPassword);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setLoading(true);
     e.preventDefault();
     try {
       const response = await fetch("http://localhost:5173/api/newdoctor", {
@@ -59,7 +79,7 @@ const DoctorForm = () => {
       });
       if (response.ok) {
         alert("Doctor and user information registered successfully");
-        navigate("/doctor");
+        navigate(-1);
       } else {
         alert("Failed to register doctor and user information");
       }
@@ -74,6 +94,7 @@ const DoctorForm = () => {
     newSelectedDays[index].selected = !newSelectedDays[index].selected;
     setSelectedDays(newSelectedDays);
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#D6E3C8]">
@@ -136,19 +157,24 @@ const DoctorForm = () => {
           />
         </div>
 
-        {/* Expertise */}
         <div className="mb-4">
           <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
             Expertise
           </label>
-          <input
-            type="text"
+          <select
             name="expertise"
             id="expertise"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
             value={expertise}
             onChange={(e) => setExpertise(e.target.value)}
-          />
+          >
+            <option value="">Select Expertise</option>
+            {expertiseList.map((exp, index) => (
+              <option key={index} value={exp}>
+                {exp}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Degree */}
@@ -196,8 +222,6 @@ const DoctorForm = () => {
           />
         </div>
 
-        {/* Working Hours */}
-        {/* Start Time */}
         <div className="mb-4">
           <label
             htmlFor="startTime"
@@ -304,8 +328,13 @@ const DoctorForm = () => {
         <button
           type="submit"
           className="col-span-2 w-2/4 bg-[#ACE86C] text-white p-2 rounded-md hover:bg-[#93d34d] focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
+          disabled={loading} // Disable button when loading is true
         >
-          Submit
+          {loading ? (
+            <FaSpinner className="animate-spin mr-2" /> // Show spinner animation when loading
+          ) : (
+            "Submit"
+          )}
         </button>
       </form>
     </div>

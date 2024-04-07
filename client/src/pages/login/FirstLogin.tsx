@@ -30,9 +30,9 @@ const FirstLogin = () => {
       }
       console.log("ok");
       // Call the server endpoint to update the password
-      await axios.post("http://localhost:5173/update-password", { email, newPassword });
+      await axios.post("http://localhost:5173/staff/updatepassword", { email, newPassword });
       
-      notifySuccess("Password updated successfully!");
+      alert("Password updated successfully!");
       // Redirect the user to the login page or any other appropriate page
       navigate("/login");
     } catch (error) {

@@ -19,17 +19,17 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ name, specialty, avatar }) => {
         </div>
       </div>
       <div className="p-4 flex justify-between mx-4">
-        <button className="text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white font-semibold py-2 px-4 rounded-full flex items-center">
+        <button className="text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white  py-2 px-4 rounded-full flex items-center">
           <FaUserCircle className="mr-2" />
           <span className="hidden sm:inline">Profile</span>
         </button>
-        <button className="text-amber-500 border border-amber-500  hover:bg-amber-500 hover:text-white font-semibold py-2 px-4 rounded-full flex items-center">
+        <button className="text-amber-500 border border-amber-500  hover:bg-amber-500 hover:text-white  py-2 px-4 rounded-full flex items-center">
           <FaEnvelope className="mr-2" />
           <span className="hidden sm:inline">Email</span>
         </button>
       </div>
       <div className="flex justify-center mb-4">
-        <button className="bg-[#91BF77] hover:bg-[#7da466] text-white font-semibold py-2 px-4 rounded-full flex items-center">
+        <button className="bg-[#91BF77] hover:bg-[#7da466] text-white  py-2 px-4 rounded-full flex items-center">
           <FaCalendarPlus  className="mr-2" />
           <span className="hidden sm:inline">Book Now</span>
         </button>

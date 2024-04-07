@@ -41,7 +41,9 @@ import PathologistsPatients from "@/pages/pathologistPages/PathologistPatients";
 import PathologistTests from "@/pages/pathologistPages/PathologistTests";
 import PathologistAppointments from "@/pages/pathologistPages/PathologistAppointments";
 import PathologistSettings from "@/pages/pathologistPages/PathologistSettings";
-
+import FirstLogin from "@/pages/login/FirstLogin";
+import Tests from "@/pages/adminPages/pathology/Tests";
+import TestDetails from "@/pages/adminPages/pathology/TestDetails";
 const AppRouter = () => {
   return (
     <Router>
@@ -52,6 +54,8 @@ const AppRouter = () => {
             <Route path="/admin/departments" element={<DepartmentsPage />} />
             <Route path="/admin/doctors" element={<DoctorsPage />} />
             <Route path="/admin/pathologists" element={<PathologistsPage />} />
+            <Route path="/admin/tests" element={<Tests />} />
+            <Route path="/admin/testdetails" element={<TestDetails />} />
             <Route path="/admin/patients" element={<PatientsPage />} />
             <Route path="/admin/wards" element={<WardsPage />} />
             <Route path="/admin/revenue" element={<RevenuePage />} />
@@ -101,6 +105,9 @@ const AppRouter = () => {
         <Route path="/reset" element={<ResetPassword />} />
         <Route path="/resetask" element={<ResetAsk />} />
         <Route path="/doctor" element={<DoctorLayout />} />
+
+        <Route path="/staff/reset" element={<FirstLogin />} />
+
       </Routes>
     </Router>
   );

@@ -3,7 +3,6 @@ import { Link, Outlet } from "react-router-dom";
 import { logout } from "@/app/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/store";
-import Sidebar from "@/components/patient/Sidebar";
 import PatientHeader from "@/components/patient/PatientHeader";
 import PatientSidebar from "@/components/patient/PatientSidebar";
 

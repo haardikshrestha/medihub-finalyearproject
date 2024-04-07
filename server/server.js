@@ -227,7 +227,6 @@ app.post("/login", async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -428,6 +427,7 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
+
 app.post("/doctor/resetpassword", async (req, res) => {
   try {
     const { email, newPassword } = req.body;
@@ -549,6 +549,21 @@ app.get("/getdepartments", async (req, res) => {
     res.status(500).json({ error: "Internal Server departments" });
   }
 });
+
+//get department names
+app.get("/getdepartmentnames", async (req, res) => {
+  try {
+    const departments = await Department.find();
+
+    const departmentNames = departments.map(department => department.depName);
+
+    res.json(departmentNames);
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    res.status(500).json(error);
+  }
+});
+
 
 //check if patient exists
 app.post("/checkpatient", async (req, res) => {
@@ -1145,7 +1160,67 @@ MediHub Team`,
   }
 });
 
+//according to expertise:
+app.get('/getdoctorsbyexpertise', async (req, res) => {
+  const { expertise } = req.query;
+
+  try {
+    // Find doctors with the specified expertise
+    const doctors = await Doctors.find({ expertise: expertise });
+
+    if (!doctors || doctors.length === 0) {
+      return res.status(404).json({ message: 'No doctors found with the specified expertise.' });
+    }
+
+    res.status(200).json(doctors);
+  } catch (error) {
+    console.error('Error fetching doctors by expertise:', error);
+    res.status(500).json(error);
+  }
+});
+
 // ---------------------------------- PATHOLOGISTS -------------------------------------------------------------
+//reset
+app.post("/staff/updatepassword", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Validate the new password
+    const passwordRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        error:
+          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      });
+    }
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Update the user's password
+    user.password = await hashPassword(newPassword);
+    
+    // Set verified to true
+    user.verified = true;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully!" });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res
+      .status(500)
+      .json({ error: "Error updating password. Please try again." });
+  }
+});
+
+
+
 app.post("/api/newpathologist", async (req, res) => {
   try {
     const {
@@ -1242,6 +1317,7 @@ app.get('/testresult/get/all', async (req, res) => {
       res.status(500).json(error);
   }
 });
+
 
 // get a specific patient's test results
 app.get('/testresult/get/patient', async (req, res) => {
@@ -1470,5 +1546,45 @@ app.get('/samplecollections/get/onedate', async (req, res) => {
   } catch (error) {
       console.error('Error fetching sample collections:', error);
       res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
+
+
+app.post("/api/post/appointments", async (req, res) => {
+  try {
+    const {
+      apptID,
+      apptDate,
+      apptPatient,
+      apptTime,
+      apptDoctor,
+      apptDisease,
+      paymentStatus,
+      transactionID
+    } = req.body;
+
+    const newAppointment = new Appointment({
+      apptID,
+      apptDate,
+      apptPatient,
+      apptTime,
+      apptDoctor,
+      apptDisease,
+      paymentStatus,
+      transactionID
+    });
+
+    await newAppointment.save();
+
+    res.status(201).json({ message: "Appointment created successfully" });
+  } catch (error) {
+    console.error("Error creating appointment:", error);
+    res.status(500).json({ error: "Failed to create appointment" });
   }
 });
