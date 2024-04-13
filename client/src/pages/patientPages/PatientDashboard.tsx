@@ -1,82 +1,89 @@
-import React from "react";
-import { MdAccessTime, MdFitnessCenter, MdLocalHospital, MdFlag } from "react-icons/md";
-import PatientProfile from "./patientProfile";
-import PatientProfiler from "@/components/patient/Profile/PatientProfile";
-import PatientDashboard from "@/components/patient/Dashboard/TestDashboard";
+import LatestAppointment from "@/components/patient/Dashboard/LatestAppointment";
+import LatestTestResults from "@/components/patient/Dashboard/LatestTestResults";
+import PatientCalendar from "@/components/patient/Dashboard/PatientCalendar";
+import { useState, useEffect } from "react";
 
 const PatientDetails: React.FC = () => {
-  const patientUser = {
-    name: 'John Doe',
-    avatar: 'https://example.com/patient-avatar.jpg',
-    bio: 'Looking for quality healthcare services.',
-    email: 'john.doe@example.com',
-    phone: '+1 555-555-5555',
-    address: '123 Main Street, Anytown USA',
-    medicalHistory: 'John has a history of high blood pressure and diabetes.',
-    appointments: [
-      {
-        date: '2023-04-15',
-        doctor: 'Dr. Jane Smith',
-        reason: 'Annual Check-up',
-      },
-      {
-        date: '2023-05-01',
-        doctor: 'Dr. Michael Johnson',
-        reason: 'Follow-up appointment',
-      },
-    ],
-  };
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  const patientData = {
-    name: 'John Doe',
-    avatar: 'https://example.com/patient-avatar.jpg',
-    upcomingAppointments: [
-      {
-        date: '2023-04-15',
-        doctor: 'Dr. Jane Smith',
-        reason: 'Annual Check-up',
-      },
-      {
-        date: '2023-05-01',
-        doctor: 'Dr. Michael Johnson',
-        reason: 'Follow-up appointment',
-      },
-    ],
-    prescriptions: [
-      {
-        name: 'Lisinopril',
-        dosage: '10mg once daily',
-        instructions: 'Take with food',
-      },
-      {
-        name: 'Metformin',
-        dosage: '500mg twice daily',
-        instructions: 'Take with meals',
-      },
-    ],
-    medicalRecords: [
-      {
-        date: '2023-03-01',
-        description: 'Annual physical exam',
-        doctor: 'Dr. Jane Smith',
-      },
-      {
-        date: '2023-02-15',
-        description: 'Follow-up visit for high blood pressure',
-        doctor: 'Dr. Michael Johnson',
-      },
-    ],
-    primaryCarePhysician: {
-      name: 'Dr. Jane Smith',
-      specialty: 'Family Medicine',
-      phone: '+1 555-555-5555',
-      email: 'jane.smith@hospital.com',
-    },
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 1000);
 
+    return () => clearInterval(interval);
+  }, []);
+
+  const formattedDate = currentDate.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  interface DashboardCardProps {
+    title: string;
+    value: number;
+    viewAllLink: string;
+    color: string; // Adding a color prop
+  }
+
+  
+const DashboardCard: React.FC<DashboardCardProps> = ({
+    title,
+    value,
+    viewAllLink,
+    color, // Accessing the color prop
+  }) => {
+    return (
+      <div className="bg-white rounded-lg border p-[17px] flex flex-col items-center">
+        <h3 className="text-md  mb-4">{title}</h3>
+        <div className="flex items-center justify-center mb-4">
+          <div
+            style={{ backgroundColor: color }} // Setting background color dynamically
+            className="rounded-full h-16 w-16 flex items-center justify-center text-white"
+          >
+            <span className="text-xl font-bold">{value}</span>
+          </div>
+        </div>
+        <a href={viewAllLink} className="text-gray-500 text-sm hover:text-gray-700 font-semibold hover:underline">
+          View All
+        </a>
+      </div>
+    );
+  };
   return (
     <>
-      <PatientProfiler patient={patientUser}/>
+      <div className="mb-5 flex justify-between">
+        <p className="font-bold">Goodmorning, Hardik!</p>
+        <p className="font-bold">{formattedDate}</p>
+      </div>
+      <div className="flex gap-5">
+        <PatientCalendar />
+        <div className="flex flex-col gap-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <DashboardCard
+              title="Medication"
+              value={5}
+              viewAllLink="/patient/medications"
+              color="#91BF77" // Assigning hexadecimal color value
+            />
+            <DashboardCard
+              title="Appointments"
+              value={3}
+              viewAllLink="/patient/appointmenthistory"
+              color="#F6AD55" // Assigning a different hexadecimal color value
+            />
+            <DashboardCard
+              title="Lab Results"
+              value={2}
+              viewAllLink="/patient/labtests"
+              color="#4299E1" // Assigning another hexadecimal color value
+            />
+          </div>
+          <LatestAppointment />
+          <LatestTestResults />
+        </div>
+      </div>
     </>
   );
 };

@@ -124,17 +124,34 @@ const Calendar: React.FC = () => {
       {selectedDate && (
         <div className="mt-4">
           <hr className="mb-4" />
-          <div className="text-lg font-bold mb-2">Your appointments</div>
-          {appointments[selectedDate.toISOString().split("T")[0]]?.map(
-            (appointment, index) => (
-              <div key={index} className="bg-blue-100 p-2 rounded mb-2">
-                <div>{appointment.title}</div>
-                <div className="text-sm text-gray-500">{appointment.time}</div>
-                <div className="text-sm text-gray-500">Dr. {appointment.doctor}</div>
-              </div>
-            ),
-          ) || <div>No appointments for this date.</div>}
-          
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-lg font-bold">
+              Your appointments on{" "}
+              {selectedDate.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
+            <div className="bg-[#91BF77] text-white py-1 px-3 rounded-full font-bold">
+              {appointments[selectedDate.toISOString().slice(0, 10)]?.length || 0}
+            </div>
+          </div>
+          <div>
+            {appointments[selectedDate.toISOString().slice(0, 10)]?.map(
+              (appointment, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg shadow-md p-4 mb-4"
+                >
+                  <div className="text-lg font-bold">{appointment.title}</div>
+                  <div className="text-sm text-gray-500">
+                    {appointment.time} - {appointment.doctor}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
         </div>
       )}
     </div>

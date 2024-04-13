@@ -1,65 +1,113 @@
-import React from "react";
-import { FaUserCircle, FaEnvelope, FaCalendarPlus  } from "react-icons/fa";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // For API calls
 
-interface DoctorCardProps {
+interface Doctor {
+  _id?: string; 
   name: string;
-  specialty: string;
-  avatar: string;
+  expertise: string;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ name, specialty, avatar }) => {
+const DoctorList = () => {
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expertise, setExpertise] = useState<string>(''); // To store selected expertise
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get('/getdoctorsbyexpertise', {
+          params: { expertise }, // Send expertise as a query parameter
+        });
+
+        if (response.status === 200) {
+          setDoctors(response.data);
+        } else {
+          throw new Error('Unexpected API response');
+        }
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (expertise) {
+      fetchDoctors(); // Fetch doctors only if expertise is selected
+    }
+  }, [expertise]); // Re-fetch on expertise change
+
+  const handleExpertiseChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setExpertise(event.target.value);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden border">
-      <div className="relative">
-        <img src={avatar} alt={`${name}'s avatar`} className="w-full h-48 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-        <div className="absolute bottom-0 p-4">
-          <h3 className="text-lg font-bold text-white">{name}</h3>
-          <p className="text-gray-300">{specialty}</p>
+    <div className="flex flex-col">
+      <div className="flex items-center mb-4">
+        <label htmlFor="expertise" className="mr-2 text-gray-700">
+          Filter by Expertise:
+        </label>
+        <select
+          id="expertise"
+          value={expertise}
+          onChange={handleExpertiseChange}
+          className="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All</option>
+          {/* Add options dynamically based on your backend data structure or a separate API call */}
+          {/* <option value="Cardiology">Cardiology</option> */}
+          {/* <option value="Dermatology">Dermatology</option>  */}
+        </select>
+      </div>
+
+      {isLoading ? (
+        <p className="text-center">Loading doctors...</p>
+      ) : error ? (
+        <p className="text-red-500 text-center">{error}</p>
+      ) : doctors.length > 0 ? (
+        <div className="overflow-x-auto rounded-md shadow-md">
+          <table className="w-full min-w-full leading-normal">
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  Name
+                </th>
+                <th
+                  scope="col"
+                  className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  Expertise
+                </th>
+                {/* Add table headers for other doctor details if needed */}
+              </tr>
+            </thead>
+            <tbody>
+              {doctors.map((doctor) => (
+                <tr key={doctor._id || doctor.name} className="hover:bg-gray-100">
+                  <td className="px-5 py-5 border-b border-gray-200 text-sm">
+                    {doctor.name}
+                  </td>
+                  <td className="px-5 py-5 border-b border-gray-200 text-sm">
+                    {doctor.expertise}
+                  </td>
+                  {/* Add table cells for other doctor details if needed */}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div className="p-4 flex justify-between mx-4">
-        <button className="text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white  py-2 px-4 rounded-full flex items-center">
-          <FaUserCircle className="mr-2" />
-          <span className="hidden sm:inline">Profile</span>
-        </button>
-        <button className="text-amber-500 border border-amber-500  hover:bg-amber-500 hover:text-white  py-2 px-4 rounded-full flex items-center">
-          <FaEnvelope className="mr-2" />
-          <span className="hidden sm:inline">Email</span>
-        </button>
-      </div>
-      <div className="flex justify-center mb-4">
-        <button className="bg-[#91BF77] hover:bg-[#7da466] text-white  py-2 px-4 rounded-full flex items-center">
-          <FaCalendarPlus  className="mr-2" />
-          <span className="hidden sm:inline">Book Now</span>
-        </button>
-      </div>
+      ) : (
+        <p className="text-center">No doctors found with the selected expertise.</p>
+      )}
     </div>
   );
-};
+}
 
-// Example usage
-const doctorData = [
-  {
-    name: "Dr. Kathryn Murphy",
-    specialty: "Urologist",
-    avatar: "",
-  },
-];
-
-const App = () => {
-  return (
-    <div className="flex justify-center gap-8 p-8">
-      {doctorData.map((doctor, index) => (
-        <DoctorCard
-          key={index}
-          name={doctor.name}
-          specialty={doctor.specialty}
-          avatar="\src\assets\docpfp.jpg"
-        />
-      ))}
-    </div>
-  );
-};
-
-export default App;
+export default DoctorList;

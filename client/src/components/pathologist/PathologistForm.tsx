@@ -7,7 +7,6 @@ const PathologistForm = () => {
   const [fullName, setFullName] = useState("");
   const [emailAddress, setEmailAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [expertise, setExpertise] = useState("");
   const [degree, setDegree] = useState("");
   const [school, setSchool] = useState("");
   const [nmcNumber, setNmcNumber] = useState("");
@@ -36,7 +35,6 @@ const PathologistForm = () => {
           fullName,
           email: emailAddress,
           phoneNumber,
-          expertise,
           degree,
           school,
           nmcNumber,
@@ -113,21 +111,6 @@ const PathologistForm = () => {
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-        </div>
-
-        {/* Expertise */}
-        <div className="mb-4">
-          <label htmlFor="expertise" className="block text-sm font-medium text-gray-600">
-            Expertise
-          </label>
-          <input
-            type="text"
-            name="expertise"
-            id="expertise"
-            className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
-            value={expertise}
-            onChange={(e) => setExpertise(e.target.value)}
           />
         </div>
 

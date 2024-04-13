@@ -11,6 +11,7 @@ interface Department {
 const PatientAppointments = () => {
   const navigate = useNavigate();
   const [departments, setDepartments] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     fetchDepartments();
@@ -33,7 +34,21 @@ const PatientAppointments = () => {
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Perform search functionality
+    // No need to filter departments immediately on form submit
+    // The list should be filtered as the user types
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    // Filter departments based on the search query
+    const filteredDepartments = departments.filter((department) =>
+      department.toLowerCase().includes(event.target.value.toLowerCase())
+    );
+    setDepartments(filteredDepartments);
+    // If search query is empty, fetch all departments again
+    if (event.target.value === "") {
+      fetchDepartments();
+    }
   };
 
   const navigator = (departmentName: string) => {
@@ -42,7 +57,6 @@ const PatientAppointments = () => {
 
   return (
     <div className="container">
-      <ViewDoctorsCard />
       <form onSubmit={handleSearch} className="relative mb-4 mt-0 flex items-center">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <FaSearch className="w-4 h-4 text-gray-400" />
@@ -51,15 +65,11 @@ const PatientAppointments = () => {
           type="search"
           id="default-search"
           className="block w-full py-3 pl-10 text-sm border-gray-300 rounded-full bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Search Doctors"
+          placeholder="Search Departments"
+          value={searchQuery}
+          onChange={handleInputChange}
           required
         />
-        <button
-          type="submit"
-          className="ml-4 bg-[#91BF77] hover:bg-[#7da466] focus:ring-4 focus:outline-none font-medium rounded-full text-sm px-4 py-2 text-white transition-colors duration-300"
-        >
-          Search
-        </button>
       </form>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {departments.map((department, index) => (

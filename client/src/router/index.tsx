@@ -44,7 +44,39 @@ import PathologistSettings from "@/pages/pathologistPages/PathologistSettings";
 import FirstLogin from "@/pages/login/FirstLogin";
 import Tests from "@/pages/adminPages/pathology/Tests";
 import TestDetails from "@/pages/adminPages/pathology/TestDetails";
+import DoctorList from "@/pages/patientPages/AppointmentDoctors";
+
+import PatientProfiler from "@/components/patient/Profile/PatientProfile";
+import Medications from "@/components/patient/Dashboard/Info/Medications";
+import LabTests from "@/components/patient/Dashboard/Info/LabTests";
+import Appointments from "@/components/patient/Dashboard/Info/Appointments";
+import Dashboard from "@/components/patient/Dashboard/Info/Dashboard";
+import AppointmentBooking from "@/components/patient/Appointments/AppointmentBooking";
+import LabTestsPage from "@/pages/adminPages/LabTestsPage";
 const AppRouter = () => {
+  const patientUser = {
+    name: "John Doe",
+    avatar: "https://example.com/patient-avatar.jpg",
+    bio: "Looking for quality healthcare services.",
+    email: "john.doe@example.com",
+    phone: "+1 555-555-5555",
+    address: "123 Main Street, Anytown USA",
+    medicalHistory: "John has a history of high blood pressure and diabetes.",
+    blood: "A+",
+    ill: "Diabetes",
+    appointments: [
+      {
+        date: "2023-04-15",
+        doctor: "Dr. Jane Smith",
+        reason: "Annual Check-up",
+      },
+      {
+        date: "2023-05-01",
+        doctor: "Dr. Michael Johnson",
+        reason: "Follow-up appointment",
+      },
+    ],
+  };
   return (
     <Router>
       <Routes>
@@ -59,6 +91,7 @@ const AppRouter = () => {
             <Route path="/admin/patients" element={<PatientsPage />} />
             <Route path="/admin/wards" element={<WardsPage />} />
             <Route path="/admin/revenue" element={<RevenuePage />} />
+            <Route path="/admin/labtests" element={<LabTestsPage />} />
           </Route>
         </Route>
         <Route path="/">
@@ -77,18 +110,28 @@ const AppRouter = () => {
             <Route path="/patient" element={<PatientDashboard />} />
             <Route path="/patient/doctors" element={<PatientDoctors />} />
             <Route path="/patient/appointments" element={<PatientAppointments />} />
-            <Route path="/patient/adoctors" element={<AppointmentDoctors />} />
-            <Route path="/patient/profile" element={<PatientProfile />} />
+            <Route path="/patient/adoctors" element={<DoctorList />} />
+            <Route
+              path="/patient/profile"
+              element={<PatientProfiler patient={patientUser} />}
+            />
             <Route path="/patient/chats" element={<ChatInterface />} />
             <Route path="/patient/pathology" element={<PathologyPage />} />
             <Route path="/patient/packages" element={<PatientHealth />} />
             <Route path="/patient/appointmentdetails" element={<AppointmentDetails />} />
+            <Route path="/patient/medications" element={<Medications />} />
+            <Route path="/patient/labtests" element={<LabTests />} />
+            <Route path="/patient/appointmenthistory" element={<Appointments />} />
+            <Route path="/patient/test" element={<AppointmentBooking />} />
           </Route>
         </Route>
         <Route path="/">
           <Route element={<PathologistLayout />}>
             <Route path="/pathologist" element={<PathologistDashboard />} />
-            <Route path="/pathologist/appointments" element={<PathologistAppointments />} />
+            <Route
+              path="/pathologist/appointments"
+              element={<PathologistAppointments />}
+            />
             <Route path="/pathologist/patients" element={<PathologistsPatients />} />
             <Route path="/pathologist/pathology" element={<PathologistTests />} />
             <Route path="/pathologist/settings" element={<PathologistSettings />} />
@@ -107,7 +150,6 @@ const AppRouter = () => {
         <Route path="/doctor" element={<DoctorLayout />} />
 
         <Route path="/staff/reset" element={<FirstLogin />} />
-
       </Routes>
     </Router>
   );

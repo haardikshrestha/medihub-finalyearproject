@@ -7,9 +7,10 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://jsonplaceholder.typicode.com",
+  baseUrl: "http://localhost:5173",
   prepareHeaders: (headers) => {
     // if you need to add global headers, do it here
+    const token = localStorage.getItem("token");
     return headers;
   },
 });

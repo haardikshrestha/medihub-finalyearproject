@@ -111,8 +111,6 @@ const DoctorDashboard = () => {
           </div>
 
           <div className=" mt-4 flex gap-4">
-            {/* gender div */}
-            <Gender />
             <div className="ml-[5px] flex-1">
               <AppointmentCard />
             </div>
