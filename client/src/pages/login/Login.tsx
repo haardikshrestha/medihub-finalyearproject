@@ -50,7 +50,7 @@ const Login = () => {
 
       const { token, role } = response.data;
       localStorage.setItem("token", token);
-      console.log("hey");
+      console.log(token);
 
       if (role === "admin" || role === "user" || role === "doctor" || role == "pathologist") {
         const successMessage = role === "admin" ? "Admin" : "User";
@@ -66,9 +66,10 @@ const Login = () => {
           navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
         } else if (role === "doctor") {
           if (verified.data.verified) {
+            console.log("hello doc")
             navigate("/doctor?email=" + email);
           } else {
-            navigate(`/reset?email=${email}`);
+            navigate(`/staff/reset?email=${email}`);
           }
         } else if (role === "pathologist") {
           console.log("entered")
@@ -77,7 +78,7 @@ const Login = () => {
             navigate("/pathologist?email=" + email);
           } else {
             console.log("no")
-            navigate(`/reset?email=${email}`);
+            navigate(`/staff/reset?email=${email}`);
           }
         }
 

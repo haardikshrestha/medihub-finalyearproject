@@ -1,9 +1,11 @@
+import SampleCollectionTable from "@/components/pathologist/appointments/PathologyAppointments";
+
+
+
 const PathologistAppointments = () => {
     return(
         <>
-        <div>
-            Patho APp
-        </div>
+        <SampleCollectionTable/>
         </>
     )
 }

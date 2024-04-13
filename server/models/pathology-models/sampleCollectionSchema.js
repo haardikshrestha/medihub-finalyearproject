@@ -11,7 +11,7 @@ const sampleCollectionSchema = new Schema({
         required: true
     },
     appointmentDateTime: {
-        type: Date,
+        type: String,
         required: true
     },
     testType: {

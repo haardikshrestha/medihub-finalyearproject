@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import CreatePathologist from "./CreatePathologist";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   _id: string;
@@ -11,6 +11,7 @@ interface User {
 
 const PathologistTable = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -25,7 +26,9 @@ const PathologistTable = () => {
     fetchUsers();
   }, []);
 
-
+  const handleadd = () =>{
+    navigate("/inp")
+  }
   
 
   return (
@@ -36,7 +39,9 @@ const PathologistTable = () => {
           <span className="text-gray-500 mr-2">Total Pathologists:</span>
           <span className="font-bold">{users.length}</span>
         </div>
-        <CreatePathologist/>
+        <button className="bg-[#91BF77] text-white px-4 py-2 rounded-md hover:bg-[#7da466]" onClick={handleadd}>
+          Add Pathologist
+        </button>
       </div>
 
       <div className="overflow-x-auto">

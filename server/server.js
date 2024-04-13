@@ -1,19 +1,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const pdf = require("html-pdf");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/userSchema");
-const Doctors = require("./models/doctorschema");
-const Patient = require("./models/patientSchema");
-const Ward = require("./models/wardSchema");
+const Doctors = require("./models/doctor-models/doctorschema");
+const Patient = require("./models/patient-models/patientSchema");
+const Ward = require("./models/hospital-models/wardSchema");
 const Pathologist = require("./models/pathology-models/pathologistSchema");
-const Department = require("./models/departmentSchema");
-const Appointment = require("./models/appointmentsSchema");
-const Surgery = require("./models/surgerySchema");
-const PasswordResetToken = require("./models/resettoken");
-const LabTest = require("./models/labtestSchema");
+const Department = require("./models/hospital-models/departmentSchema");
+const Appointment = require("./models/patient-models/appointmentsSchema");
+const Surgery = require("./models/doctor-models/surgerySchema");
+const PasswordResetToken = require("./models/patient-models/resettoken");
+const LabTest = require("./models/pathology-models/labtestSchema");
 const TestResult = require("./models/pathology-models/testResultSchema");
 const SampleCollection = require("./models/pathology-models/sampleCollectionSchema")
 
@@ -25,8 +26,8 @@ const dotenv = require("dotenv");
 const multer = require("multer");
 const { isErrored } = require("nodemailer/lib/xoauth2");
 const { appendFile } = require("fs/promises");
-const upload = multer({ dest: "uploads/" });
 dotenv.config();
+const AuthGuard = require("./middleware");
 
 const dbURI = process.env.MONGODB_URI;
 const SECRET_KEY = process.env.JWT_SECRET;
@@ -78,6 +79,8 @@ const checkAdmin = async () => {
 
 checkAdmin();
 
+
+
 {
   /* Send email */
 }
@@ -108,6 +111,31 @@ async function comparePassword(inputPassword, storedHash) {
   const isPasswordValid = await bcrypt.compare(inputPassword, storedHash);
   return isPasswordValid;
 }
+
+app.get(
+  "/getUsers1",
+  AuthGuard(["user", "doctor", "pathologist"]),
+  async (req, res) => {
+    try {
+      const userEmail = req.user.email;
+
+      const user = await User.findOne({ email: userEmail }).select("-password");
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({
+        message: "User found",
+        user,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Error getting user" });
+    }
+  }
+);
+
 
 //SIGN UP - POST
 app.post("/postregister", async (req, res) => {
@@ -224,10 +252,8 @@ app.get("/pathologists", async (req, res) => {
 //LOGIN - POST
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -243,6 +269,7 @@ app.post("/login", async (req, res) => {
     });
 
     res.json({ token, role: user.role });
+    console.log(token);
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json(error);
@@ -428,6 +455,7 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
+
 app.post("/doctor/resetpassword", async (req, res) => {
   try {
     const { email, newPassword } = req.body;
@@ -549,6 +577,21 @@ app.get("/getdepartments", async (req, res) => {
     res.status(500).json({ error: "Internal Server departments" });
   }
 });
+
+//get department names
+app.get("/getdepartmentnames", async (req, res) => {
+  try {
+    const departments = await Department.find();
+
+    const departmentNames = departments.map(department => department.depName);
+
+    res.json(departmentNames);
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    res.status(500).json(error);
+  }
+});
+
 
 //check if patient exists
 app.post("/checkpatient", async (req, res) => {
@@ -929,21 +972,6 @@ app.post("/patients/addInfo", async (req, res) => {
 
 
 
-
-app.post("/labtests", async (req, res) => {
-  try {
-    const newLabTest = new LabTest({
-      testName: req.body.testName,
-      testDetails: req.body.testDetails,
-    });
-    const savedLabTest = await newLabTest.save();
-
-    res.status(201).json(savedLabTest);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
 app.post("/add/appointments", async (req, res) => {
   try {
     const newAppointment = new Appointment(req.body);
@@ -1140,19 +1168,76 @@ MediHub Team`,
       .status(200)
       .json({ message: "Doctor and user registered successfully" });
   } catch (error) {
-    console.error("Error registering doctor and user:", error);
+    console.error(error);
+    res.status(500).json(error);
+  }
+});
+
+//according to expertise:
+app.get('/getdoctorsbyexpertise', async (req, res) => {
+  const { expertise } = req.body;
+
+  try {
+    // Find doctors with the specified expertise
+    const doctors = await Doctors.find({ expertise });
+
+    if (!doctors || doctors.length === 0) {
+      return res.status(404).json({ message: 'No doctors found with the specified expertise.' });
+    }
+
+    res.status(200).json(doctors);
+  } catch (error) {
+    console.error('Error fetching doctors by expertise:', error);
     res.status(500).json(error);
   }
 });
 
 // ---------------------------------- PATHOLOGISTS -------------------------------------------------------------
+//reset
+app.post("/staff/updatepassword", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Validate the new password
+    const passwordRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        error:
+          "Password should be 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      });
+    }
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Update the user's password
+    user.password = await hashPassword(newPassword);
+    
+    // Set verified to true
+    user.verified = true;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully!" });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res
+      .status(500)
+      .json({ error: "Error updating password. Please try again." });
+  }
+});
+
 app.post("/api/newpathologist", async (req, res) => {
   try {
     const {
       fullName,
       email,
       phoneNumber,
-      expertise,
       degree,
       school,
       nmcNumber,
@@ -1165,7 +1250,6 @@ app.post("/api/newpathologist", async (req, res) => {
       fullname: fullName,
       email: email,
       number: phoneNumber,
-      expertise: expertise,
       degree: degree,
       school: school,
       nmc: nmcNumber,
@@ -1242,6 +1326,7 @@ app.get('/testresult/get/all', async (req, res) => {
       res.status(500).json(error);
   }
 });
+
 
 // get a specific patient's test results
 app.get('/testresult/get/patient', async (req, res) => {
@@ -1472,3 +1557,191 @@ app.get('/samplecollections/get/onedate', async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+app.post('/generate-pdf', (req, res) => {
+  const { patientInfo, diagnosis } = req.body;
+
+  const html = `
+      <div>
+          <h1>Patient Information</h1>
+          <p>Name: ${patientInfo.name}</p>
+          <p>Age: ${patientInfo.age}</p>
+          <h2>Diagnosis</h2>
+          <p>${diagnosis}</p>
+      </div>
+  `;
+
+  pdf.create(html).toBuffer((err, buffer) => {
+      if (err) {
+          res.status(500).send('Error generating PDF');
+          return;
+      }
+      res.contentType('application/pdf');
+      res.send(buffer);
+  });
+});
+
+app.post('/generate-report-template', (req, res) => {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Medical Report Template</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+        }
+        h1, h2 {
+          color: #333;
+        }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        th, td {
+          padding: 8px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
+        th {
+          background-color: #f2f2f2;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Medical Report</h1>
+      <h2>Patient Information</h2>
+      <p>Name: <span id="patientName">${req.body.patientName}</span></p>
+      <p>Age: <span id="patientAge">${req.body.patientAge}</span></p>
+
+      <h2>Test Results</h2>
+      <table>
+        <tr>
+          <th>Test Name</th>
+          <th>Value</th>
+          <th>Reference Range</th>
+        </tr>
+        <tr>
+          <td>Hemoglobin</td>
+          <td id="hemoglobin">${req.body.hemoglobin}</td>
+          <td>12 - 15 g/dL</td>
+        </tr>
+      </table>
+
+      <h2>Diagnosis</h2>
+      <p id="diagnosis">${req.body.diagnosis}</p>
+
+      <p>Signature: <span id="signature">${req.body.signature}</span></p>
+    </body>
+    </html>
+  `;
+
+  pdf.create(html).toBuffer((err, buffer) => {
+    if (err) {
+      res.status(500).send('Error generating PDF');
+      return;
+    }
+
+    const mailOptions = {
+      from: 'app.medihub@gmail.com', // Your Gmail email address
+      to: 'haardikshrestha@gmail.com',
+      subject: 'Medical Report',
+      html: 'Please find attached the medical report.',
+      attachments: [
+        {
+          filename: 'medical_report.pdf',
+          content: buffer
+        }
+      ]
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        res.status(500).send('Error sending email');
+      } else {
+        console.log('Email sent:', info.response);
+        res.contentType('application/pdf');
+        res.send(buffer);
+      }
+    });
+  });
+});
+
+app.post("/api/post/appointments", async (req, res) => {
+  try {
+    const {
+      apptID,
+      apptDate,
+      apptPatient,
+      apptTime,
+      apptDoctor,
+      apptDisease,
+      paymentStatus,
+      transactionID
+    } = req.body;
+
+    const newAppointment = new Appointment({
+      apptID,
+      apptDate,
+      apptPatient,
+      apptTime,
+      apptDoctor,
+      apptDisease,
+      paymentStatus,
+      transactionID
+    });
+
+    await newAppointment.save();
+
+    res.status(201).json({ message: "Appointment created successfully" });
+  } catch (error) {
+    console.error("Error creating appointment:", error);
+    res.status(500).json({ error: "Failed to create appointment" });
+  }
+});
+
+
+
+app.post('/post/labtests', async (req, res) => {
+  try {
+    const { testName, testPrice, testFields } = req.body;
+    console.log("heloo")
+
+    // Create a new LabTest instance
+    const newLabTest = new LabTest({
+      testName,
+      testPrice,
+      testFields,
+    });
+
+    console.log(testFields)
+    await newLabTest.save();
+
+    res.status(201).json({ message: 'Lab test created successfully' });
+  } catch (error) {
+    console.error('Error creating lab test:', error);
+    res.status(500).json(error);
+  }
+});
+
+app.get("/get/labtests", async (req, res) => {
+  try {
+    const labTests = await LabTest.find(); // Retrieve all lab tests from the database
+    res.json(labTests); // Send the lab tests as JSON response
+  } catch (error) {
+    res.status(500).json({ message: error.message }); // If an error occurs, send 500 status code with error message
+  }
+})
+
+app.get("/get/labtestsNo", async (req, res) => {
+  try {
+    const labTests = await LabTest.countDocuments(); // Retrieve all lab tests from the database
+    res.json(labTests); // Send the lab tests as JSON response
+  } catch (error) {
+    res.status(500).json({ message: error.message }); // If an error occurs, send 500 status code with error message
+  }
+})

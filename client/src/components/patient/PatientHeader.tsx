@@ -13,16 +13,18 @@ const PatientHeader = () => {
           <TbMoon className="text-black mx-2 text-xl" />
           <TbBell className="text-black mx-2 text-xl" />
           <div className="border-r border-gray-400 h-6 mx-2"></div>
-          <div className="flex items-center ml-2 mr-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-              <img
-                src="/src/assets/pfp.png"
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+          <a href="/patient/profile">
+            <div className="flex items-center ml-2 mr-2">
+              <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                <img
+                  src="/src/assets/pfp.png"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="text-black">John Doe</p>
             </div>
-            <p className="text-black ">John Doe</p>
-          </div>
+          </a>
         </div>
       </div>
     </>
