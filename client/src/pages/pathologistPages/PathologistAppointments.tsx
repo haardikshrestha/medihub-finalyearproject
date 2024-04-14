@@ -1,4 +1,4 @@
-import SampleCollectionTable from "@/components/pathologist/appointments/PathologyAppointments";
+import SampleCollectionTable from "@/components/pathologist/appointments/SampleCollectionTable";
 
 
 

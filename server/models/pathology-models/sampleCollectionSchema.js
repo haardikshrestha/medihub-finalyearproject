@@ -10,11 +10,11 @@ const sampleCollectionSchema = new Schema({
         type: String,
         required: true
     },
-    appointmentDateTime: {
+    appointmentDate: {
         type: String,
         required: true
     },
-    testType: {
+    testName: {
         type: String,
         required: true
     },
@@ -23,9 +23,9 @@ const sampleCollectionSchema = new Schema({
         enum: ['Sample Pending', 'Test Pending', 'Test Completed'],
         default: 'Sample Pending'
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    testID: {
+        type: String,
+        required: true
     }
 });
 

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   otp: { type: String },
   otpExpiresAt: { type: Date },
   role: {type: String,
-    enum: ["user", "doctor", "pathologist"],
+    type: String,
     default: 'user'},
 });
 

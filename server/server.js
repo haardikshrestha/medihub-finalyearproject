@@ -16,7 +16,8 @@ const Surgery = require("./models/doctor-models/surgerySchema");
 const PasswordResetToken = require("./models/patient-models/resettoken");
 const LabTest = require("./models/pathology-models/labtestSchema");
 const TestResult = require("./models/pathology-models/testResultSchema");
-const SampleCollection = require("./models/pathology-models/sampleCollectionSchema")
+const SampleCollection = require("./models/pathology-models/sampleCollectionSchema");
+const InPatient = require("./models/patient-models/inPatientSchema");
 
 const app = express();
 const crypto = require("crypto");
@@ -28,7 +29,8 @@ const { isErrored } = require("nodemailer/lib/xoauth2");
 const { appendFile } = require("fs/promises");
 dotenv.config();
 const AuthGuard = require("./middleware");
-
+const fs = require('fs');
+const path = require('path');
 const dbURI = process.env.MONGODB_URI;
 const SECRET_KEY = process.env.JWT_SECRET;
 const saltRounds = 10;
@@ -1706,12 +1708,12 @@ app.post("/api/post/appointments", async (req, res) => {
 
 
 
+
+
 app.post('/post/labtests', async (req, res) => {
   try {
     const { testName, testPrice, testFields } = req.body;
     console.log("heloo")
-
-    // Create a new LabTest instance
     const newLabTest = new LabTest({
       testName,
       testPrice,
@@ -1737,6 +1739,28 @@ app.get("/get/labtests", async (req, res) => {
   }
 })
 
+app.get('/singlelabtest', async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: 'id is required in the request body' });
+  }
+
+  try {
+    const labTest = await LabTest.findById(id);
+
+    if (!labTest) {
+      return res.status(404).json({ error: 'LabTest not found' });
+    }
+
+    // If found, return the LabTest document
+    res.json(labTest);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.get("/get/labtestsNo", async (req, res) => {
   try {
     const labTests = await LabTest.countDocuments(); // Retrieve all lab tests from the database
@@ -1745,3 +1769,232 @@ app.get("/get/labtestsNo", async (req, res) => {
     res.status(500).json({ message: error.message }); // If an error occurs, send 500 status code with error message
   }
 })
+
+app.post('/scheduleSample', async (req, res) => {
+  try {
+    const newSample = new SampleCollection(req.body);
+
+    // Save the new sample to the database
+    await newSample.save();
+
+    res.status(201).json({ message: 'Sample saved successfully', sample: newSample });
+  } catch (error) {
+    console.error('Error saving sample:', error);
+    res.status(500).json(error);
+  }
+});
+
+app.post('/samplecollections/:id/updateStatus', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const updatedCollection = await SampleCollection.findByIdAndUpdate(id, { status }, { new: true });
+
+    if (!updatedCollection) {
+      return res.status(404).json({ message: 'Sample collection not found' });
+    }
+
+    res.status(200).json(updatedCollection);
+  } catch (error) {
+    console.error('Error updating sample collection status:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/samplecollections/:id/updateStatus', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const updatedCollection = await SampleCollection.findByIdAndUpdate(id, { status }, { new: true });
+
+    if (!updatedCollection) {
+      return res.status(404).json({ message: 'Sample collection not found' });
+    }
+
+    res.status(200).json(updatedCollection);
+  } catch (error) {
+    console.error('Error updating sample collection status:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+
+// Middleware for parsing application/json
+app.use(bodyParser.json());
+
+// Middleware for parsing application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Middleware for handling multipart/form-data (file uploads)
+const upload = multer({ dest: 'uploads/' });
+
+// Your routes
+
+// GET route to fetch lab test by ID
+app.get('/reportlabtests/:id', async (req, res) => {
+  const testId = req.params.id; 
+  console.log(testId);
+  try {
+    const labTest = await LabTest.findById(testId);
+    console.log(labTest.testFields);
+    res.json(labTest);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+app.post('/testresults', upload.single('testResultsPdf'), (req, res) => {
+  
+  const testResult = new TestResult({
+    patientName: req.body.patientName,
+    doctorName: req.body.doctorName,
+    testResultsPdf: req.file ? req.file.path : null,
+    date: req.body.date,
+    testType: req.body.testType,
+    comments: req.body.comments
+  });
+  testResult.save((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to save test result' });
+    }
+    res.json({ message: 'Test result saved successfully' });
+  });
+})
+
+app.post("/new/inpatients", async (req, res) => {
+  const {
+    email,
+    firstName,
+    lastName,
+    gender,
+    dateofbirth,
+    chronicillness,
+    address,
+    bloodgroup,
+    admitdate,
+    dischargedate,
+    ward,
+    status,
+    medications 
+  } = req.body;
+
+  try {
+    const newInPatient = new InPatient({
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+      admitdate,
+      dischargedate,
+      ward,
+      status,
+      medications 
+    });
+
+    await newInPatient.save();
+
+    res.status(201).json({ message: "Inpatient created successfully", data: newInPatient });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/get/inpatients", async (req, res) => {
+  try {
+    // Query the database to fetch all inpatients
+    const allInPatients = await InPatient.find();
+
+    // Send the response with the fetched inpatients
+    res.json(allInPatients);
+  } catch (error) {
+    // If an error occurs, send a failure response
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/get/one/inpatients/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const inPatient = await InPatient.findOne({ email });
+    if (!inPatient) {
+      return res.status(404).json({ message: 'Inpatient not found' });
+    }
+    res.json(inPatient);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/update/inpatients/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    await InPatient.findOneAndUpdate({ email }, { status: 'discharged' });
+    res.json({ message: 'Patient discharged successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Send discharge summary report as PDF file to patient's email
+app.post('/send/discharge-summary/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { dischargeSummary } = req.body;
+
+    // Generate HTML for discharge summary report
+    const htmlContent = `
+      <html>
+        <body>
+          <h1>Discharge Summary Report</h1>
+          <p>${dischargeSummary}</p>
+        </body>
+      </html>
+    `;
+
+    // Create PDF file
+    const pdfPath = path.join(__dirname, '..', 'discharge_summary.pdf');
+    pdf.create(htmlContent).toFile(pdfPath, (err, _) => {
+      if (err) throw err;
+      // Send PDF file as an attachment to patient's email
+      // Here you would use your email service provider to send the email
+      // For example, using Nodemailer
+      // You need to configure your email service provider and provide the necessary credentials
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
+        service: 'your_email_service_provider',
+        auth: {
+          user: 'your_email',
+          pass: 'your_password',
+        },
+      });
+      const mailOptions = {
+        from: 'your_email',
+        to: email,
+        subject: 'Discharge Summary Report',
+        text: 'Please find the discharge summary report attached.',
+        attachments: [{ path: pdfPath }],
+      };
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email:', error);
+          res.status(500).json({ error: 'Error sending email' });
+        } else {
+          console.log('Email sent:', info.response);
+          // Delete the generated PDF file
+          fs.unlinkSync(pdfPath);
+          res.json({ message: 'Discharge summary report sent successfully' });
+        }
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});

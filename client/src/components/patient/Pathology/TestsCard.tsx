@@ -66,7 +66,7 @@ const LabTestCard: React.FC = () => {
             </div>
             <div className="flex justify-center mb-4">
               <Link
-                to={`/testdetails?id=${test._id}`}
+                to={`/patient/testdetails?id=${test._id}`}
                 className="bg-[#91BF77]  hover:bg-[#7da466] text-white py-2 px-4 rounded-full flex items-center justify-center transition duration-300 w-[100px]"
               >
                 View

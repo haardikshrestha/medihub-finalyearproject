@@ -16,9 +16,9 @@ const LabTestCard: React.FC = () => {
 
     fetchLabTests(); // Initial fetch
 
-    const intervalId = setInterval(fetchLabTests, 30000); // Fetch every 2 minutes
+    const intervalId = setInterval(fetchLabTests, 1000); 
 
-    return () => clearInterval(intervalId); // Clean up interval on component unmount
+    return () => clearInterval(intervalId); 
   }, []);
 
   return (

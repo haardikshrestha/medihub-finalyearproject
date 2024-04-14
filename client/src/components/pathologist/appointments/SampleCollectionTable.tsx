@@ -5,10 +5,10 @@ interface SampleCollection {
   _id: string;
   patientName: string;
   doctorName: string;
-  appointmentDateTime: string;
-  testType: string;
+  appointmentDate: string;
+  testName: string;
   status: "Sample Pending" | "Test Pending" | "Test Completed";
-  createdAt: string;
+  testID: string;
 }
 
 const SampleCollectionTable = () => {
@@ -47,15 +47,22 @@ const SampleCollectionTable = () => {
     setFilter(newFilter);
   };
 
-  const handleStatusChange = (sampleCollectionId: string, newStatus: "Test Pending" | "Test Completed") => {
-    // Here, you would make an API call to update the status of the sample collection
-    // and then update the state with the new data
-    console.log(`Updating status of ${sampleCollectionId} to ${newStatus}`);
-  };
+  const handleStatusChange = async (sampleCollectionId: string, newStatus: "Test Pending" | "Test Completed") => {
+    try {
+      await axios.put(`http://localhost:5173/samplecollections/${sampleCollectionId}/updateStatus`, { status: newStatus });
 
-  const handleTestingPage = (sampleCollectionId: string) => {
-    // Here, you would navigate to the testing page for the specific sample collection
-    console.log(`Navigating to testing page for ${sampleCollectionId}`);
+      setSampleCollections(prevCollections =>
+        prevCollections.map(collection =>
+          collection._id === sampleCollectionId ? { ...collection, status: newStatus } : collection
+        )
+      );
+
+      if (newStatus === "Test Pending") {
+        window.location.replace("/createtest");
+      }
+    } catch (error) {
+      console.error(`Error updating status of ${sampleCollectionId} to ${newStatus}:`, error);
+    }
   };
 
   return (
@@ -107,12 +114,13 @@ const SampleCollectionTable = () => {
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+              <th className="py-4 px-6">Sample ID</th>
               <th className="py-4 px-6">Patient</th>
               <th className="py-4 px-6">Doctor</th>
               <th className="py-4 px-6">Date</th>
-              <th className="py-4 px-6">Type</th>
+              <th className="py-4 px-6">Test Name</th>
               <th className="py-4 px-6">Status</th>
-              <th className="py-4 px-6">Created At</th>
+              <th className="py-4 px-6">Test ID</th>
               <th className="py-4 px-6">Action</th>
             </tr>
           </thead>
@@ -122,12 +130,11 @@ const SampleCollectionTable = () => {
                 key={sampleCollection._id}
                 className="hover:bg-gray-100 border-b border-gray-200 text-sm"
               >
-                <td className="py-4 px-6 ">{sampleCollection.patientName}</td>
+                <td className="py-4 px-6">{sampleCollection._id}</td>
+                <td className="py-4 px-6">{sampleCollection.patientName}</td>
                 <td className="py-4 px-6">{sampleCollection.doctorName}</td>
-                <td className="py-4 px-6">
-                  {new Date(sampleCollection.appointmentDateTime).toLocaleDateString()}
-                </td>
-                <td className="py-4 px-6">{sampleCollection.testType}</td>
+                <td className="py-4 px-6">{sampleCollection.appointmentDate}</td>
+                <td className="py-4 px-6">{sampleCollection.testName}</td>
                 <td className="py-4 px-6 flex justify-center">
                   <span
                     className={`px-3 py-1 rounded-full text-white text-sm  ${
@@ -145,21 +152,19 @@ const SampleCollectionTable = () => {
                       : "Completed"}
                   </span>
                 </td>
-                <td className="py-4 px-6">
-                  {new Date(sampleCollection.createdAt).toLocaleDateString()}
-                </td>
+                <td className="py-4 px-6">{sampleCollection.testID}</td>
                 <td className="py-4 px-6 flex justify-center">
                   {sampleCollection.status === "Sample Pending" ? (
                     <button
                       className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
                       onClick={() => handleStatusChange(sampleCollection._id, "Test Pending")}
                     >
-                      Mark as Testing
+                      Test
                     </button>
                   ) : sampleCollection.status === "Test Pending" ? (
                     <button
                       className="bg-green-500 hover:bg-green-700 text-white  py-2 px-4 rounded-md transition-colors duration-300"
-                      onClick={() => handleTestingPage(sampleCollection._id)}
+                      onClick={() => window.location.replace("/createtest")}
                     >
                       Go to Testing
                     </button>
@@ -167,18 +172,18 @@ const SampleCollectionTable = () => {
                     <button
                       className="bg-gray-500 hover:bg-gray-700 text-white  py-2 px-4 rounded-md transition-colors duration-300"
                       onClick={() => alert("Test completed, sending results to patient")}
-                    >
+                      >
                       Send to Patient
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-export default SampleCollectionTable;
+                      </button>
+                      )}
+                      </td>
+                      </tr>
+                      ))}
+                      </tbody>
+                      </table>
+                      </div>
+                      </div>
+                      );
+                      };
+                      
+                      export default SampleCollectionTable;

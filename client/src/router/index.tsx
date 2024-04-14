@@ -43,7 +43,7 @@ import PathologistAppointments from "@/pages/pathologistPages/PathologistAppoint
 import PathologistSettings from "@/pages/pathologistPages/PathologistSettings";
 import FirstLogin from "@/pages/login/FirstLogin";
 import Tests from "@/pages/adminPages/pathology/Tests";
-import TestDetails from "@/pages/adminPages/pathology/TestDetails";
+import TestDetails from "@/components/patient/Pathology/TestsDetails";
 import DoctorList from "@/pages/patientPages/AppointmentDoctors";
 
 import PatientProfiler from "@/components/patient/Profile/PatientProfile";
@@ -53,6 +53,9 @@ import Appointments from "@/components/patient/Dashboard/Info/Appointments";
 import Dashboard from "@/components/patient/Dashboard/Info/Dashboard";
 import AppointmentBooking from "@/components/patient/Appointments/AppointmentBooking";
 import LabTestsPage from "@/pages/adminPages/LabTestsPage";
+import CreateTest from "@/components/pathologist/appointments/CreateReport";
+import InPatientDetails from "@/components/doctor/Patients/InPatientsDetails";
+import DischargePatient from "@/components/doctor/Patients/DischargePatient";
 const AppRouter = () => {
   const patientUser = {
     name: "John Doe",
@@ -99,6 +102,8 @@ const AppRouter = () => {
             <Route path="/doctor" element={<DoctorDashboard />} />
             <Route path="/doctor/patients" element={<DoctorPatients />} />
             <Route path="/doctor/patients/view" element={<PatientView />} />
+            <Route path="/doctor/inpatientdetails" element={<InPatientDetails />} />
+            <Route path="/doctor/dischargepatient" element={<DischargePatient />} />
             <Route path="/doctor/appointments" element={<DoctorAppointments />} />
             <Route path="/doctor/surgeries" element={<DoctorSurgeries />} />
             <Route path="/doctor/pathology" element={<DoctorPathology />} />
@@ -122,7 +127,7 @@ const AppRouter = () => {
             <Route path="/patient/medications" element={<Medications />} />
             <Route path="/patient/labtests" element={<LabTests />} />
             <Route path="/patient/appointmenthistory" element={<Appointments />} />
-            <Route path="/patient/test" element={<AppointmentBooking />} />
+            <Route path="/patient/testdetails" element={<TestDetails />} />
           </Route>
         </Route>
         <Route path="/">
@@ -135,6 +140,7 @@ const AppRouter = () => {
             <Route path="/pathologist/patients" element={<PathologistsPatients />} />
             <Route path="/pathologist/pathology" element={<PathologistTests />} />
             <Route path="/pathologist/settings" element={<PathologistSettings />} />
+            <Route path="/pathologist/createtest" element={<CreateTest />} />
           </Route>
         </Route>
 
