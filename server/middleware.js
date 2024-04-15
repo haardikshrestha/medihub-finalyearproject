@@ -4,6 +4,7 @@ require("dotenv").config();
 const AuthGuard = (role) => {
   return (req, res, next) => {
     const token = req.headers["authorization"];
+    console.log(token);
     if (!token) {
       return res.status(401).json({
         message: "No token found",
@@ -17,13 +18,8 @@ const AuthGuard = (role) => {
           message: "Invalid token",
         });
       }
+      console.log(user)
 
-      if (!user || !user.role) {
-        return res.status(401).json({
-          message: "Invalid user",
-        });
-      }
-    
       if (!role.includes(user.role)) {
         return res.status(401).json({
           message: "You are not authorized",

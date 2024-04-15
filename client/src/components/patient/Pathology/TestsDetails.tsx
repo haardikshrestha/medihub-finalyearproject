@@ -117,7 +117,7 @@ const TestDetails: React.FC = () => {
             />
             <button
               type="submit"
-              className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300"
+              className="w-full px-4 py-2 bg-[#91BF77] text-white rounded-md hover:bg-indigo-700 transition-colors duration-300"
             >
               Schedule
             </button>

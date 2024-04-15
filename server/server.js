@@ -120,8 +120,10 @@ app.get(
   async (req, res) => {
     try {
       const userEmail = req.user.email;
+      
 
       const user = await User.findOne({ email: userEmail }).select("-password");
+      console.log(user)
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -265,8 +267,9 @@ app.post("/login", async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const userPayload = {email: user.email, role: user.role, id:user._id}
+    console.log(userPayload)
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
@@ -1824,18 +1827,13 @@ app.put('/samplecollections/:id/updateStatus', async (req, res) => {
 
 
 
-// Middleware for parsing application/json
+
 app.use(bodyParser.json());
 
-// Middleware for parsing application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Middleware for handling multipart/form-data (file uploads)
 const upload = multer({ dest: 'uploads/' });
 
-// Your routes
-
-// GET route to fetch lab test by ID
 app.get('/reportlabtests/:id', async (req, res) => {
   const testId = req.params.id; 
   console.log(testId);
@@ -1901,6 +1899,21 @@ app.post("/new/inpatients", async (req, res) => {
 
     await newInPatient.save();
 
+    const mailOptions = {
+      from: 'app.medihub@gmail.com', 
+      to: email,
+      subject: 'Admission Notification',
+      text: `Dear ${firstName} ${lastName},\n\nYou have been admitted to the hospital.\n\nHere are your details:\nFirst Name: ${firstName}\nLast Name: ${lastName}\nGender: ${gender}\nDate of Birth: ${dateofbirth}\nChronic Illness: ${chronicillness}\nAddress: ${address}\nBlood Group: ${bloodgroup}\nAdmit Date: ${admitdate}\nWard: ${ward}\n\nThank you.`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+
     res.status(201).json({ message: "Inpatient created successfully", data: newInPatient });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -1943,38 +1956,47 @@ app.put('/update/inpatients/:email', async (req, res) => {
   }
 });
 
-// Send discharge summary report as PDF file to patient's email
 app.post('/send/discharge-summary/:email', async (req, res) => {
   try {
     const { email } = req.params;
     const { dischargeSummary } = req.body;
 
-    // Generate HTML for discharge summary report
     const htmlContent = `
-      <html>
-        <body>
-          <h1>Discharge Summary Report</h1>
-          <p>${dischargeSummary}</p>
-        </body>
-      </html>
-    `;
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discharge Summary Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto max-w-3xl py-8 px-4 bg-white rounded-lg shadow-md">
+      <div class="flex justify-between items-center mb-8">
+        <img src="https://th.bing.com/th/id/R.3ebf7b4f949143f8440dbb87f36c9056?rik=I7pMkoWTtcYadg&pid=ImgRaw&r=0" alt="Hospital Logo" class="h-12" />
+        <div class="text-right">
+          <h2 class="text-xl font-bold text-gray-800">MediHub Hospital</h2>
+          <p class="text-gray-600">Maru Bahi, Kathmandu</p>
+          <p class="text-gray-600">Phone: 42132435</p>
+        </div>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Discharge Summary Report</h1>
+      <p class="text-gray-700 leading-relaxed mb-4">${dischargeSummary}</p>
+      <div class="text-center text-gray-500 text-sm">
+        <p>&copy; MediHub Hospital. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
+`;
 
     // Create PDF file
     const pdfPath = path.join(__dirname, '..', 'discharge_summary.pdf');
     pdf.create(htmlContent).toFile(pdfPath, (err, _) => {
-      if (err) throw err;
-      // Send PDF file as an attachment to patient's email
-      // Here you would use your email service provider to send the email
-      // For example, using Nodemailer
-      // You need to configure your email service provider and provide the necessary credentials
-      const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransport({
-        service: 'your_email_service_provider',
-        auth: {
-          user: 'your_email',
-          pass: 'your_password',
-        },
-      });
+      console.log("created")
       const mailOptions = {
         from: 'your_email',
         to: email,

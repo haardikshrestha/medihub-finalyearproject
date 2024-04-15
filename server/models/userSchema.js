@@ -6,9 +6,11 @@ const userSchema = new mongoose.Schema({
   verified: { type: Boolean, default: false },
   otp: { type: String },
   otpExpiresAt: { type: Date },
-  role: {type: String,
+  role: {
     type: String,
-    default: 'user'},
+    enum: ["user", "doctor", "pathologist"],
+    default: "user",
+  },
 });
 
 const User = mongoose.model("User", userSchema);
