@@ -1,6 +1,5 @@
 import Card from "@/components/admin/Card";
 import { useState, useEffect } from "react";
-import Image from "@/components/admin/Image";
 
 const DashboardPage = () => {
   const [info, setInfo] = useState({
@@ -54,7 +53,6 @@ const DashboardPage = () => {
           imageUrl="src/assets/admin-images/ward.png"
         />
       </div>
-      <Image />
     </div>
   );
 };

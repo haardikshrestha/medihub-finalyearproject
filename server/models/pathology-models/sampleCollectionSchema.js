@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const sampleCollectionSchema = new Schema({
-    patientName: {
+    patientEmail: {
         type: String,
         required: true
     },

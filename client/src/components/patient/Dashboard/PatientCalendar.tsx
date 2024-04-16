@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import axios from "axios";
 
 interface Treatment {
   title: string;
@@ -9,13 +10,22 @@ interface Treatment {
 const PatientCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [schedule, setSchedule] = useState<Treatment[]>([]);
 
   useEffect(() => {
     setSelectedDate(new Date());
+    fetchData();
   }, []);
 
-  const treatments: { [date: string]: Treatment[] } = {
-    // Treatments data
+  const fetchData = async () => {
+    try {
+      const userEmail = "haardikshrestha@gmail.com";
+
+      const response = await axios.get(`http://localhost:5173/sample/${selectedDate?.toISOString().slice(0, 10)}/${userEmail}`);
+      setSchedule(response.data);
+    } catch (error) {
+      console.error("Error fetching schedule:", error);
+    }
   };
 
   const handlePrevMonth = () => {
@@ -137,18 +147,21 @@ const PatientCalendar: React.FC = () => {
           </div>
           <div className="h-48 overflow-y-auto ">
             <div className="flex flex-col gap-4 mt-3">
-              <div className="bg-white rounded-lg  p-4 border">
-                <div className="text-lg font-bold">Blood Test</div>
-                <div className="text-sm text-gray-500">
-                  Routine blood test for cholesterol levels.
+              {schedule.length === 0 ? (
+                <div className="flex items-center justify-center bg-gray-200 p-2 rounded-md mt-10">
+                  <span role="img" aria-label="Happy emoji">
+                    🙂
+                  </span>
+                  <span className="ml-2 text-sm">Nothing scheduled for the day!</span>
                 </div>
-              </div>
-              <div className="bg-white rounded-lg border p-4">
-                <div className="text-lg font-bold">X-Ray</div>
-                <div className="text-sm text-gray-500">
-                  X-Ray scan for the knee joint.
-                </div>
-              </div>
+              ) : (
+                schedule.map((item, index) => (
+                  <div key={index} className="bg-white rounded-lg border p-4">
+                    <div className="text-lg font-bold">{item.title}</div>
+                    <div className="text-sm text-gray-500">{item.description}</div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

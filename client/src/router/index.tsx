@@ -12,7 +12,7 @@ import DashboardPage from "@/pages/adminPages/DashboardPage";
 import DepartmentsPage from "@/pages/adminPages/DepartmentsPage";
 import DoctorsPage from "@/pages/adminPages/DoctorsPage";
 import PathologistsPage from "@/pages/adminPages/PathologistsPage";
-import PatientsPage from "@/pages/adminPages/PatientsPage";
+import PatientsPage from "@/pages/adminPages/patient/PatientsPage";
 import WardsPage from "@/pages/adminPages/WardsPage";
 import RevenuePage from "@/pages/adminPages/RevenuePage";
 import Initial from "@/pages/patientPages/Initial";
@@ -56,6 +56,8 @@ import LabTestsPage from "@/pages/adminPages/LabTestsPage";
 import CreateTest from "@/components/pathologist/appointments/CreateReport";
 import InPatientDetails from "@/components/doctor/Patients/InPatientsDetails";
 import DischargePatient from "@/components/doctor/Patients/DischargePatient";
+import AdmissionPage from "@/pages/adminPages/patient/AdmissionPage";
+import InPatientsPage from "@/pages/adminPages/patient/InPatientsPage";
 const AppRouter = () => {
   const patientUser = {
     name: "John Doe",
@@ -91,7 +93,9 @@ const AppRouter = () => {
             <Route path="/admin/pathologists" element={<PathologistsPage />} />
             <Route path="/admin/tests" element={<Tests />} />
             <Route path="/admin/testdetails" element={<TestDetails />} />
-            <Route path="/admin/patients" element={<PatientsPage />} />
+            <Route path="/admin/outpatients" element={<PatientsPage />} />
+            <Route path="/admin/inpatients" element={<InPatientsPage />} />
+            <Route path="/admin/admission" element={<AdmissionPage />} />
             <Route path="/admin/wards" element={<WardsPage />} />
             <Route path="/admin/revenue" element={<RevenuePage />} />
             <Route path="/admin/labtests" element={<LabTestsPage />} />

@@ -29,8 +29,8 @@ const { isErrored } = require("nodemailer/lib/xoauth2");
 const { appendFile } = require("fs/promises");
 dotenv.config();
 const AuthGuard = require("./middleware");
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 const dbURI = process.env.MONGODB_URI;
 const SECRET_KEY = process.env.JWT_SECRET;
 const saltRounds = 10;
@@ -81,8 +81,6 @@ const checkAdmin = async () => {
 
 checkAdmin();
 
-
-
 {
   /* Send email */
 }
@@ -120,10 +118,9 @@ app.get(
   async (req, res) => {
     try {
       const userEmail = req.user.email;
-      
 
       const user = await User.findOne({ email: userEmail }).select("-password");
-      console.log(user)
+      console.log(user);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -140,14 +137,16 @@ app.get(
   }
 );
 
-
-//SIGN UP - POST
 app.post("/postregister", async (req, res) => {
   const { email, password } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     return res.status(400).json({ error: "Email already exists" });
+  }
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Empty Details!" });
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -164,28 +163,12 @@ app.post("/postregister", async (req, res) => {
     });
   }
 
-  // Validate password
-  if (!passwordRegex.test(password)) {
-    return res.status(400).json({
-      error:
-        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character",
-    });
-  }
-
-  // Validate email
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: "Invalid email address" });
-  }
-
-  // Hash the password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  // Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
   const otpExpiresAt = Date.now() + 15 * 60 * 1000;
 
-  // Create a new user
   const newUser = new User({
     email,
     password: hashedPassword,
@@ -194,15 +177,34 @@ app.post("/postregister", async (req, res) => {
   });
 
   try {
-    // Save the new user to the database
     await newUser.save();
 
-    // Send OTP to user's email
     const mailOptions = {
-      from: "your-email@gmail.com", // Replace with your email address
+      from: "app.medihub@gmail.com",
       to: email,
-      subject: "OTP for Registration",
-      text: `Your OTP for registration is: ${otp}`,
+      subject: "Welcome to Our Platform!",
+      html: `
+        <html>
+          <head>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+          </head>
+          <body class="bg-gray-100 font-sans">
+            <div class="max-w-2xl mx-auto p-8 bg-white rounded shadow-md">
+              <div class="text-center mb-8">
+                <img src="https://example.com/logo.png" alt="Company Logo" class="w-20 mx-auto mb-4">
+                <h1 class="text-2xl font-bold text-gray-800">Welcome to Our Platform!</h1>
+              </div>
+              <p class="text-gray-800 mb-4">Hello,</p>
+              <p class="text-gray-800 mb-4">Thank you for registering with us!</p>
+              <p class="text-xl font-bold text-blue-500 mb-6">${otp}</p>
+              <p class="text-gray-600 mb-4">Your OTP for registration is:</p>
+              <p class="text-gray-600 mb-4">Please use this OTP to complete your registration process.</p>
+              <p class="text-gray-600 mb-4">If you did not initiate this registration, please ignore this email.</p>
+              <p class="text-gray-800">Best regards,<br>Your Company Name</p>
+            </div>
+          </body>
+        </html>
+      `,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -257,18 +259,24 @@ app.get("/pathologists", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
+    if (!email || !password) {
+      return res.status(400).json({ error: "Empty Details!" });
+    }
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ error: "Invalid credentials! Please try again." });
     }
-
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ error: "Invalid credentials! Please try again." });
     }
-    const userPayload = {email: user.email, role: user.role, id:user._id}
-    console.log(userPayload)
+    const userPayload = { email: user.email, role: user.role, id: user._id };
+    console.log(userPayload);
     const token = jwt.sign(userPayload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -291,8 +299,7 @@ app.post("/checkverify", async (req, res) => {
       return res.status(400).json({ error: "User not found" });
     }
 
-
-    res.json({ verified: user.verified});
+    res.json({ verified: user.verified });
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json(error);
@@ -354,7 +361,45 @@ app.post("/verify-otp", async (req, res) => {
       if (user.otp === otp) {
         user.verified = true;
         await user.save();
-        return res.status(200).json({ message: "OTP verified successfully." });
+
+        const mailOptions = {
+          from: "your-email@gmail.com",
+          to: email,
+          subject: "Welcome to Our Platform!",
+          html: `
+            <html>
+              <head>
+                <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+              </head>
+              <body class="bg-gray-100 font-sans">
+                <div class="max-w-2xl mx-auto p-8 bg-white rounded shadow-md">
+                  <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold text-gray-800">Welcome to Our Platform!</h1>
+                  </div>
+                  <p class="text-gray-800 mb-4">Hello,</p>
+                  <p class="text-gray-800 mb-4">Thank you for registering with us!</p>
+                  <p class="text-gray-800 mb-4">We're excited to have you on board.</p>
+                  <p class="text-gray-800 mb-4">Your account has been successfully verified.</p>
+                  <p class="text-gray-800 mb-4">Please log in and fill in your medical details on your first login.</p>
+                  <p class="text-gray-600 mb-4">If you have any questions or need assistance, feel free to reach out to us.</p>
+                  <p class="text-gray-800">Best regards,<br>MediHub App</p>
+                </div>
+              </body>
+            </html>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
+
+        return res
+          .status(200)
+          .json({ message: "OTP verified successfully. Welcome email sent." });
       } else {
         return res.status(400).json({ error: "Invalid OTP." });
       }
@@ -460,7 +505,6 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
-
 app.post("/doctor/resetpassword", async (req, res) => {
   try {
     const { email, newPassword } = req.body;
@@ -490,7 +534,12 @@ Your Application Team`,
     // Send the email
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ message: "Password reset successfully. Check your email for the new password." });
+    res
+      .status(200)
+      .json({
+        message:
+          "Password reset successfully. Check your email for the new password.",
+      });
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json(error);
@@ -588,7 +637,7 @@ app.get("/getdepartmentnames", async (req, res) => {
   try {
     const departments = await Department.find();
 
-    const departmentNames = departments.map(department => department.depName);
+    const departmentNames = departments.map((department) => department.depName);
 
     res.json(departmentNames);
   } catch (error) {
@@ -596,7 +645,6 @@ app.get("/getdepartmentnames", async (req, res) => {
     res.status(500).json(error);
   }
 });
-
 
 //check if patient exists
 app.post("/checkpatient", async (req, res) => {
@@ -974,9 +1022,6 @@ app.post("/patients/addInfo", async (req, res) => {
   }
 });
 
-
-
-
 app.post("/add/appointments", async (req, res) => {
   try {
     const newAppointment = new Appointment(req.body);
@@ -1179,7 +1224,7 @@ MediHub Team`,
 });
 
 //according to expertise:
-app.get('/getdoctorsbyexpertise', async (req, res) => {
+app.get("/getdoctorsbyexpertise", async (req, res) => {
   const { expertise } = req.body;
 
   try {
@@ -1187,12 +1232,14 @@ app.get('/getdoctorsbyexpertise', async (req, res) => {
     const doctors = await Doctors.find({ expertise });
 
     if (!doctors || doctors.length === 0) {
-      return res.status(404).json({ message: 'No doctors found with the specified expertise.' });
+      return res
+        .status(404)
+        .json({ message: "No doctors found with the specified expertise." });
     }
 
     res.status(200).json(doctors);
   } catch (error) {
-    console.error('Error fetching doctors by expertise:', error);
+    console.error("Error fetching doctors by expertise:", error);
     res.status(500).json(error);
   }
 });
@@ -1222,7 +1269,7 @@ app.post("/staff/updatepassword", async (req, res) => {
 
     // Update the user's password
     user.password = await hashPassword(newPassword);
-    
+
     // Set verified to true
     user.verified = true;
 
@@ -1290,7 +1337,9 @@ MediHub Team`,
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ message: "Pathologist information registered successfully" });
+    res
+      .status(200)
+      .json({ message: "Pathologist information registered successfully" });
   } catch (error) {
     console.error("Error registering pathologist information:", error);
     res.status(500).json(error);
@@ -1298,274 +1347,316 @@ MediHub Team`,
 });
 
 //add new test result:
-app.post('/testresult/add', async (req, res) => {
+app.post("/testresult/add", async (req, res) => {
   try {
-      const { patientName, doctorName, testResultsPdf, testType, comments, date } = req.body;
+    const {
+      patientName,
+      doctorName,
+      testResultsPdf,
+      testType,
+      comments,
+      date,
+    } = req.body;
 
-      const newTestResult = new TestResult({
-          patientName,
-          doctorName,
-          testResultsPdf,
-          testType,
-          comments,
-          date
-      });
+    const newTestResult = new TestResult({
+      patientName,
+      doctorName,
+      testResultsPdf,
+      testType,
+      comments,
+      date,
+    });
 
-      await newTestResult.save();
+    await newTestResult.save();
 
-      res.status(201).json({ message: 'Test result created successfully' });
+    res.status(201).json({ message: "Test result created successfully" });
   } catch (error) {
-      console.error('Error creating test result:', error);
-      res.status(500).json(error);
+    console.error("Error creating test result:", error);
+    res.status(500).json(error);
   }
 });
 
 //get all test results
-app.get('/testresult/get/all', async (req, res) => {
+app.get("/testresult/get/all", async (req, res) => {
   try {
-      const testResults = await TestResult.find();
+    const testResults = await TestResult.find();
 
-      res.status(200).json(testResults);
+    res.status(200).json(testResults);
   } catch (error) {
-      console.error('Error fetching test results:', error);
-      res.status(500).json(error);
+    console.error("Error fetching test results:", error);
+    res.status(500).json(error);
   }
 });
 
-
 // get a specific patient's test results
-app.get('/testresult/get/patient', async (req, res) => {
+app.get("/testresult/get/patient", async (req, res) => {
   try {
-      const patientName = req.query.patientName;
+    const patientName = req.query.patientName;
 
-      if (!patientName) {
-          return res.status(400).json({ error: 'Patient name is required in query parameters' });
-      }
+    if (!patientName) {
+      return res
+        .status(400)
+        .json({ error: "Patient name is required in query parameters" });
+    }
 
-      const testResults = await TestResult.find({ patientName });
+    const testResults = await TestResult.find({ patientName });
 
-      res.status(200).json(testResults);
+    res.status(200).json(testResults);
   } catch (error) {
-      console.error('Error fetching test results:', error);
-      res.status(500).json(error);
+    console.error("Error fetching test results:", error);
+    res.status(500).json(error);
   }
 });
 
 //get all the test results within a certain date range
-app.get('/testresult/get/daterange', async (req, res) => {
+app.get("/testresult/get/daterange", async (req, res) => {
   try {
-      const startDate = req.query.startDate;
-      const endDate = req.query.endDate;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
 
-      if (!startDate || !endDate) {
-          return res.status(400).json({ error: 'Both start date and end date are required in query parameters' });
-      }
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "Both start date and end date are required in query parameters",
+        });
+    }
 
-      const testResults = await TestResult.find({
-          date: {
-              $gte: new Date(startDate), 
-              $lte: new Date(endDate)    
-          }
-      });
+    const testResults = await TestResult.find({
+      date: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    });
 
-      res.status(200).json(testResults);
+    res.status(200).json(testResults);
   } catch (error) {
-      console.error('Error fetching test results:', error);
-      res.status(500).json(error);
+    console.error("Error fetching test results:", error);
+    res.status(500).json(error);
   }
 });
 
 //get test results of the same type
-app.get('/testresult/get/type', async (req, res) => {
+app.get("/testresult/get/type", async (req, res) => {
   try {
-      const testType = req.query.testType;
+    const testType = req.query.testType;
 
-      if (!testType) {
-          return res.status(400).json({ error: 'Test type is required in query parameters' });
-      }
+    if (!testType) {
+      return res
+        .status(400)
+        .json({ error: "Test type is required in query parameters" });
+    }
 
-      const testResults = await TestResult.find({ testType });
+    const testResults = await TestResult.find({ testType });
 
-      res.status(200).json(testResults);
+    res.status(200).json(testResults);
   } catch (error) {
-      console.error('Error fetching test results:', error);
-      res.status(500).json(error);
+    console.error("Error fetching test results:", error);
+    res.status(500).json(error);
   }
 });
 
 //add pathologist appointment.
-app.post('/samplecollections/add', async (req, res) => {
+app.post("/samplecollections/add", async (req, res) => {
   try {
-      const { patientName, doctorName, testType } = req.body;
+    const { patientName, doctorName, testType } = req.body;
 
-      const startHour = 9; 
-      const endHour = 16; 
+    const startHour = 9;
+    const endHour = 16;
 
-      const currentDate = new Date();
-      let appointmentDate = new Date(currentDate);
-      appointmentDate.setDate(currentDate.getDate() + (currentDate.getHours() >= endHour || currentDate.getHours() < startHour ? 1 : 0));
+    const currentDate = new Date();
+    let appointmentDate = new Date(currentDate);
+    appointmentDate.setDate(
+      currentDate.getDate() +
+        (currentDate.getHours() >= endHour || currentDate.getHours() < startHour
+          ? 1
+          : 0)
+    );
+    appointmentDate.setHours(startHour, 0, 0, 0);
+
+    while (
+      appointmentDate.getHours() >= endHour ||
+      appointmentDate.getDay() === 0 ||
+      appointmentDate.getDay() === 6
+    ) {
+      appointmentDate.setDate(appointmentDate.getDate() + 1);
       appointmentDate.setHours(startHour, 0, 0, 0);
+    }
 
-      while (appointmentDate.getHours() >= endHour || appointmentDate.getDay() === 0 || appointmentDate.getDay() === 6) {
-          appointmentDate.setDate(appointmentDate.getDate() + 1);
-          appointmentDate.setHours(startHour, 0, 0, 0);
-      }
+    const newSampleCollection = new SampleCollection({
+      patientName,
+      doctorName,
+      appointmentDateTime: appointmentDate,
+      testType,
+    });
 
-      const newSampleCollection = new SampleCollection({
-          patientName,
-          doctorName,
-          appointmentDateTime: appointmentDate,
-          testType
+    await newSampleCollection.save();
+
+    res
+      .status(201)
+      .json({
+        message: "Sample collection created successfully",
+        appointmentDateTime: appointmentDate,
       });
-
-      await newSampleCollection.save();
-
-      res.status(201).json({ message: 'Sample collection created successfully', appointmentDateTime: appointmentDate });
   } catch (error) {
-      console.error('Error creating sample collection:', error);
-      res.status(500).json(error);
+    console.error("Error creating sample collection:", error);
+    res.status(500).json(error);
   }
 });
 
 //get all appointments
-app.get('/samplecollections/get/all', async (req, res) => {
+app.get("/samplecollections/get/all", async (req, res) => {
   try {
-      const sampleCollections = await SampleCollection.find();
+    const sampleCollections = await SampleCollection.find();
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json(error);
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json(error);
   }
 });
 
 //get according to patient
-app.get('/samplecollections/get/patient', async (req, res) => {
+app.get("/samplecollections/get/patient", async (req, res) => {
   try {
-      const patientName = req.query.patientName;
+    const patientName = req.query.patientName;
 
-      if (!patientName) {
-          return res.status(400).json({ error: 'Patient name is required in query parameters' });
-      }
+    if (!patientName) {
+      return res
+        .status(400)
+        .json({ error: "Patient name is required in query parameters" });
+    }
 
-      const sampleCollections = await SampleCollection.find({ patientName });
+    const sampleCollections = await SampleCollection.find({ patientName });
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json(error);
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json(error);
   }
 });
 
 //get according to doctor
-app.get('/samplecollections/get/doctor', async (req, res) => {
+app.get("/samplecollections/get/doctor", async (req, res) => {
   try {
-      const doctorName = req.query.doctorName;
+    const doctorName = req.query.doctorName;
 
-      if (!doctorName) {
-          return res.status(400).json({ error: 'Doctor name is required in query parameters' });
-      }
+    if (!doctorName) {
+      return res
+        .status(400)
+        .json({ error: "Doctor name is required in query parameters" });
+    }
 
-      const sampleCollections = await SampleCollection.find({ doctorName });
+    const sampleCollections = await SampleCollection.find({ doctorName });
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json(error);
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json(error);
   }
 });
 
 // get all sample collection according to status
-app.get('/samplecollections/get/status', async (req, res) => {
+app.get("/samplecollections/get/status", async (req, res) => {
   try {
-      const status = req.query.status;
+    const status = req.query.status;
 
-      if (!status) {
-          return res.status(400).json({ error: 'Status is required in query parameters' });
-      }
+    if (!status) {
+      return res
+        .status(400)
+        .json({ error: "Status is required in query parameters" });
+    }
 
-      const sampleCollections = await SampleCollection.find({ status });
+    const sampleCollections = await SampleCollection.find({ status });
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json(error);
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json(error);
   }
 });
 
 //get according to test type
-app.get('/samplecollections/get/testtype', async (req, res) => {
+app.get("/samplecollections/get/testtype", async (req, res) => {
   try {
-      const testType = req.query.testType;
+    const testType = req.query.testType;
 
-      if (!testType) {
-          return res.status(400).json({ error: 'Test type is required in query parameters' });
-      }
+    if (!testType) {
+      return res
+        .status(400)
+        .json({ error: "Test type is required in query parameters" });
+    }
 
-      const sampleCollections = await SampleCollection.find({ testType });
+    const sampleCollections = await SampleCollection.find({ testType });
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 //get according to date range:
-app.get('/samplecollections/get/daterange', async (req, res) => {
+app.get("/samplecollections/get/daterange", async (req, res) => {
   try {
-      const startDate = req.query.startDate;
-      const endDate = req.query.endDate;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
 
-      if (!startDate || !endDate) {
-          return res.status(400).json({ error: 'Both start date and end date are required in query parameters' });
-      }
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "Both start date and end date are required in query parameters",
+        });
+    }
 
-      const sampleCollections = await SampleCollection.find({
-          appointmentDateTime: {
-              $gte: new Date(startDate),
-              $lte: new Date(endDate)
-          }
-      });
+    const sampleCollections = await SampleCollection.find({
+      appointmentDateTime: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    });
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 //get according to specific date
-app.get('/samplecollections/get/onedate', async (req, res) => {
+app.get("/samplecollections/get/onedate", async (req, res) => {
   try {
-      const date = req.query.date;
+    const date = req.query.date;
 
-      if (!date) {
-          return res.status(400).json({ error: 'Date is required in query parameters' });
-      }
+    if (!date) {
+      return res
+        .status(400)
+        .json({ error: "Date is required in query parameters" });
+    }
 
-      const startDate = new Date(date);
-      startDate.setHours(0, 0, 0, 0); 
-      const endDate = new Date(date);
-      endDate.setHours(23, 59, 59, 999); 
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
 
-      const sampleCollections = await SampleCollection.find({
-          appointmentDateTime: {
-              $gte: startDate,
-              $lte: endDate
-          }
-      });
+    const sampleCollections = await SampleCollection.find({
+      appointmentDateTime: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    });
 
-      res.status(200).json(sampleCollections);
+    res.status(200).json(sampleCollections);
   } catch (error) {
-      console.error('Error fetching sample collections:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching sample collections:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-
-
-app.post('/generate-pdf', (req, res) => {
+app.post("/generate-pdf", (req, res) => {
   const { patientInfo, diagnosis } = req.body;
 
   const html = `
@@ -1579,16 +1670,16 @@ app.post('/generate-pdf', (req, res) => {
   `;
 
   pdf.create(html).toBuffer((err, buffer) => {
-      if (err) {
-          res.status(500).send('Error generating PDF');
-          return;
-      }
-      res.contentType('application/pdf');
-      res.send(buffer);
+    if (err) {
+      res.status(500).send("Error generating PDF");
+      return;
+    }
+    res.contentType("application/pdf");
+    res.send(buffer);
   });
 });
 
-app.post('/generate-report-template', (req, res) => {
+app.post("/generate-report-template", (req, res) => {
   const html = `
     <!DOCTYPE html>
     <html>
@@ -1646,30 +1737,30 @@ app.post('/generate-report-template', (req, res) => {
 
   pdf.create(html).toBuffer((err, buffer) => {
     if (err) {
-      res.status(500).send('Error generating PDF');
+      res.status(500).send("Error generating PDF");
       return;
     }
 
     const mailOptions = {
-      from: 'app.medihub@gmail.com', // Your Gmail email address
-      to: 'haardikshrestha@gmail.com',
-      subject: 'Medical Report',
-      html: 'Please find attached the medical report.',
+      from: "app.medihub@gmail.com", // Your Gmail email address
+      to: "haardikshrestha@gmail.com",
+      subject: "Medical Report",
+      html: "Please find attached the medical report.",
       attachments: [
         {
-          filename: 'medical_report.pdf',
-          content: buffer
-        }
-      ]
+          filename: "medical_report.pdf",
+          content: buffer,
+        },
+      ],
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Error sending email:', error);
-        res.status(500).send('Error sending email');
+        console.error("Error sending email:", error);
+        res.status(500).send("Error sending email");
       } else {
-        console.log('Email sent:', info.response);
-        res.contentType('application/pdf');
+        console.log("Email sent:", info.response);
+        res.contentType("application/pdf");
         res.send(buffer);
       }
     });
@@ -1686,7 +1777,7 @@ app.post("/api/post/appointments", async (req, res) => {
       apptDoctor,
       apptDisease,
       paymentStatus,
-      transactionID
+      transactionID,
     } = req.body;
 
     const newAppointment = new Appointment({
@@ -1697,7 +1788,7 @@ app.post("/api/post/appointments", async (req, res) => {
       apptDoctor,
       apptDisease,
       paymentStatus,
-      transactionID
+      transactionID,
     });
 
     await newAppointment.save();
@@ -1709,26 +1800,22 @@ app.post("/api/post/appointments", async (req, res) => {
   }
 });
 
-
-
-
-
-app.post('/post/labtests', async (req, res) => {
+app.post("/post/labtests", async (req, res) => {
   try {
     const { testName, testPrice, testFields } = req.body;
-    console.log("heloo")
+    console.log("heloo");
     const newLabTest = new LabTest({
       testName,
       testPrice,
       testFields,
     });
 
-    console.log(testFields)
+    console.log(testFields);
     await newLabTest.save();
 
-    res.status(201).json({ message: 'Lab test created successfully' });
+    res.status(201).json({ message: "Lab test created successfully" });
   } catch (error) {
-    console.error('Error creating lab test:', error);
+    console.error("Error creating lab test:", error);
     res.status(500).json(error);
   }
 });
@@ -1740,27 +1827,29 @@ app.get("/get/labtests", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message }); // If an error occurs, send 500 status code with error message
   }
-})
+});
 
-app.get('/singlelabtest', async (req, res) => {
+app.get("/singlelabtest", async (req, res) => {
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'id is required in the request body' });
+    return res
+      .status(400)
+      .json({ error: "id is required in the request body" });
   }
 
   try {
     const labTest = await LabTest.findById(id);
 
     if (!labTest) {
-      return res.status(404).json({ error: 'LabTest not found' });
+      return res.status(404).json({ error: "LabTest not found" });
     }
 
     // If found, return the LabTest document
     res.json(labTest);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -1771,71 +1860,76 @@ app.get("/get/labtestsNo", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message }); // If an error occurs, send 500 status code with error message
   }
-})
+});
 
-app.post('/scheduleSample', async (req, res) => {
+app.post("/scheduleSample", async (req, res) => {
   try {
     const newSample = new SampleCollection(req.body);
 
     // Save the new sample to the database
     await newSample.save();
 
-    res.status(201).json({ message: 'Sample saved successfully', sample: newSample });
+    res
+      .status(201)
+      .json({ message: "Sample saved successfully", sample: newSample });
   } catch (error) {
-    console.error('Error saving sample:', error);
+    console.error("Error saving sample:", error);
     res.status(500).json(error);
   }
 });
 
-app.post('/samplecollections/:id/updateStatus', async (req, res) => {
+app.post("/samplecollections/:id/updateStatus", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
   try {
-    const updatedCollection = await SampleCollection.findByIdAndUpdate(id, { status }, { new: true });
+    const updatedCollection = await SampleCollection.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
 
     if (!updatedCollection) {
-      return res.status(404).json({ message: 'Sample collection not found' });
+      return res.status(404).json({ message: "Sample collection not found" });
     }
 
     res.status(200).json(updatedCollection);
   } catch (error) {
-    console.error('Error updating sample collection status:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating sample collection status:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-app.put('/samplecollections/:id/updateStatus', async (req, res) => {
+app.put("/samplecollections/:id/updateStatus", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
   try {
-    const updatedCollection = await SampleCollection.findByIdAndUpdate(id, { status }, { new: true });
+    const updatedCollection = await SampleCollection.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
 
     if (!updatedCollection) {
-      return res.status(404).json({ message: 'Sample collection not found' });
+      return res.status(404).json({ message: "Sample collection not found" });
     }
 
     res.status(200).json(updatedCollection);
   } catch (error) {
-    console.error('Error updating sample collection status:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating sample collection status:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
-
-
-
-
-
 
 app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: "uploads/" });
 
-app.get('/reportlabtests/:id', async (req, res) => {
-  const testId = req.params.id; 
+app.get("/reportlabtests/:id", async (req, res) => {
+  const testId = req.params.id;
   console.log(testId);
   try {
     const labTest = await LabTest.findById(testId);
@@ -1845,23 +1939,22 @@ app.get('/reportlabtests/:id', async (req, res) => {
     res.status(500).json(error);
   }
 });
-app.post('/testresults', upload.single('testResultsPdf'), (req, res) => {
-  
+app.post("/testresults", upload.single("testResultsPdf"), (req, res) => {
   const testResult = new TestResult({
     patientName: req.body.patientName,
     doctorName: req.body.doctorName,
     testResultsPdf: req.file ? req.file.path : null,
     date: req.body.date,
     testType: req.body.testType,
-    comments: req.body.comments
+    comments: req.body.comments,
   });
   testResult.save((err) => {
     if (err) {
-      return res.status(500).json({ error: 'Failed to save test result' });
+      return res.status(500).json({ error: "Failed to save test result" });
     }
-    res.json({ message: 'Test result saved successfully' });
+    res.json({ message: "Test result saved successfully" });
   });
-})
+});
 
 app.post("/new/inpatients", async (req, res) => {
   const {
@@ -1877,7 +1970,7 @@ app.post("/new/inpatients", async (req, res) => {
     dischargedate,
     ward,
     status,
-    medications 
+    medications,
   } = req.body;
 
   try {
@@ -1894,27 +1987,29 @@ app.post("/new/inpatients", async (req, res) => {
       dischargedate,
       ward,
       status,
-      medications 
+      medications,
     });
 
     await newInPatient.save();
 
     const mailOptions = {
-      from: 'app.medihub@gmail.com', 
+      from: "app.medihub@gmail.com",
       to: email,
-      subject: 'Admission Notification',
+      subject: "Admission Notification",
       text: `Dear ${firstName} ${lastName},\n\nYou have been admitted to the hospital.\n\nHere are your details:\nFirst Name: ${firstName}\nLast Name: ${lastName}\nGender: ${gender}\nDate of Birth: ${dateofbirth}\nChronic Illness: ${chronicillness}\nAddress: ${address}\nBlood Group: ${bloodgroup}\nAdmit Date: ${admitdate}\nWard: ${ward}\n\nThank you.`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Error sending email:', error);
+        console.error("Error sending email:", error);
       } else {
-        console.log('Email sent:', info.response);
+        console.log("Email sent:", info.response);
       }
     });
 
-    res.status(201).json({ message: "Inpatient created successfully", data: newInPatient });
+    res
+      .status(201)
+      .json({ message: "Inpatient created successfully", data: newInPatient });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1933,12 +2028,12 @@ app.get("/get/inpatients", async (req, res) => {
   }
 });
 
-app.get('/get/one/inpatients/:email', async (req, res) => {
+app.get("/get/one/inpatients/:email", async (req, res) => {
   try {
     const email = req.params.email;
     const inPatient = await InPatient.findOne({ email });
     if (!inPatient) {
-      return res.status(404).json({ message: 'Inpatient not found' });
+      return res.status(404).json({ message: "Inpatient not found" });
     }
     res.json(inPatient);
   } catch (error) {
@@ -1946,17 +2041,17 @@ app.get('/get/one/inpatients/:email', async (req, res) => {
   }
 });
 
-app.put('/update/inpatients/:email', async (req, res) => {
+app.put("/update/inpatients/:email", async (req, res) => {
   try {
     const { email } = req.params;
-    await InPatient.findOneAndUpdate({ email }, { status: 'discharged' });
-    res.json({ message: 'Patient discharged successfully' });
+    await InPatient.findOneAndUpdate({ email }, { status: "discharged" });
+    res.json({ message: "Patient discharged successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/send/discharge-summary/:email', async (req, res) => {
+app.post("/send/discharge-summary/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const { dischargeSummary } = req.body;
@@ -1994,29 +2089,119 @@ app.post('/send/discharge-summary/:email', async (req, res) => {
 `;
 
     // Create PDF file
-    const pdfPath = path.join(__dirname, '..', 'discharge_summary.pdf');
+    const pdfPath = path.join(__dirname, "..", "discharge_summary.pdf");
     pdf.create(htmlContent).toFile(pdfPath, (err, _) => {
-      console.log("created")
+      console.log("created");
       const mailOptions = {
-        from: 'your_email',
+        from: "your_email",
         to: email,
-        subject: 'Discharge Summary Report',
-        text: 'Please find the discharge summary report attached.',
+        subject: "Discharge Summary Report",
+        text: "Please find the discharge summary report attached.",
         attachments: [{ path: pdfPath }],
       };
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          console.error('Error sending email:', error);
-          res.status(500).json({ error: 'Error sending email' });
+          console.error("Error sending email:", error);
+          res.status(500).json({ error: "Error sending email" });
         } else {
-          console.log('Email sent:', info.response);
+          console.log("Email sent:", info.response);
           // Delete the generated PDF file
           fs.unlinkSync(pdfPath);
-          res.json({ message: 'Discharge summary report sent successfully' });
+          res.json({ message: "Discharge summary report sent successfully" });
         }
       });
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/sample/:date/:email", async (req, res) => {
+  try {
+    const date = req.params.date;
+    const email = req.params.email;
+
+    const sampleData = await SampleCollection.find({
+      appointmentDate: date,
+      patientEmail: email,
+    });
+
+    if (sampleData.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No data found for the specified date and email." });
+    }
+
+    res.status(200).json(sampleData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(error);
+  }
+});
+
+app.get("/appointment/:date/:email", async (req, res) => {
+  try {
+    const date = req.params.date;
+    const email = req.params.email;
+
+    const appointmentData = await Appointment.find({
+      apptDate: date,
+      apptPatient: email,
+    });
+
+    if (appointmentData.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No data found for the specified date and email." });
+    }
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(error);
+  }
+});
+
+app.get("/api/upcoming-appointment/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    const upcomingAppointment = await Appointment.findOne({
+      apptPatient: email,
+      apptDate: { $gte: new Date() },
+    })
+      .sort({ apptDate: 1 })
+      .limit(1);
+
+    if (!upcomingAppointment) {
+      return res.status(200).json({ message: "No scheduled appointments." });
+    }
+
+    res.status(200).json(upcomingAppointment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.get("/api/upcoming-sample/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    const upcomingAppointment = await SampleCollection.findOne({
+      apptPatient: email,
+      apptDate: { $gte: new Date() },
+    })
+      .sort({ apptDate: 1 })
+      .limit(1);
+
+    if (!upcomingAppointment) {
+      return res.status(200).json({ message: "No scheduled appointments." });
+    }
+
+    res.status(200).json(upcomingAppointment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
