@@ -260,20 +260,20 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     if (!email || !password) {
-      return res.status(400).json({ error: "Empty Details!" });
+      return res.status(400).json({ error: "Please fill in all the details!" });
     }
     const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(400)
-        .json({ error: "Invalid credentials! Please try again." });
+        .json({ error: "Invalid Email or Password!" });
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
       return res
         .status(400)
-        .json({ error: "Invalid credentials! Please try again." });
+        .json({ error: "Invalid Email or Password!" });
     }
     const userPayload = { email: user.email, role: user.role, id: user._id };
     console.log(userPayload);

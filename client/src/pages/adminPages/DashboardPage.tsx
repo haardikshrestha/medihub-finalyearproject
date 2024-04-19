@@ -1,5 +1,7 @@
 import Card from "@/components/admin/Card";
 import { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DashboardPage = () => {
   const [info, setInfo] = useState({
@@ -9,13 +11,14 @@ const DashboardPage = () => {
     patients: 0,
     wards: 0,
   });
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("http://localhost:5173/numberOfData");
         const data = await response.json();
         setInfo(data);
+        
       } catch (error) {
         console.error(error);
       }
@@ -26,6 +29,7 @@ const DashboardPage = () => {
 
   return (
     <div>
+      <ToastContainer /> {/* Render ToastContainer */}
       <div className="flex flex-row justify-between">
         <Card
           number={info.patients} 
