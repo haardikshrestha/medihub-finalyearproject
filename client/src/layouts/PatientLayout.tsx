@@ -1,18 +1,13 @@
 import { Link, Outlet } from "react-router-dom";
 
 import { logout } from "@/app/authSlice";
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "@/app/store";
+
 import PatientHeader from "@/components/patient/PatientHeader";
 import PatientSidebar from "@/components/patient/PatientSidebar";
 
 
 const DoctorLayout = () => {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const handlelogout = () => {
-    navigate("/login");
-  };
+  
   return (
     <div>
       <PatientHeader/>

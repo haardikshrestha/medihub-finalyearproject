@@ -18,6 +18,7 @@ const LabTest = require("./models/pathology-models/labtestSchema");
 const TestResult = require("./models/pathology-models/testResultSchema");
 const SampleCollection = require("./models/pathology-models/sampleCollectionSchema");
 const InPatient = require("./models/patient-models/inPatientSchema");
+const PatientDiagnosis = require("./models/patient-models/patientDiagnosisSchema");
 
 const app = express();
 const crypto = require("crypto");
@@ -25,8 +26,6 @@ const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const dotenv = require("dotenv");
 const multer = require("multer");
-const { isErrored } = require("nodemailer/lib/xoauth2");
-const { appendFile } = require("fs/promises");
 dotenv.config();
 const AuthGuard = require("./middleware");
 const fs = require("fs");
@@ -35,9 +34,6 @@ const dbURI = process.env.MONGODB_URI;
 const SECRET_KEY = process.env.JWT_SECRET;
 const saltRounds = 10;
 
-{
-  /* Connect to mongodb */
-}
 mongoose
   .connect(dbURI)
   .then(() => {
@@ -180,7 +176,7 @@ app.post("/postregister", async (req, res) => {
     await newUser.save();
 
     const mailOptions = {
-      from: "app.medihub@gmail.com",
+      from: "MediHub App",
       to: email,
       subject: "Welcome to Our Platform!",
       html: `
@@ -196,11 +192,10 @@ app.post("/postregister", async (req, res) => {
               </div>
               <p class="text-gray-800 mb-4">Hello,</p>
               <p class="text-gray-800 mb-4">Thank you for registering with us!</p>
-              <p class="text-xl font-bold text-blue-500 mb-6">${otp}</p>
-              <p class="text-gray-600 mb-4">Your OTP for registration is:</p>
+              <p class="text-gray-600 mb-4">Your OTP for registration is: ${otp}</p>
               <p class="text-gray-600 mb-4">Please use this OTP to complete your registration process.</p>
               <p class="text-gray-600 mb-4">If you did not initiate this registration, please ignore this email.</p>
-              <p class="text-gray-800">Best regards,<br>Your Company Name</p>
+              <p class="text-gray-800">Best regards,<br>MediHub App</p>
             </div>
           </body>
         </html>
@@ -837,7 +832,6 @@ app.get("/doctors/findexpertise", async (req, res) => {
 
 app.post("/patientsinfo", async (req, res) => {
   try {
-    // Extract patient information from the request body
     const {
       email,
       firstName,
@@ -849,7 +843,17 @@ app.post("/patientsinfo", async (req, res) => {
       bloodgroup,
     } = req.body;
 
-    // Create a new patient instance
+    // Calculate age based on date of birth
+    const birthDate = new Date(dateofbirth);
+    const ageDiffMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDiffMs); // miliseconds from epoch
+    const userAge = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+    // Check if user is at least 18 years old
+    if (userAge < 18) {
+      return res.status(400).json({ error: "User must be at least 18 years old." });
+    }
+
     const newPatient = new Patient({
       email,
       firstName,
@@ -861,17 +865,116 @@ app.post("/patientsinfo", async (req, res) => {
       bloodgroup,
     });
 
-    // Save the patient information to the database
     await newPatient.save();
 
     res.status(201).json({ message: "Patient information saved successfully" });
   } catch (error) {
     console.error("Error saving patient information:", error);
-    res.status(500).json({
-      message: "An unexpected error occurred. Please try again later.",
-    });
+    res.status(500).json(error);
   }
 });
+
+app.get("/patients/:email", async (req, res) => {
+  try {
+    const patient = await Patient.findOne({ email: req.params.email });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+    res.status(200).json(patient);
+  } catch (error) {
+    console.error("Error fetching patient details:", error);
+    res.status(500).json(error);
+  }
+});
+
+
+const calculateAge = (dateOfBirth) => {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return age;
+};
+
+app.put("/patients/:email", async (req, res) => {
+  try {
+    const dateOfBirth = req.body.dateofbirth;
+    const age = calculateAge(dateOfBirth);
+
+    if (age < 18) {
+      return res.status(400).json({
+        message: "You must be at least 18 years old.",
+      });
+    }
+
+    const patient = await Patient.findOneAndUpdate(
+      { email: req.params.email },
+      req.body,
+      { new: true }
+    );
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.status(200).json({
+      message: "Patient profile updated successfully",
+      patient,
+    });
+  } catch (error) {
+    console.error("Error updating patient profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/post/patientdiagnosis', async (req, res) => {
+  try {
+    const { patientEmail, doctorEmail, diagnosis, medication, comments } = req.body;
+
+    const newDiagnosis = new PatientDiagnosis({
+      patientEmail,
+      doctorEmail,
+      diagnosis,
+      medication,
+      comments
+    });
+
+    await newDiagnosis.save();
+
+    res.status(201).json({ message: 'Patient diagnosis created successfully' });
+  } catch (error) {
+    console.error('Error creating patient diagnosis:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/get/patientdiagnosis/:patientEmail', async (req, res) => {
+  try {
+    const patientEmail = req.params.patientEmail;
+
+    const patientDiagnosis = await PatientDiagnosis.find({ patientEmail });
+
+    if (!patientDiagnosis) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    res.json(patientDiagnosis);
+  } catch (error) {
+    console.error('Error fetching patient diagnosis:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 
 app.get("/numberOfData", async (req, res) => {
   try {

@@ -87,10 +87,15 @@ const Login = () => {
           }
         }
 
+        localStorage.setItem("token", token);
+        localStorage.setItem("email", email);
+        localStorage.setItem("role", role);
+
         window.location.reload();
       }
     } catch (error) {
       handleLoginError(error);
+      setLoading(false);
     }
   };
 

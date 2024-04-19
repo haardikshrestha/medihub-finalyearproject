@@ -1,4 +1,6 @@
-import  { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from 'react-toastify';
+import axios from "axios";
 import {
   FaEdit,
   FaEnvelope,
@@ -9,41 +11,96 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-interface PatientProfileProps extends React.HTMLAttributes<HTMLDivElement> {
-  patient: {
-    name: string;
-    avatar: string;
-    bio: string;
-    email: string;
-    phone: string;
-    address: string;
-    medicalHistory: string;
-    ill: string;
-    blood: string;
-    appointments: { date: string; doctor: string; reason: string }[];
-  };
+interface PatientData {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  dateofbirth: string;
+  chronicillness: string;
+  address: string;
+  bloodgroup: string;
+  __v: number;
 }
 
-const PatientProfile: React.FC<PatientProfileProps> = ({ patient, ...rest }) => {
+const PatientProfile: React.FC = () => {
+  const [patient, setPatient] = useState<PatientData | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editedPatient, setEditedPatient] = useState(patient);
+  const [editedPatient, setEditedPatient] = useState<PatientData | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const email = localStorage.getItem("email");
+    if (email) {
+      axios
+        .get(`http://localhost:5173/patients/${email}`)
+        .then((response) => {
+          setPatient(response.data);
+          setEditedPatient(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching patient details:", error);
+        });
+    } else {
+      console.error("Email not found in localStorage");
+    }
+  }, []);
 
   const handleEditProfile = () => {
     setEditMode(!editMode);
   };
 
-  const handlechange = () => {
-    navigate("/resetask")
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditedPatient({ ...editedPatient, [e.target.name]: e.target.value });
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const updatedPatient = updatePatientData(
+      editedPatient,
+      e.target.name,
+      e.target.value
+    );
+    setEditedPatient(updatedPatient);
   };
 
   const handleSaveProfile = () => {
-    setEditMode(false);
+    const email = localStorage.getItem("email");
+    if (email) {
+      axios
+        .put(`http://localhost:5173/patients/${email}`, editedPatient)
+        .then((response) => {
+          setPatient(response.data.patient);
+          setEditMode(false);
+          toast.success("Patient profile updated successfully"); // Show success toast
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 400) {
+            toast.error(error.response.data.message); // Show error message from the backend
+          } else {
+            console.error("Error updating patient profile:", error);
+            toast.error("An error occurred while updating the profile."); // Show generic error toast
+          }
+        });
+    } else {
+      console.error("Email not found in localStorage");
+      toast.error("Email not found in localStorage."); // Show error toast
+    }
   };
+
+  const updatePatientData = (
+    patient: PatientData | null,
+    field: string,
+    value: string
+  ): PatientData => {
+    if (!patient) {
+      throw new Error("Patient data is null");
+    }
+
+    return {
+      ...patient,
+      [field]: value,
+    };
+  };
+
 
   return (
     <div className=" mx-auto bg-white rounded-lg overflow-hidden">
@@ -51,11 +108,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, ...rest }) => 
         <div className="flex items-center">
           <img
             className="h-24 w-24 rounded-full object-cover mr-6"
-            src="src\\assets\\pfp.png"
-            alt={`${patient.name}'s avatar`}
+            src="/src/assets/profile.png"
+            alt={`${patient?.firstName} ${patient?.lastName}'s avatar`}
           />
           <div>
-            <h2 className="text-2xl font-bold text-white">{patient.name}</h2>
+            <h2 className="text-2xl font-bold text-white">
+              {patient?.firstName} {patient?.lastName}
+            </h2>
             <p className="text-gray-200">Patient</p>
           </div>
         </div>
@@ -75,26 +134,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, ...rest }) => 
               <p className="text-gray-700 font-semibold">Email:</p>
             </div>
             <div>
-              
-              <p className="text-gray-600">{patient.email}</p>
+              <p className="text-gray-600">{patient?.email}</p>
             </div>
-          </div>
-          <div>
-            <div className="flex items-center mb-2">
-              <FaPhone className="text-[#91BF77] mr-2" size={18} />
-              <p className="text-gray-700 font-semibold">Phone:</p>
-            </div>
-            {editMode ? (
-              <input
-                type="tel"
-                name="phone"
-                value={editedPatient.phone}
-                onChange={handleInputChange}
-                className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
-              />
-            ) : (
-              <p className="text-gray-600">{patient.phone}</p>
-            )}
           </div>
           <div>
             <div className="flex items-center mb-2">
@@ -105,29 +146,29 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, ...rest }) => 
               <input
                 type="text"
                 name="address"
-                value={editedPatient.address}
+                value={editedPatient?.address || ""}
                 onChange={handleInputChange}
                 className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
               />
             ) : (
-              <p className="text-gray-600">{patient.address}</p>
+              <p className="text-gray-600">{patient?.address}</p>
             )}
           </div>
           <div>
-            <div className="flex items-center mb-2 mt-3">
+            <div className="flex items-center mb-2 ">
               <FaHeartbeat className="text-[#91BF77] mr-2" size={18} />
               <p className="text-gray-700 font-semibold">Chronic Illness:</p>
             </div>
             {editMode ? (
               <input
                 type="text"
-                name="chronicIllness"
-                value={editedPatient.ill}
+                name="chronicillness"
+                value={editedPatient?.chronicillness || ""}
                 onChange={handleInputChange}
                 className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
               />
             ) : (
-              <p className="text-gray-600">Diabetes</p>
+              <p className="text-gray-600">{patient?.chronicillness}</p>
             )}
           </div>
           <div>
@@ -136,45 +177,75 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, ...rest }) => 
               <p className="text-gray-700 font-semibold">Blood Group:</p>
             </div>
             {editMode ? (
+              <select
+                name="bloodgroup"
+                value={editedPatient?.bloodgroup || ""}
+                onChange={handleInputChange}
+                className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
+              >
+                <option value="">Select Blood Group</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            ) : (
+              <p className="text-gray-600">{patient?.bloodgroup}</p>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center mb-2 mt-3">
+              <FaTint className="text-[#91BF77] mr-2" size={18} />
+              <p className="text-gray-700 font-semibold">Date of Birth:</p>
+            </div>
+            {editMode ? (
               <input
-                type="text"
-                name="bloodGroup"
-                value={editedPatient.blood}
+                type="date"
+                name="dateofbirth"
+                value={editedPatient?.dateofbirth || ""}
                 onChange={handleInputChange}
                 className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
               />
             ) : (
-              <p className="text-gray-600">A+</p>
+              <p className="text-gray-600">{patient?.dateofbirth}</p>
             )}
           </div>
           <div>
-          {editMode && (
-          <div className="flex justify-end">
-            <button
-              className="bg-[#91BF77] text-white  py-2 px-3 w-full mt-11 rounded hover:bg-[#75a559] transition duration-300"
-              onClick={handlechange}
-            >
-              Change Password
-            </button>
-          </div>
-        )}
+            <div className="flex items-center mb-2 mt-3">
+              <FaTint className="text-[#91BF77] mr-2" size={18} />
+              <p className="text-gray-700 font-semibold">Gender:</p>
+            </div>
+            {editMode ? (
+              <select
+                name="gender"
+                value={editedPatient?.gender || ""}
+                onChange={handleInputChange}
+                className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            ) : (
+              <p className="text-gray-600">{patient?.gender}</p>
+            )}
           </div>
         </div>
         {editMode && (
           <div className="flex justify-center">
             <button
-              className="bg-[#91BF77] text-white  py-2 px-4 w-[100px] rounded hover:bg-[#75a559] transition duration-300"
+              className="bg-[#91BF77] text-white py-2 px-4 w-[100px] rounded hover:bg-[#75a559] transition duration-300"
               onClick={handleSaveProfile}
             >
               Save
             </button>
           </div>
         )}
-      </div>
-      <div className="bg-gray-100 p-3 flex justify-center">
-        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-          Logout
-        </button>
       </div>
     </div>
   );

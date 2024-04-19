@@ -11,6 +11,7 @@ const DashboardPage = () => {
     patients: 0,
     wards: 0,
   });
+
   
   useEffect(() => {
     const fetchData = async () => {
@@ -29,7 +30,7 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <ToastContainer /> {/* Render ToastContainer */}
+      <ToastContainer /> 
       <div className="flex flex-row justify-between">
         <Card
           number={info.patients} 

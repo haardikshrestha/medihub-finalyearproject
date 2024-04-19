@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
-import { useSearchParams,  } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const InitialForm = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const InitialForm = () => {
   const email = searchParams.get("email");
   const [dob, setDob] = useState<Date | null>(null);
   const [ageError, setAgeError] = useState(false);
+  const [chronicIllness, setChronicIllness] = useState("None");
 
   const handleDobChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDob = new Date(event.target.value);
@@ -16,19 +18,27 @@ const InitialForm = () => {
     validateAge(selectedDob);
   };
 
+  const handleChronicIllnessChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setChronicIllness(event.target.value);
+  };
+
   const validateAge = (selectedDob: Date) => {
     const today = new Date();
     let age = today.getFullYear() - selectedDob.getFullYear();
     const monthDiff = today.getMonth() - selectedDob.getMonth();
-  
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < selectedDob.getDate())) {
       age--;
     }
-  
+
     setAgeError(age < 18);
   };
 
-  const handleregister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleregister = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     try {
@@ -39,7 +49,6 @@ const InitialForm = () => {
       const lastName = formData.get('last_name') as string;
       const gender = formData.get('gender') as string;
       const dob = formData.get('dob') as string;
-      const chronicIllness = formData.get('chronic_illness') as string;
       const address = formData.get('address') as string;
       const bloodGroup = formData.get('blood_group') as string;
 
@@ -49,16 +58,24 @@ const InitialForm = () => {
         return;
       }
 
-      const response = await axios.post("http://localhost:5173/patientsinfo", {
-        email,
-        firstName,
-        lastName,
-        gender,
-        dateofbirth: dob,
-        chronicillness: chronicIllness,
-        address,
-        bloodgroup: bloodGroup,
-      });
+      if (ageError) {
+        toast.error("Patient must be over 18 years old.");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5173/patientsinfo",
+        {
+          email,
+          firstName,
+          lastName,
+          gender,
+          dateofbirth: dob,
+          chronicillness: chronicIllness,
+          address,
+          bloodgroup: bloodGroup,
+        }
+      );
 
       if (response.status === 201) {
         alert("Patient registered successfully");
@@ -76,7 +93,7 @@ const InitialForm = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-lime-300"
+      className="min-h-screen flex items-center justify-center bg-[#D6E3C8]"
       style={{ backdropFilter: "blur(20px)" }}
     >
       <form
@@ -88,7 +105,10 @@ const InitialForm = () => {
         </h2>
 
         <div className="mb-4">
-          <label htmlFor="first_name" className="block text-sm font-medium text-gray-600">
+          <label
+            htmlFor="first_name"
+            className="block text-sm font-medium text-gray-600"
+          >
             First Name
           </label>
           <input
@@ -102,7 +122,10 @@ const InitialForm = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="last_name" className="block text-sm font-medium text-gray-600">
+          <label
+            htmlFor="last_name"
+            className="block text-sm font-medium text-gray-600"
+          >
             Last Name
           </label>
           <input
@@ -116,7 +139,10 @@ const InitialForm = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="gender" className="block text-sm font-medium text-gray-600">
+          <label
+            htmlFor="gender"
+            className="block text-sm font-medium text-gray-600"
+          >
             Gender
           </label>
           <select
@@ -132,19 +158,28 @@ const InitialForm = () => {
         </div>
 
         <div className="mb-4">
-      <label htmlFor="dob" className="block text-sm font-medium text-gray-600">
-        Date of Birth
-      </label>
-      <input
-        type="date"
-        name="dob"
-        id="dob"
-        className={`mt-1 p-2.5 border ${ageError ? 'border-red-500' : 'border-gray-300'} rounded-md w-full focus:outline-none focus:ring focus:border-blue-300`}
-        onChange={handleDobChange}
-        required
-      />
-      {ageError && <span className="text-red-500 text-sm ml-2">! Patient must be over 18 years old.</span>}
-    </div>
+          <label
+            htmlFor="dob"
+            className="block text-sm font-medium text-gray-600"
+          >
+            Date of Birth
+          </label>
+          <input
+            type="date"
+            name="dob"
+            id="dob"
+            className={`mt-1 p-2.5 border ${
+              ageError ? "border-red-500" : "border-gray-300"
+            } rounded-md w-full focus:outline-none focus:ring focus:border-blue-300`}
+            onChange={handleDobChange}
+            required
+          />
+          {ageError && (
+            <span className="text-red-500 text-sm ml-2">
+              ! Patient must be over 18 years old.
+            </span>
+          )}
+        </div>
 
         <div className="mb-4">
           <label
@@ -158,6 +193,8 @@ const InitialForm = () => {
             name="chronic_illness"
             id="chronic_illness"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
+            defaultValue="None"
+            onChange={handleChronicIllnessChange}
           />
         </div>
 
@@ -201,8 +238,7 @@ const InitialForm = () => {
 
         <button
           type="submit"
-          className="col-span-2 w-2/4 bg-lime-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
-                 
+          className="col-span-2 w-2/4 bg-[#91BF77] text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
         >
           Submit
         </button>

@@ -33,7 +33,6 @@ export default function Signup() {
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success("Cliecked");
     if (!email) {
       toast.error("Email is required");
       return;

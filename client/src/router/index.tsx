@@ -85,6 +85,7 @@ const AppRouter = () => {
   return (
     <Router>
       <Routes>
+      <Route path="/" element={<Login />} />
         <Route path="/">
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<DashboardPage />} />
@@ -122,7 +123,7 @@ const AppRouter = () => {
             <Route path="/patient/adoctors" element={<DoctorList />} />
             <Route
               path="/patient/profile"
-              element={<PatientProfiler patient={patientUser} />}
+              element={<PatientProfiler/>}
             />
             <Route path="/patient/chats" element={<ChatInterface />} />
             <Route path="/patient/pathology" element={<PathologyPage />} />

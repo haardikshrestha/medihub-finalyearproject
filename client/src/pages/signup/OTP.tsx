@@ -1,106 +1,131 @@
-import { ReactHTMLElement, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-
-import { toast } from 'react-toastify';
-import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function OTP() {
   const [otp, setOtp] = useState("");
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Show toast when component mounts
-    toast.success("User registered successfully");
-  }, []);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleVerify = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     console.log(email);
+    setVerifyLoading(true);
     axios
-      .post("http://localhost:5173/verify-otp", { email, otp }) // Replace 'user@example.com' with the actual user email
+      .post("http://localhost:5173/verify-otp", { email, otp })
       .then((response) => {
-        alert(response.data.message);
-        navigate("/login");
-        // Add logic to navigate to the next page or perform other actions after successful verification
+        toast.success("OTP Verified Sucessfully! Redirecting you to the login page.");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+        setVerifyLoading(false);
       })
       .catch((error) => {
-        // Handle verification error
-        console.error("OTP Verification Error:", error);
+        toast.error(error);
+        setVerifyLoading(false);
       });
   };
 
   const handleResendCode = () => {
+    setResendLoading(true);
     axios
       .post("http://localhost:5173/resend-code", { email })
       .then((response) => {
-        alert(response.data.message);
-        // Add logic to handle success, if needed
+        toast.success("OTP resent! Please check you email.");
+        setResendLoading(false);
       })
       .catch((error) => {
-        console.error("Resend Code Error:", error);
-        // Handle error, if needed
+        toast.error("Unable to resend code!");
+        setResendLoading(false);
       });
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Left Panel */}
-      <div className="bg-lime-300 w-auto relative overflow-hidden flex items-center justify-center">
-        <img src="src/assets/otp.svg" alt="" className="h-full w-full object-cover" />
-      </div>
-
-      {/* Right Panel */}
-      <div className="bg-slate-50 w-1/2 flex flex-col justify-evenly py-10 text-center">
-        <section className="w-3/4 mx-auto flex flex-col gap-10">
-          {/* Title Section */}
-          <div className="title">
-            <h3 className="text-gray-800 text-2xl font-bold py-4">Verify Account</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">
-              Please enter the OTP pin received in your email.
-            </p>
-          </div>
-
-          {/* Form Section */}
-          <form className="flex flex-col gap-5" onSubmit={handleVerify}>
-            {/* Password Input */}
-            <div className="flex border rounded-xl relative hover:border-lime-500">
+    <section className="bg-[#D6E3C8] min-h-screen flex items-center justify-center">
+      <ToastContainer />
+      <div className="bg-gray-100 flex rounded-2xl max-w-3xl p-3 items-center">
+        <div className="md:w-4/5 mx-auto px-8 md:px-10 text-center mt-7 mb-7">
+          <h2 className="font-bold text-xl text-black mb-3">Verify Account</h2>
+          <p className="w-3/4 text-gray-400 mx-auto text-sm mb-8">
+            Please enter the OTP pin received in your email.
+          </p>
+          <form className="flex flex-col gap-4" onSubmit={handleVerify}>
+            <div className="relative">
               <input
-                type="text"
+                className="p-2 rounded-xl border w-full text-sm"
                 name="otp"
                 placeholder="OTP"
-                required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-none"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
               />
-              <span className="icon flex items-center px-4 cursor-pointer"></span>
             </div>
-
-            {/* Submit Button */}
-            <div className="input-button">
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-xl py-2 text-gray-50 text-sm"
-              >
-                Verify
-              </button>
-            </div>
-            {/* Forgot Password Link */}
-            <p className="text-right text-gray-400 text-sm ">
-              <button
-                onClick={handleResendCode}
-                className="w-full border border-lime-500 rounded-xl py-2 px-4 text-lime-500 text-sm "
-                style={{ background: "white" }}
-              >
-                Resend Code
-              </button>
-            </p>
+            <button
+              className="bg-[#91BF77] rounded-xl text-white py-2 text-sm flex items-center justify-center"
+              type="submit"
+              disabled={verifyLoading}
+            >
+              {verifyLoading ? (
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : null}
+              {verifyLoading ? "Verifying..." : "Verify"}
+            </button>
+            <button
+              className="bg-gray-100 border border-[#91BF77] rounded-xl text-[#91BF77] py-2 text-sm flex items-center justify-center hover:bg-[#91BF77] hover:text-white transition duration-300"
+              type="button"
+              onClick={handleResendCode}
+              disabled={resendLoading}
+            >
+              {resendLoading ? (
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : null}
+              {resendLoading ? "Resending..." : "Resend Code"}
+            </button>
           </form>
-        </section>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
