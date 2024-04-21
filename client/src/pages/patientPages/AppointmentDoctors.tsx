@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // For API calls
+import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Doctor {
-  _id?: string; 
-  name: string;
+  _id?: string;
+  fullName: string;
   expertise: string;
+  email: string;
 }
 
 const DoctorList = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expertise, setExpertise] = useState<string>(''); // To store selected expertise
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const searchParams = new URLSearchParams(location.search);
+  const expertise = searchParams.get('department') || '';
 
   useEffect(() => {
     const fetchDoctors = async () => {
       setIsLoading(true);
       setError(null);
-
       try {
-        const response = await axios.get('/getdoctorsbyexpertise', {
-          params: { expertise }, // Send expertise as a query parameter
-        });
-
-        if (response.status === 200) {
-          setDoctors(response.data);
-        } else {
-          throw new Error('Unexpected API response');
-        }
+        const response = await axios.get(`http://localhost:5173/getdoctorsbyexpertise/${expertise}`);
+        setDoctors(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching doctors:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
@@ -35,79 +34,48 @@ const DoctorList = () => {
         setIsLoading(false);
       }
     };
+    fetchDoctors();
+  }, [expertise]);
 
-    if (expertise) {
-      fetchDoctors(); // Fetch doctors only if expertise is selected
-    }
-  }, [expertise]); // Re-fetch on expertise change
-
-  const handleExpertiseChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setExpertise(event.target.value);
+  const handleViewDoctorClick = (doctorEmail: string) => {
+    navigate(`/patient/doctordetails?email=${doctorEmail}`);
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="flex items-center mb-4">
-        <label htmlFor="expertise" className="mr-2 text-gray-700">
-          Filter by Expertise:
-        </label>
-        <select
-          id="expertise"
-          value={expertise}
-          onChange={handleExpertiseChange}
-          className="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All</option>
-          {/* Add options dynamically based on your backend data structure or a separate API call */}
-          {/* <option value="Cardiology">Cardiology</option> */}
-          {/* <option value="Dermatology">Dermatology</option>  */}
-        </select>
-      </div>
-
+    <div className="container mx-auto">
+      <p className='mb-4'>Doctors under {expertise}:</p>
       {isLoading ? (
-        <p className="text-center">Loading doctors...</p>
+        <p className="text-center text-gray-700">Loading doctors...</p>
       ) : error ? (
-        <p className="text-red-500 text-center">{error}</p>
+        <p className="text-center text-red-500">{error}</p>
       ) : doctors.length > 0 ? (
-        <div className="overflow-x-auto rounded-md shadow-md">
-          <table className="w-full min-w-full leading-normal">
-            <thead>
-              <tr>
-                <th
-                  scope="col"
-                  className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {doctors.map((doctor) => (
+            <div
+              key={doctor._id || doctor.fullName}
+              className="bg-white rounded-lg overflow-hidden border border-gray-200"
+            >
+              <div className="h-40 bg-gray-300 flex items-center justify-center">
+                {/* Add any image or icon here */}
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold mb-2">{doctor.fullName}</h3>
+                <p className="text-gray-700 mb-4">{doctor.expertise}</p>
+                <button
+                  className="bg-[#91BF77] hover:bg-[#7da466] text-white font-semibold py-2 px-4 rounded transition-colors duration-300"
+                  onClick={() => handleViewDoctorClick(doctor.email)}
                 >
-                  Name
-                </th>
-                <th
-                  scope="col"
-                  className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
-                >
-                  Expertise
-                </th>
-                {/* Add table headers for other doctor details if needed */}
-              </tr>
-            </thead>
-            <tbody>
-              {doctors.map((doctor) => (
-                <tr key={doctor._id || doctor.name} className="hover:bg-gray-100">
-                  <td className="px-5 py-5 border-b border-gray-200 text-sm">
-                    {doctor.name}
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 text-sm">
-                    {doctor.expertise}
-                  </td>
-                  {/* Add table cells for other doctor details if needed */}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  View Doctor
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
-        <p className="text-center">No doctors found with the selected expertise.</p>
+        <p className="text-center text-gray-700">No doctors found with the selected expertise.</p>
       )}
     </div>
   );
-}
+};
 
 export default DoctorList;

@@ -41,29 +41,11 @@ const PatientSidebar = () => {
         </li>
         <li className="mb-2">
           <Link
-            to="/patient/doctors"
-            className="flex items-center hover:text-gray-600 text-sm"
-          >
-            <TbUser className="mr-2" />
-            Doctors
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
             to="/patient/pathology"
             className="flex items-center hover:text-gray-600 text-sm"
           >
             <IoMdMedkit className="mr-2" />
             Pathology
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
-            to="/patient/chats"
-            className="flex items-center hover:text-gray-600 text-sm"
-          >
-            <FiMessageSquare className="text-sm mr-2" />
-            Chats
           </Link>
         </li>
         <li className="mb-2">

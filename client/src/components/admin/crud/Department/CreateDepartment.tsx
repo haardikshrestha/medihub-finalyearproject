@@ -1,6 +1,7 @@
 import { HiX } from "react-icons/hi";
 import { useState } from "react";
-import axios from "axios"; // Make sure to install axios: npm install axios
+import axios from "axios"; 
+import { toast } from "react-toastify";
 
 const CreateDepartment = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -8,12 +9,38 @@ const CreateDepartment = () => {
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
-
- 
+  
+  const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const depID = formData.get("id");
+    const depName = formData.get("name");
+    const depNameShort = formData.get("short");
+  
+    try {
+      const response = await axios.post("http://localhost:5173/addDepartment", {
+        depID,
+        depName,
+        depNameShort,
+      });
+      console.log(response.data);
+      toast.success(response.data.message); 
+      toggleModal();
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          toast.error(error.response.data.error); 
+        } else if (error.request) {
+          toast.error("No response from the server");
+        } else {
+          toast.error(error.message);
+        }
+      }
+    }
+  };
 
   return (
     <>
-      {/* Modal toggle */}
       <button
         onClick={toggleModal}
         className="block text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:outline-none focus:ring-lime-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
@@ -21,8 +48,6 @@ const CreateDepartment = () => {
       >
         Add department
       </button>
-
-      {/* Main modal */}
       {isModalOpen && (
         <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -61,8 +86,7 @@ const CreateDepartment = () => {
                     <span className="sr-only">Close modal</span>
                   </button>
                 </div>
-                {/* Modal body */}
-                <form className="p-4 md:p-5" >
+                <form className="p-4 md:p-5" onSubmit={submitHandler}>
                   <div className="grid gap-4 mb-4 grid-cols-2">
                     <div className="col-span-2">
                       <label

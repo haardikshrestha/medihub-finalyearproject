@@ -53,11 +53,13 @@ import Appointments from "@/components/patient/Dashboard/Info/Appointments";
 import Dashboard from "@/components/patient/Dashboard/Info/Dashboard";
 import AppointmentBooking from "@/components/patient/Appointments/AppointmentBooking";
 import LabTestsPage from "@/pages/adminPages/LabTestsPage";
-import CreateTest from "@/components/pathologist/appointments/CreateReport";
 import InPatientDetails from "@/components/doctor/Patients/InPatientsDetails";
 import DischargePatient from "@/components/doctor/Patients/DischargePatient";
 import AdmissionPage from "@/pages/adminPages/patient/AdmissionPage";
 import InPatientsPage from "@/pages/adminPages/patient/InPatientsPage";
+import ViewTestHistory from "@/pages/patientPages/Pathology/ViewTestHistory";
+import CreateTestPage from "@/pages/pathologistPages/CreateTestPage";
+import DoctorDetails from "@/pages/patientPages/Doctors/DoctorDetails";
 const AppRouter = () => {
   const patientUser = {
     name: "John Doe",
@@ -125,6 +127,10 @@ const AppRouter = () => {
               path="/patient/profile"
               element={<PatientProfiler/>}
             />
+            <Route
+              path="/patient/settings"
+              element={<PatientProfiler/>}
+            />
             <Route path="/patient/chats" element={<ChatInterface />} />
             <Route path="/patient/pathology" element={<PathologyPage />} />
             <Route path="/patient/packages" element={<PatientHealth />} />
@@ -133,6 +139,9 @@ const AppRouter = () => {
             <Route path="/patient/labtests" element={<LabTests />} />
             <Route path="/patient/appointmenthistory" element={<Appointments />} />
             <Route path="/patient/testdetails" element={<TestDetails />} />
+            <Route path="/patient/testhistory" element={<ViewTestHistory />} />
+            <Route path="/patient/doctordetails" element={<DoctorDetails />} />
+            
           </Route>
         </Route>
         <Route path="/">
@@ -145,7 +154,7 @@ const AppRouter = () => {
             <Route path="/pathologist/patients" element={<PathologistsPatients />} />
             <Route path="/pathologist/pathology" element={<PathologistTests />} />
             <Route path="/pathologist/settings" element={<PathologistSettings />} />
-            <Route path="/pathologist/createtest" element={<CreateTest />} />
+            <Route path="/pathologist/createtest" element={<CreateTestPage />} />
           </Route>
         </Route>
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEye } from "react-icons/fa";
-import LabTestForm from "./LabTestForm";
+import { useNavigate } from "react-router-dom";
 import PatientLabTestCard from "./TestsCard";
 
 interface Test {
@@ -12,6 +12,7 @@ interface Test {
 }
 
 const PathologyPage: React.FC = () => {
+  const navigate = useNavigate();
   const [tests, setTests] = useState<Test[]>([
     {
       id: "2",
@@ -41,7 +42,7 @@ const PathologyPage: React.FC = () => {
   const scheduledTests = tests.filter((test) => test.status === "scheduled");
 
   const handleAddTestClick = () => {
-    setShowForm(true);
+    navigate("/patient/testhistory")
   };
 
   return (

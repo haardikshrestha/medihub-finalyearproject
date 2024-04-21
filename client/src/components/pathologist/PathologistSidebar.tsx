@@ -37,34 +37,7 @@ const PathologistSidebar = () => {
             Appointments
           </Link>
         </li>
-        <li className="mb-2">
-          <Link
-            to="/pathologist/patients"
-            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
-          >
-            <TbUser className="mr-2" />
-            Patients
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
-            to="/pathologist/pathology"
-            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
-          >
-            <TbList className="mr-2" />
-            Pathology
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
-            to="/pathologist/settings"
-            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
-          >
-            <TbSettings className="mr-2" />
-            Settings
-          </Link>
-        </li>
-        {/* logout button at the bottom */}
+        
         <div className="absolute bottom-0 w-full left-0 p-4">
           <button
             className="btn border-none bg-error w-full text-center text-white"

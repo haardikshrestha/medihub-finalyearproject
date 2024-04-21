@@ -1,13 +1,16 @@
+// Import necessary dependencies
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
 
+// Define the Day interface
 interface Day {
   day: string;
   selected: boolean;
 }
 
+// DoctorForm component
 const DoctorForm: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -34,6 +37,7 @@ const DoctorForm: React.FC = () => {
   const [expertiseList, setExpertiseList] = useState<string[]>([]);
 
   useEffect(() => {
+    // Fetch expertise list
     const fetchExpertiseList = async () => {
       try {
         const response = await axios.get<string[]>("http://localhost:5173/getdepartmentnames");
@@ -46,6 +50,7 @@ const DoctorForm: React.FC = () => {
     fetchExpertiseList();
   }, []);
 
+  // Generate random password function
   const generateRandomPassword = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let generatedPassword = "";
@@ -55,6 +60,7 @@ const DoctorForm: React.FC = () => {
     setPassword(generatedPassword);
   };
 
+  // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setLoading(true);
     e.preventDefault();
@@ -65,6 +71,7 @@ const DoctorForm: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          fullName, // Include fullName in the request body
           nmc: nmcNumber,
           email: emailAddress,
           expertise,
@@ -74,7 +81,7 @@ const DoctorForm: React.FC = () => {
           endTime,
           daysAvailable: selectedDays.filter((day) => day.selected).map((day) => day.day),
           fees,
-          password, // Add the password field
+          password,
         }),
       });
       if (response.ok) {
@@ -86,15 +93,17 @@ const DoctorForm: React.FC = () => {
     } catch (error) {
       console.error("Error registering doctor and user information:", error);
       alert("An unexpected error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Day selection handler
   const handleDaySelection = (index: number) => {
     const newSelectedDays = [...selectedDays];
     newSelectedDays[index].selected = !newSelectedDays[index].selected;
     setSelectedDays(newSelectedDays);
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#D6E3C8]">
@@ -117,10 +126,9 @@ const DoctorForm: React.FC = () => {
             id="fullname"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={(e) => setFullName(e.target.value)} // Update the full name state
           />
         </div>
-
         {/* Email Address */}
         <div className="mb-4">
           <label
@@ -328,10 +336,10 @@ const DoctorForm: React.FC = () => {
         <button
           type="submit"
           className="col-span-2 w-2/4 bg-[#ACE86C] text-white p-2 rounded-md hover:bg-[#93d34d] focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
-          disabled={loading} // Disable button when loading is true
+          disabled={loading}
         >
           {loading ? (
-            <FaSpinner className="animate-spin mr-2" /> // Show spinner animation when loading
+            <FaSpinner className="animate-spin mr-2" />
           ) : (
             "Submit"
           )}

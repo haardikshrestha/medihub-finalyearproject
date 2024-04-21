@@ -1,8 +1,17 @@
 import { TbHome, TbCalendar, TbUser, TbList, TbSettings, TbLogout } from "react-icons/tb";
-import { IoMdMedkit } from 'react-icons/io';
-import { Link } from 'react-router-dom';
+import { IoMdMedkit } from "react-icons/io";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const DoctorSidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("email");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
@@ -15,37 +24,55 @@ const DoctorSidebar = () => {
           />
         </div>
         <li className="mb-2">
-          <Link to="/doctor" className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300">
+          <Link
+            to="/doctor"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
             <TbHome className="mr-2" />
             Dashboard
           </Link>
         </li>
         <li className="mb-2">
-          <Link to="/doctor/appointments" className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300">
+          <Link
+            to="/doctor/appointments"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
             <TbCalendar className="mr-2" />
             Appointments
           </Link>
         </li>
         <li className="mb-2">
-          <Link to="/doctor/patients" className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300">
+          <Link
+            to="/doctor/patients"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
             <TbUser className="mr-2" />
             Patients
           </Link>
         </li>
         <li className="mb-2">
-          <Link to="/doctor/surgeries" className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300">
+          <Link
+            to="/doctor/surgeries"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
             <IoMdMedkit className="mr-2" />
             Surgeries
           </Link>
         </li>
         <li className="mb-2">
-          <Link to="/doctor/pathology" className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300">
+          <Link
+            to="/doctor/pathology"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
             <TbList className="mr-2" />
             Pathology
           </Link>
         </li>
         <li className="mb-2">
-          <Link to="/doctor/settings" className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300">
+          <Link
+            to="/doctor/settings"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
             <TbSettings className="mr-2" />
             Settings
           </Link>
@@ -54,7 +81,7 @@ const DoctorSidebar = () => {
         <div className="absolute bottom-0 w-full left-0 p-4">
           <button
             className="btn border-none bg-error w-full text-center text-white"
-            // onClick={handleLogout}
+            onClick={handleLogout}
           >
             <TbLogout className="mr-2" />
             Logout

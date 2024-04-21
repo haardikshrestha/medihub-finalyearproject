@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface SampleCollection {
   _id: string;
@@ -7,7 +8,7 @@ interface SampleCollection {
   doctorName: string;
   appointmentDate: string;
   testName: string;
-  status: "Sample Pending" | "Test Pending" | "Test Completed";
+  status: "Sample Pending" | "Test Pending" | "Test Completed" | "Cancelled";
   testID: string;
 }
 
@@ -15,8 +16,9 @@ const SampleCollectionTable = () => {
   const [sampleCollections, setSampleCollections] = useState<SampleCollection[]>([]);
   const [filteredCollections, setFilteredCollections] = useState<SampleCollection[]>([]);
   const [filter, setFilter] = useState<
-    "All" | "Sample Pending" | "Test Pending" | "Test Completed"
+    "All" | "Sample Pending" | "Test Pending" | "Test Completed" | "Cancelled"
   >("All");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSampleCollections();
@@ -27,7 +29,13 @@ const SampleCollectionTable = () => {
       setFilteredCollections(sampleCollections);
     } else {
       setFilteredCollections(
-        sampleCollections.filter((collection) => collection.status === filter)
+        sampleCollections.filter((collection) => {
+          if (filter === "Cancelled") {
+            return collection.status === filter;
+          } else {
+            return collection.status === filter ;
+          }
+        })
       );
     }
   }, [sampleCollections, filter]);
@@ -42,12 +50,17 @@ const SampleCollectionTable = () => {
   };
 
   const handleFilterChange = (
-    newFilter: "All" | "Sample Pending" | "Test Pending" | "Test Completed"
+    newFilter: "All" | "Sample Pending" | "Test Pending" | "Test Completed" | "Cancelled"
   ) => {
     setFilter(newFilter);
   };
 
-  const handleStatusChange = async (sampleCollectionId: string, newStatus: "Test Pending" | "Test Completed") => {
+  const handleStatusChange = async (sampleCollectionId: string, newStatus: SampleCollection["status"]) => {
+
+    if (newStatus === "Cancelled") {
+      return;
+    }
+
     try {
       await axios.put(`http://localhost:5173/samplecollections/${sampleCollectionId}/updateStatus`, { status: newStatus });
 
@@ -58,12 +71,13 @@ const SampleCollectionTable = () => {
       );
 
       if (newStatus === "Test Pending") {
-        window.location.replace("/createtest");
+        navigate(`/pathologist/createtest?sampleId=${sampleCollectionId}`);
       }
     } catch (error) {
       console.error(`Error updating status of ${sampleCollectionId} to ${newStatus}:`, error);
     }
   };
+
 
   return (
     <div className="container mx-auto">
@@ -100,7 +114,7 @@ const SampleCollectionTable = () => {
           Testing
         </button>
         <button
-          className={`px-4 py-2 rounded-md text-white text-sm transition-colors duration-300 ${
+          className={`px-4 py-2 rounded-md text-white text-sm mr-2 transition-colors duration-300 ${
             filter === "Test Completed"
               ? "bg-green-500 hover:bg-green-600"
               : "bg-gray-400 hover:bg-gray-500"
@@ -108,6 +122,16 @@ const SampleCollectionTable = () => {
           onClick={() => handleFilterChange("Test Completed")}
         >
           Completed
+        </button>
+        <button
+          className={`px-4 py-2 rounded-md text-white text-sm transition-colors duration-300  ${
+            filter === "Cancelled"
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-gray-400 hover:bg-gray-500"
+          }`}
+          onClick={() => handleFilterChange("Cancelled")}
+        >
+          Cancelled
         </button>
       </div>
       <div className="bg-white rounded-lg border overflow-x-auto">
@@ -142,48 +166,67 @@ const SampleCollectionTable = () => {
                         ? "bg-yellow-500"
                         : sampleCollection.status === "Test Pending"
                         ? "bg-blue-500"
-                        : "bg-green-500"
+                        : sampleCollection.status === "Test Completed"
+                        ? "bg-green-500"
+                        : "bg-red-500"
                     }`}
                   >
                     {sampleCollection.status === "Sample Pending"
                       ? "Pending"
                       : sampleCollection.status === "Test Pending"
                       ? "Testing"
-                      : "Completed"}
+                      : sampleCollection.status === "Test Completed"
+                      ? "Completed"
+                      : "Cancelled"}
                   </span>
                 </td>
                 <td className="py-4 px-6">{sampleCollection.testID}</td>
                 <td className="py-4 px-6 flex justify-center">
-                  {sampleCollection.status === "Sample Pending" ? (
-                    <button
-                      className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
-                      onClick={() => handleStatusChange(sampleCollection._id, "Test Pending")}
-                    >
-                      Test
-                    </button>
-                  ) : sampleCollection.status === "Test Pending" ? (
-                    <button
-                      className="bg-green-500 hover:bg-green-700 text-white  py-2 px-4 rounded-md transition-colors duration-300"
-                      onClick={() => window.location.replace("/createtest")}
-                    >
-                      Go to Testing
-                    </button>
-                  ) : (
-                    <button
-                      className="bg-gray-500 hover:bg-gray-700 text-white  py-2 px-4 rounded-md transition-colors duration-300"
-                      onClick={() => alert("Test completed, sending results to patient")}
-                      >
-                      Send to Patient
-                      </button>
+                  {sampleCollection.status !== "Cancelled" && (
+                    <>
+                      {sampleCollection.status === "Sample Pending" ? (
+                        <button
+                          className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
+                          onClick={() =>
+                            handleStatusChange(sampleCollection._id, "Test Pending")
+                          }
+                        >
+                          Test
+                        </button>
+                      ) : sampleCollection.status === "Test Pending" ? (
+                        <button
+                          className="bg-green-500 hover:bg-green-700 text-white  py-2 px-4 rounded-md transition-colors duration-300"
+                          onClick={() => navigate(`/pathologist/createtest?sampleId=${sampleCollection._id}`)}
+                        >
+                          Go to Testing
+                        </button>
+                      ) : sampleCollection.status === "Test Completed" ? (
+                        <button
+                          className="bg-gray-500 hover:bg-gray-700 text-white  py-2 px-4 rounded-md transition-colors duration-300"
+                          onClick={() => alert("Test completed, sending results to patient")}
+                        >
+                          Send to Patient
+                        </button>
+                      ) : (
+                        <button
+                          className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
+                          onClick={() =>
+                            handleStatusChange(sampleCollection._id, "Sample Pending")
+                          }
+                        >
+                          Reschedule
+                        </button>
                       )}
-                      </td>
-                      </tr>
-                      ))}
-                      </tbody>
-                      </table>
-                      </div>
-                      </div>
-                      );
-                      };
-                      
-                      export default SampleCollectionTable;
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default SampleCollectionTable;

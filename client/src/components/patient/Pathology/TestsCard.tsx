@@ -3,8 +3,15 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { FaArrowRight, FaSearch } from "react-icons/fa";
 
+interface LabTest {
+  _id: string;
+  testName: string;
+  testPrice: number;
+  testFields: { fieldName: string; normalRange: string }[];
+}
+
 const LabTestCard: React.FC = () => {
-  const [labTests, setLabTests] = useState<any[]>([]);
+  const [labTests, setLabTests] = useState<LabTest[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
@@ -59,8 +66,10 @@ const LabTestCard: React.FC = () => {
               </h2>
               <p className="text-gray-600 mb-4">Price: Rs.{test.testPrice}</p>
               <ul className="list-disc pl-4 mb-4 text-gray-600">
-                {test.testFields.map((field: string, index: number) => (
-                  <li key={index}>{field}</li>
+                {test.testFields.map((field, index) => (
+                  <li key={index}>
+                    {field.fieldName}
+                  </li>
                 ))}
               </ul>
             </div>

@@ -1,110 +1,95 @@
-import  { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CreateDoctor from "./CreateDoctor";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
-interface User {
+interface Doctor {
   _id: string;
-  username: string;
+  fullName: string;
   email: string;
   number: string;
+  expertise: string;
 }
 
-const DoctorTable = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+const DoctorTable: React.FC = () => {
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchDoctors = async () => {
       try {
-        const response = await axios.get<User[]>("http://localhost:5173/getdoctors");
-        setUsers(response.data);
+        const response = await axios.get<Doctor[]>("http://localhost:5173/api/doctors");
+        setDoctors(response.data);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching doctors:", error);
       }
     };
 
-    fetchUsers();
+    fetchDoctors();
   }, []);
 
-  const handleDeleteClick = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsDeleteModalOpen(true);
+  const handleDeleteClick = (doctorEmail: string) => {
+    confirmAlert({
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this doctor?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => handleDeleteConfirm(doctorEmail),
+        },
+        {
+          label: 'No',
+          onClick: handleDeleteCancel,
+        },
+      ],
+    });
   };
 
-  const handleDeleteConfirm = () => {
-    // Call your delete user API or function here using the selectedUserId
-    // ...
-
-    // After successful deletion, close the modal
-    setIsDeleteModalOpen(false);
-    setSelectedUserId(null);
+  const handleDeleteConfirm = async (doctorEmail: string) => {
+    try {
+      await axios.delete(`http://localhost:5173/deleteDoctor?email=${encodeURIComponent(doctorEmail)}`);
+  
+      await axios.delete(`http://localhost:5173/deleteUser?email=${encodeURIComponent(doctorEmail)}`);
+      
+      setDoctors(doctors.filter(doctor => doctor.email !== doctorEmail));
+    } catch (error) {
+      console.error('Error deleting doctor:', error);
+    }
   };
 
   const handleDeleteCancel = () => {
-    // Cancel the delete action, close the modal
-    setIsDeleteModalOpen(false);
-    setSelectedUserId(null);
+    // Close the modal or handle cancel action
   };
-  
 
   return (
     <div>
       <div className="flex justify-between mb-2">
-        {/* Total Users Box */}
         <div className="flex items-center">
           <span className="text-gray-500 mr-2">Total Doctors:</span>
-          <span className="font-bold">{users.length}</span>
+          <span className="font-bold">{doctors.length}</span>
         </div>
-
-        {/* "Add Users" Button */}
-        <CreateDoctor/>
+        <CreateDoctor />
       </div>
-
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 rounded-lg">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Username
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Email
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Phone Number
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expertise</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.username}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{user.number}</td>
+            {doctors.map((doctor) => (
+              <tr key={doctor._id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{doctor.fullName}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{doctor.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{doctor.expertise}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <button className="text-blue-600 hover:text-blue-900 mr-2">View</button>
-                  <button className="text-green-600 hover:text-green-900 mr-2">
-                    Edit
-                  </button>
                   <button
                     className="text-red-600 hover:text-red-900"
-                    onClick={() => handleDeleteClick(user._id)}
+                    onClick={() => handleDeleteClick(doctor.email)}
                   >
                     Delete
                   </button>

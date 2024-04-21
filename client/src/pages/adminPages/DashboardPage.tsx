@@ -1,4 +1,5 @@
 import Card from "@/components/admin/Card";
+import Gender from "@/components/admin/charts/GenderStats";
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,7 +13,6 @@ const DashboardPage = () => {
     wards: 0,
   });
 
-  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,6 +57,9 @@ const DashboardPage = () => {
           title="Wards"
           imageUrl="src/assets/admin-images/ward.png"
         />
+      </div>
+      <div className="mt-6">
+      <Gender/>
       </div>
     </div>
   );

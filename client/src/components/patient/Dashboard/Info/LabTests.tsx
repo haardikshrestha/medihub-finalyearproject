@@ -1,22 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+interface LabReport {
+  _id: string;
+  patientName: string;
+  patientEmail: string;
+  testName: string;
+  createdAt: Date;
+}
 
 const LabTests: React.FC = () => {
-  const testResults = [
-    {
-      patientName: 'John Doe',
-      doctorName: 'Dr. Jane Smith',
-      testType: 'Blood Test',
-      date: new Date('2024-04-05'),
-      comments: 'Crticial',
-    },
-    {
-      patientName: 'Jane Doe',
-      doctorName: 'Dr. Michael Brown',
-      testType: 'X-Ray',
-      date: new Date('2024-04-10'),
-      comments: 'Minor',
-    },
-  ];
+  const [labReports, setLabReports] = useState<LabReport[]>([]);
+  const userEmail = localStorage.getItem("email");
+
+  useEffect(() => {
+    const fetchLabReports = async () => {
+      try {
+        const response = await axios.get("http://localhost:5173/labreports", {
+          params: {
+            patientEmail: userEmail,
+          },
+        });
+        setLabReports(response.data);
+      } catch (error) {
+        console.error("Error fetching lab reports:", error);
+      }
+    };
+
+    fetchLabReports();
+  }, [userEmail]);
 
   return (
     <div className="">
@@ -24,23 +36,22 @@ const LabTests: React.FC = () => {
       <table className="w-full table-auto min-w-max">
         <thead>
           <tr className="text-left bg-gray-100 border-b border-gray-200 font-medium">
-            <th className="p-4">Doctor</th>
-            <th className="p-4">Test Type</th>
+            <th className="p-4">Test Name</th>
             <th className="p-4">Date</th>
-            <th className="p-4">Comments</th>
             <th className="p-4 text-center">Download</th>
           </tr>
         </thead>
         <tbody>
-          {testResults.map((result) => (
-            <tr key={result.date.toString()} className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-4">{result.doctorName}</td>
-              <td className="p-4">{result.testType}</td>
-              <td className="p-4">{result.date.toLocaleDateString()}</td> {/* Format date for readability */}
-              <td className="p-4">{result.comments}</td>
+          {labReports.map((report) => (
+            <tr key={report._id} className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="p-4">{report.testName}</td>
+              <td className="p-4">{new Date(report.createdAt).toLocaleDateString()}</td>
               <td className="p-4 text-center">
-                <button className="px-2 py-1 rounded-md bg-blue-100 text-blue-600 font-bold hover:bg-blue-200">
-                  Download
+                <button
+                  className="px-2 py-1 bg-blue-100 text-blue-600 font-bold rounded-lg cursor-not-allowed"
+                  disabled
+                >
+                  Check your mail.
                 </button>
               </td>
             </tr>

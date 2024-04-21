@@ -1,21 +1,35 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const diagnosisSchema = new mongoose.Schema({
+  patientEmail: {
+    type: String,
+    required: true
+  },
+  doctorEmail: {
+    type: String,
+    required: true
+  },
   diagnosis: {
     type: String,
-    required: true,
+    required: true
   },
-  medications: [
-    {
-      name: String,
-      dosage: String,
-      timeOfDay: String,
-      beforeOrAfterEating: String,
+  medications: [{
+    name: {
+      type: String
     },
-  ],
-  notes: String,
+    dosage: {
+      type: String
+    },
+    timeOfDay: {
+      type: String
+    },
+    beforeOrAfterEating: {
+      type: String
+    }
+  }],
+  notes: {
+    type: String
+  }
 });
 
-const Diagnosis = mongoose.model("Diagnosis", diagnosisSchema);
-
-module.exports = Diagnosis;
+const Diagnosis = mongoose.model('Diagnosis', diagnosisSchema);

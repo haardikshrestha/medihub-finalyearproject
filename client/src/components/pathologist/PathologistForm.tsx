@@ -43,7 +43,7 @@ const PathologistForm = () => {
       });
       if (response.ok) {
         alert("Pathologist information registered successfully");
-        navigate("/pathologist");
+        navigate("/login");
       } else {
         alert("Failed to register pathologist information");
       }

@@ -15,12 +15,11 @@ const LatestTestResults: React.FC = () => {
           rel="noopener noreferrer"
           className="text-blue-600 hover:text-blue-800 font-semibold flex items-center"
         >
-          <FaFilePdf className="mr-2 text-red-500" />
-          View PDF
+          
+          Please wait for your test result.
         </a>
       </div>
       <div className="mt-4 text-gray-600">
-        <p>Last updated: </p>
       </div>
     </div>
   );

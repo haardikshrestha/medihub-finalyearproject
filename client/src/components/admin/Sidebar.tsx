@@ -1,8 +1,13 @@
-// Sidebar.tsx
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    navigate("/login");
+    localStorage.removeItem("email");
+    localStorage.removeItem("role")
+  }
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
@@ -64,8 +69,8 @@ const Sidebar = () => {
         </li>
         {/* logout button at the bottom */}
         <div className="absolute bottom-0 w-full left-0 p-4">
-          <button className="btn border-none bg-error w-full text-center text-white">
-            {/* onClick={handleLogout} */}
+          <button onClick={handleLogout} className="btn border-none bg-error w-full text-center text-white">
+            
             Logout
           </button>
         </div>

@@ -11,8 +11,7 @@ const LatestAppointment: React.FC = () => {
         <FaCalendarAlt className="text-green-500 text-2xl" />
       </div>
       <div className="bg-gray-100 rounded-lg p-4">
-        <p className="text-gray-600 mb-2">Date: </p>
-        <p className="text-gray-600 mb-2">Doctor: </p>
+        <p>No appointments scheduled.</p>
       </div>
     </div>
   );

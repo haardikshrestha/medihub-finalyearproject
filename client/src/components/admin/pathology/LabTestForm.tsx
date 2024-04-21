@@ -7,7 +7,7 @@ const LabTestForm: React.FC = () => {
   const [formData, setFormData] = useState({
     testName: "",
     testPrice: 0,
-    testFields: [""],
+    testFields: [{ fieldName: "", normalRange: "" }],
   });
   const [formVisible, setFormVisible] = useState(false);
 
@@ -23,21 +23,22 @@ const LabTestForm: React.FC = () => {
     }));
   };
 
-  const handleFieldChange = (index: number, value: string) => {
+  const handleFieldChange = (index: number, field: keyof typeof formData.testFields[0], value: string) => {
     setFormData((prevData) => {
       const newTestFields = [...prevData.testFields];
-      newTestFields[index] = value;
+      newTestFields[index][field] = value;
       return {
         ...prevData,
         testFields: newTestFields,
       };
     });
   };
+  
 
   const addField = () => {
     setFormData((prevData) => ({
       ...prevData,
-      testFields: [...prevData.testFields, ""],
+      testFields: [...prevData.testFields, { fieldName: "", normalRange: "" }],
     }));
   };
 
@@ -65,7 +66,7 @@ const LabTestForm: React.FC = () => {
         setFormData({
           testName: "",
           testPrice: 0,
-          testFields: [""],
+          testFields: [{ fieldName: "", normalRange: "" }],
         });
         toast.success("Lab test added successfully");
       } else {
@@ -135,10 +136,17 @@ const LabTestForm: React.FC = () => {
               <div key={index} className="flex items-center mb-2">
                 <input
                   type="text"
-                  placeholder="Enter test field"
-                  value={field}
-                  onChange={(e) => handleFieldChange(index, e.target.value)}
+                  placeholder="Enter test field name"
+                  value={field.fieldName}
+                  onChange={(e) => handleFieldChange(index, "fieldName", e.target.value)}
                   className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-indigo-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Enter normal range"
+                  value={field.normalRange}
+                  onChange={(e) => handleFieldChange(index, "normalRange", e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-indigo-500 ml-2"
                 />
                 {index !== 0 && (
                   <button

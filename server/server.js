@@ -19,6 +19,7 @@ const TestResult = require("./models/pathology-models/testResultSchema");
 const SampleCollection = require("./models/pathology-models/sampleCollectionSchema");
 const InPatient = require("./models/patient-models/inPatientSchema");
 const PatientDiagnosis = require("./models/patient-models/patientDiagnosisSchema");
+const LabReport = require("./models/pathology-models/labReportSchema");
 
 const app = express();
 const crypto = require("crypto");
@@ -677,11 +678,11 @@ app.get("/getgender", async (req, res) => {
 // Route to get all doctors
 app.get("/api/doctors", async (req, res) => {
   try {
-    const allDoctors = await Doctor.find();
+    const allDoctors = await Doctors.find();
     res.status(200).json(allDoctors);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json(error);
   }
 });
 
@@ -743,18 +744,33 @@ app.post("/newdoctor", async (req, res) => {
 
 app.post("/addDepartment", async (req, res) => {
   try {
-    const { depID, depName } = req.body; // Assuming these values come from the request body
+    const { depID, depName, depNameShort } = req.body;
 
-    const existingDepartment = await Department.findOne({ depID });
-
-    if (existingDepartment) {
-      return res.status(400).json({ error: "Department already exists." });
+    if (!depID || !depName || !depNameShort) {
+      return res.status(400).json({ error: "Please provide department ID, name, and short name." });
     }
+
+    const existingDepartmentID = await Department.findOne({ depID });
+    if (existingDepartmentID) {
+      return res.status(400).json({ error: "Department ID is already in use." });
+    }
+
+    const existingDepartmentName = await Department.findOne({ depName });
+    if (existingDepartmentName) {
+      return res.status(400).json({ error: "Department name is already in use." });
+    }
+
+    const existingDepartmentShortName = await Department.findOne({ depNameShort });
+    if (existingDepartmentShortName) {
+      return res.status(400).json({ error: "Department short name is already in use." });
+    }
+
+    const capitalizedShortName = depNameShort.toUpperCase();
 
     const newDepartment = new Department({
       depID,
       depName,
-      // ... other fields ...
+      depNameShort: capitalizedShortName
     });
 
     await newDepartment.save();
@@ -765,6 +781,8 @@ app.post("/addDepartment", async (req, res) => {
     res.status(500).json({ error: "Internal server error." });
   }
 });
+
+
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -806,6 +824,27 @@ app.get("/getappointments", async (req, res) => {
     res.status(500).json({ message: err.message }); // Return an error message if something goes wrong
   }
 });
+
+app.get("/getappointmentsbyemail", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const appointments = await Appointment.find({ email });
+
+    if (appointments.length === 0) {
+      return res.status(404).json({ message: 'No appointments scheduled yet' });
+    }
+
+    res.status(200).json(appointments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 app.get("/appointments/count", async (req, res) => {
   try {
@@ -972,9 +1011,6 @@ app.get('/get/patientdiagnosis/:patientEmail', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-
-
 
 app.get("/numberOfData", async (req, res) => {
   try {
@@ -1191,8 +1227,7 @@ app.post("/patients/delete", async (req, res) => {
   }
 });
 
-//count patients according to their gender
-app.get("/patients/genderCount", async (req, res) => {
+app.get("/genderCounter", async (req, res) => {
   try {
     const genderCounts = await Patient.aggregate([
       { $group: { _id: "$gender", count: { $sum: 1 } } },
@@ -1217,7 +1252,6 @@ app.get("/patients/genderCount", async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error("Error finding gender counts:", err);
-    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -1257,6 +1291,7 @@ app.post("/patientsinfo", async (req, res) => {
 app.post("/api/newdoctor", async (req, res) => {
   try {
     const {
+      fullName, 
       nmc,
       email,
       expertise,
@@ -1269,11 +1304,10 @@ app.post("/api/newdoctor", async (req, res) => {
       password,
     } = req.body;
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the saltRounds
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
-    // Create a new doctor document
     const newDoctor = new Doctors({
+      fullName, 
       nmc,
       email,
       expertise,
@@ -1287,7 +1321,6 @@ app.post("/api/newdoctor", async (req, res) => {
 
     await newDoctor.save();
 
-    // Create a new user with hashed password
     const newUser = new User({
       email,
       password: hashedPassword,
@@ -1312,23 +1345,21 @@ Please change your password after logging in for security reasons.
 Regards,
 MediHub Team`,
     };
-    console.log("sending mail nowwww");
 
     // Send the email
     await transporter.sendMail(mailOptions);
-    console.log("mailed!!");
-    res
-      .status(200)
-      .json({ message: "Doctor and user registered successfully" });
+
+    res.status(200).json({ message: "Doctor and user registered successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json(error);
   }
 });
 
+
 //according to expertise:
-app.get("/getdoctorsbyexpertise", async (req, res) => {
-  const { expertise } = req.body;
+app.get("/getdoctorsbyexpertise/:expertise", async (req, res) => {
+  const { expertise } = req.params;
 
   try {
     // Find doctors with the specified expertise
@@ -1346,6 +1377,61 @@ app.get("/getdoctorsbyexpertise", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
+app.get("/getdoctorbyemail/:email", async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const doctor = await Doctors.findOne({ email });
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found with the specified email." });
+    }
+
+    res.status(200).json(doctor);
+  } catch (error) {
+    console.error("Error fetching doctor by email:", error);
+    res.status(500).json(error);
+  }
+});
+
+
+app.delete('/deleteDoctor', async (req, res) => {
+  const { email } = req.query; 
+  try {
+    const doctor = await Doctors.findOne({ email });
+
+    if (!doctor) {
+      return res.status(404).json({ error: 'Doctor not found' });
+    }
+    await Doctors.deleteOne({ email });
+
+    res.status(200).json({ message: 'Doctor deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting doctor:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/deleteUser', async (req, res) => {
+  const { email } = req.query; 
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await User.deleteOne({ email });
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 // ---------------------------------- PATHOLOGISTS -------------------------------------------------------------
 //reset
@@ -1621,22 +1707,62 @@ app.get("/samplecollections/get/all", async (req, res) => {
 });
 
 //get according to patient
-app.get("/samplecollections/get/patient", async (req, res) => {
+app.get("/samplecollections/get/patient/:email", async (req, res) => {
   try {
-    const patientName = req.query.patientName;
+    const patientEmail = req.params.email;
 
-    if (!patientName) {
+    if (!patientEmail) {
       return res
         .status(400)
-        .json({ error: "Patient name is required in query parameters" });
+        .json({ error: "Patient email is required in route parameter" });
     }
 
-    const sampleCollections = await SampleCollection.find({ patientName });
+    const sampleCollections = await SampleCollection.find({ patientEmail });
+
+    if (sampleCollections.length === 0) {
+      return res.status(404).json({ error: "No sample collections found for the provided patient email" });
+    }
 
     res.status(200).json(sampleCollections);
   } catch (error) {
     console.error("Error fetching sample collections:", error);
-    res.status(500).json(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get('/api/samples/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const samples = await SampleCollection.find({ patientEmail: email });
+
+    if (samples.length === 0) {
+      return res.status(404).json({ message: 'No samples found for the given email' });
+    }
+
+    res.json(samples);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.put('/samplecollections/cancel/:testID', async (req, res) => {
+  try {
+    const testID = req.params.testID;
+    const appointment = await SampleCollection.findOneAndUpdate(
+      { _id: testID },
+      { status: "Cancelled" },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    return res.status(200).json(appointment);
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -1967,19 +2093,33 @@ app.get("/get/labtestsNo", async (req, res) => {
 
 app.post("/scheduleSample", async (req, res) => {
   try {
+    const appointmentDate = new Date(req.body.appointmentDate);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (appointmentDate.toDateString() < tomorrow.toDateString()) {
+      return res.status(400).json({ error: "Appointment date should be tomorrow or a later date." });
+    }
+
+    const appointmentTime = new Date(`2000-01-01T${req.body.appointmentTime}`);
+    const startTime = new Date(`2000-01-01T09:00:00`);
+    const endTime = new Date(`2000-01-01T17:00:00`);
+    if (appointmentTime < startTime || appointmentTime > endTime) {
+      return res.status(400).json({ error: "Appointment time should be between 9 am and 5 pm." });
+    }
+
+    // Save the appointment if validations pass
     const newSample = new SampleCollection(req.body);
-
-    // Save the new sample to the database
     await newSample.save();
-
-    res
-      .status(201)
-      .json({ message: "Sample saved successfully", sample: newSample });
+    res.status(201).json({ message: "Sample saved successfully", sample: newSample });
   } catch (error) {
     console.error("Error saving sample:", error);
-    res.status(500).json(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
 
 app.post("/samplecollections/:id/updateStatus", async (req, res) => {
   const { id } = req.params;
@@ -2042,6 +2182,7 @@ app.get("/reportlabtests/:id", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
 app.post("/testresults", upload.single("testResultsPdf"), (req, res) => {
   const testResult = new TestResult({
     patientName: req.body.patientName,
@@ -2307,4 +2448,221 @@ app.get("/api/upcoming-sample/:email", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error" });
   }
+});
+
+// ----------------------- Create Test Page ----------------------
+
+app.get("/getbyemail/patient/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+    const user = await Patient.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/getbyid/test/:testId", async (req, res) => {
+  try {
+    const testId = req.params.testId;
+    const labTest = await LabTest.findById(testId);
+    if (!labTest) {
+      return res.status(404).json({ message: "Lab test not found" });
+    }
+    res.json(labTest);
+  } catch (error) {
+    console.error("Error fetching lab test:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/getbyid/sample/:sampleId", async (req, res) => {
+  try {
+    const sampleId = req.params.sampleId;
+    const sample = await SampleCollection.findById(sampleId);
+    if (!sample) {
+      return res.status(404).json({ message: "Sample not found" });
+    }
+    res.json(sample);
+  } catch (error) {
+    console.error("Error fetching sample:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+//mail and save:
+app.post('/submit/test', async (req, res) => {
+  try {
+    const { labTest, user, fieldValues, comment } = req.body;
+
+    // Generate HTML for the PDF lab report
+    const html = `
+      <html>
+        <head>
+          <style>
+            /* Add your CSS styles here */
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+            }
+            h1 {
+              color: #333;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            th, td {
+              padding: 8px;
+              text-align: left;
+              border-bottom: 1px solid #ddd;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Lab Report</h1>
+          <p>Patient Name: ${user.firstName} ${user.lastName}</p>
+          <p>Patient Email: ${user.email}</p>
+          <p>Test Name: ${labTest.testName}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Field Name</th>
+                <th>Normal Range</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${labTest.testFields.map(
+                (field) => `
+                <tr>
+                  <td>${field.fieldName}</td>
+                  <td>${field.normalRange}</td>
+                  <td>${fieldValues[field.fieldName] || ''}</td>
+                </tr>
+              `
+              ).join('')}
+            </tbody>
+          </table>
+          <p>Comments: ${comment}</p>
+        </body>
+      </html>
+    `;
+
+    // Generate PDF from HTML
+    const pdfBuffer = await new Promise((resolve, reject) => {
+      pdf.create(html).toBuffer((err, buffer) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(buffer);
+        }
+      });
+    });
+
+    // Save PDF in the database
+    const pdfData = {
+      patientName: `${user.firstName} ${user.lastName}`,
+      patientEmail: user.email,
+      testName: labTest.testName,
+      pdfBuffer: pdfBuffer,
+    };
+    const savedPDF = await LabReport.create(pdfData);
+
+    // Send PDF to the patient via email
+    const mailOptions = {
+      from: 'your-email@gmail.com', // Replace with your email address
+      to: user.email,
+      subject: 'Lab Report',
+      text: 'Please find attached your lab report.',
+      attachments: [
+        {
+          filename: `lab-report-${user.firstName}-${user.lastName}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Lab report submitted successfully' });
+  } catch (error) {
+    console.error('Error submitting lab report:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+//------------------------------------------------------------------
+
+
+// ------------------- lab reports ----------------------
+
+
+// Endpoint to fetch lab reports by patient email
+app.get('/labreports', async (req, res) => {
+  try {
+    const { patientEmail } = req.query;
+    if (!patientEmail) {
+      return res.status(400).json({ message: 'Patient email is required' });
+    }
+
+    const labReports = await LabReport.find({ patientEmail });
+    if (labReports.length === 0) {
+      return res.status(404).json({ message: 'Lab reports not found for the specified patient email' });
+    }
+
+    res.json(labReports);
+  } catch (error) {
+    console.error('Error fetching lab reports:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+// ------------------------- diagnosis -------------------
+app.post('/diagnosis', async (req, res) => {
+  try {
+    const { patientEmail, doctorEmail, diagnosis, medications, notes } = req.body;
+
+    const newDiagnosis = new Diagnosis({
+      patientEmail: patientEmail,
+      doctorEmail: doctorEmail,
+      diagnosis: diagnosis,
+      medications: medications,
+      notes: notes
+    });
+    
+    const savedDiagnosis = await newDiagnosis.save();
+    
+    res.json(savedDiagnosis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+app.get('/counter/:email', async (req, res) => {
+    const email = req.params.email;
+
+    try {
+        const appointmentCount = await Appointment.countDocuments({ patientEmail: email });
+        const sampleCollectionCount = await SampleCollection.countDocuments({ patientEmail: email });
+        const patientDiagnosisCount = await PatientDiagnosis.countDocuments({ patientEmail: email });
+        const labReportCount = await LabReport.countDocuments({ patientEmail: email });
+
+        res.status(200).json({ 
+            appointmentCount: appointmentCount,
+            sampleCollectionCount: sampleCollectionCount,
+            patientDiagnosisCount: patientDiagnosisCount,
+            labReportCount: labReportCount
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
 });

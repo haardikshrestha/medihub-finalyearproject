@@ -1,30 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+interface Appointment {
+  apptID: string;
+  apptDate: string;
+  apptPatient: string;
+  apptTime: string;
+  apptDoctor: string;
+  apptStatus: string;
+  apptDisease: string;
+  paymentStatus: string;
+  transactionID: string;
+}
 
 const Appointments: React.FC = () => {
-  const appointments = [
-    {
-      apptID: 'APPT-1234',
-      apptDate: '2024-04-12',
-      apptPatient: 'John Doe',
-      apptTime: '10:00 AM',
-      apptDoctor: 'Dr. Jane Smith',
-      apptStatus: 'scheduled',
-      apptDisease: 'Common Cold',
-      paymentStatus: 'paid',
-      transactionID: 'TXN-0001',
-    },
-    {
-      apptID: 'APPT-5678',
-      apptDate: '2024-04-18',
-      apptPatient: 'Jane Doe',
-      apptTime: '2:00 PM',
-      apptDoctor: 'Dr. Michael Brown',
-      apptStatus: 'pending',
-      apptDisease: 'Back Pain',
-      paymentStatus: 'unpaid',
-      transactionID: '',
-    },
-  ];
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const mail = localStorage.getItem('email');
+
+    const fetchAppointments = async () => {
+      try {
+        const response = await axios.get<Appointment[]>(
+          'http://localhost:5173/getappointmentsbyemail',
+          {
+            params: {
+              email: mail,
+            },
+          }
+        );
+        setAppointments(response.data);
+        setLoading(false);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Error fetching appointments');
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="">
@@ -60,6 +84,13 @@ const Appointments: React.FC = () => {
               </td>
             </tr>
           ))}
+          {appointments.length === 0 && (
+            <tr>
+              <td colSpan={5} className="text-center py-4">
+                No appointments scheduled yet
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

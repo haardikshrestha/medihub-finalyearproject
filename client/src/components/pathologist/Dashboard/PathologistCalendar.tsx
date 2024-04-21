@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import axios from "axios";
 
-interface Treatment {
-  title: string;
-  description: string;
+interface Appointment {
+  _id: string;
+  patientEmail: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  testName: string;
+  status: string;
+  testID: string;
 }
 
 const PathologistCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
-    setSelectedDate(new Date());
-  }, []);
+    fetchData();
+  }, [selectedDate]);
 
-  const treatments: { [date: string]: Treatment[] } = {
-    // Treatments data
+  const fetchData = async () => {
+    try {
+      if (!selectedDate) return;
+      const response = await axios.get("http://localhost:5173/samplecollections/get/all");
+      setAppointments(response.data);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
   };
 
   const handlePrevMonth = () => {
@@ -24,6 +37,32 @@ const PathologistCalendar: React.FC = () => {
 
   const handleNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
+  const renderAppointments = () => {
+    if (!selectedDate) return null;
+    const selectedDateString = selectedDate.toISOString().slice(0, 10); 
+    const selectedAppointments = appointments.filter(
+      (appointment) => appointment.appointmentDate === selectedDateString
+    );
+
+    if (selectedAppointments.length === 0) {
+      return (
+        <div className="flex items-center justify-center bg-gray-200 p-2 rounded-md mt-10">
+          <span role="img" aria-label="Happy emoji">
+            🙂
+          </span>
+          <span className="ml-2 text-sm">No appointments scheduled for the day!</span>
+        </div>
+      );
+    }
+
+    return selectedAppointments.map((appointment) => (
+      <div key={appointment._id} className="bg-white rounded-lg border p-4 mb-4">
+        <div className="text-lg font-bold">{appointment.testName}</div>
+        <div className="text-sm text-gray-500">{appointment.status}</div>
+      </div>
+    ));
   };
 
   const renderCalendar = () => {
@@ -99,6 +138,7 @@ const PathologistCalendar: React.FC = () => {
     return calendar;
   };
 
+
   return (
     <div
       className="p-4 border border-gray-200 rounded-xl h-[490px] w-[500px]"
@@ -126,7 +166,7 @@ const PathologistCalendar: React.FC = () => {
         <div className="mt-4">
           <hr className="mb-4" />
           <div className="text-center">
-            <div className="text-sm font-semibold text-gray-800 mb-1">Your Schedule</div>
+            <div className="text-sm font-semibold text-gray-800 mb-1">Appointments</div>
             <div className="text-md font-bold text-[#91BF77] mb-1">
               {selectedDate.toLocaleDateString("en-US", {
                 weekday: "long",
@@ -135,22 +175,7 @@ const PathologistCalendar: React.FC = () => {
               })}
             </div>
           </div>
-          <div className="h-48 overflow-y-auto ">
-            <div className="flex flex-col gap-4 mt-3">
-              <div className="bg-white rounded-lg  p-4 border">
-                <div className="text-lg font-bold">Blood Test</div>
-                <div className="text-sm text-gray-500">
-                  Routine blood test for cholesterol levels.
-                </div>
-              </div>
-              <div className="bg-white rounded-lg border p-4">
-                <div className="text-lg font-bold">X-Ray</div>
-                <div className="text-sm text-gray-500">
-                  X-Ray scan for the knee joint.
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className="h-48 overflow-y-auto">{renderAppointments()}</div>
         </div>
       )}
     </div>

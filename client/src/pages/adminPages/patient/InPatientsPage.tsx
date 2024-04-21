@@ -1,7 +1,9 @@
+import InPatientTable from "@/components/admin/crud/Patients/InPatientTable"
+
 const InPatientsPage = () => {
     return(
         <>
-        In Patients
+        <InPatientTable/>
         </>
     )
 }

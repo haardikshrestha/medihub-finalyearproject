@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+interface LabTest {
+  _id: string;
+  testName: string;
+  testPrice: number;
+  testFields: { fieldName: string; normalRange: string }[];
+}
+
 const LabTestCard: React.FC = () => {
-  const [labTests, setLabTests] = useState<any[]>([]);
+  const [labTests, setLabTests] = useState<LabTest[]>([]);
 
   useEffect(() => {
     const fetchLabTests = async () => {
@@ -14,7 +21,7 @@ const LabTestCard: React.FC = () => {
       }
     };
 
-    fetchLabTests(); // Initial fetch
+    fetchLabTests(); 
 
     const intervalId = setInterval(fetchLabTests, 1000); 
 
@@ -30,8 +37,10 @@ const LabTestCard: React.FC = () => {
             <h2 className="text-lg font-semibold mb-2">{test.testName}</h2>
             <p className="text-gray-600 mb-2">Price: Rs.{test.testPrice}</p>
             <ul className="list-disc pl-5">
-              {test.testFields.map((field: string, index: number) => (
-                <li key={index}>{field}</li>
+              {test.testFields.map((field, index) => (
+                <li key={index}>
+                  {field.fieldName}: {field.normalRange}
+                </li>
               ))}
             </ul>
           </div>

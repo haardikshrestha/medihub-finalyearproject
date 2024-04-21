@@ -1,10 +1,7 @@
 import Calendar from "@/components/doctor/Calendar";
 import StatsCard from "@/components/doctor/Dashboard/StatsCard";
 import { useState, useEffect } from "react";
-import Gender from "@/components/doctor/Patients/GenderStats";
 import AppointmentCard from "@/components/doctor/Dashboard/AppointmentCard";
-import TimeSlotPicker from "@/components/doctor/Appointments/TimeSlotPicker";
-import ProfileCard from "@/components/doctor/Dashboard/ProfileCard";
 
 const DoctorDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -122,16 +119,6 @@ const DoctorDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* <Events/>
-      <PatientDashboard/> */}
-      {/* <TimeSlotPicker/>
-      <ProfileCard
-        profileImage="/profile-image.jpg"
-        name="Jane Cooper"
-        description="Dr. Jane Cooper is an emerging surgeon with over 5 years of experience in cardiology."
-        commitment="Dr. Cooper is committed to providing the best treatment and care to her patients."
-      /> */}
     </>
   );
 };

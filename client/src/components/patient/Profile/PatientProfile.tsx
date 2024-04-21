@@ -4,10 +4,11 @@ import axios from "axios";
 import {
   FaEdit,
   FaEnvelope,
-  FaPhone,
   FaMapMarkerAlt,
   FaHeartbeat,
   FaTint,
+  FaBirthdayCake,
+  FaTransgenderAlt
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -126,7 +127,7 @@ const PatientProfile: React.FC = () => {
         </button>
       </div>
       <div className="py-4 px-8 border">
-        <h3 className="text-xl font-semibold mb-4">Personal Information</h3>
+        <h3 className="text-xl font-semibold mb-4 mt-2">Personal Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <div className="flex items-center mb-2">
@@ -199,7 +200,7 @@ const PatientProfile: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center mb-2 mt-3">
-              <FaTint className="text-[#91BF77] mr-2" size={18} />
+              <FaBirthdayCake className="text-[#91BF77] mr-2" size={18} />
               <p className="text-gray-700 font-semibold">Date of Birth:</p>
             </div>
             {editMode ? (
@@ -216,7 +217,7 @@ const PatientProfile: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center mb-2 mt-3">
-              <FaTint className="text-[#91BF77] mr-2" size={18} />
+              <FaTransgenderAlt className="text-[#91BF77] mr-2" size={18} />
               <p className="text-gray-700 font-semibold">Gender:</p>
             </div>
             {editMode ? (

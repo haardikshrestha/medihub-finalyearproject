@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 interface InPatient {
   email: string;
@@ -44,6 +45,7 @@ const InPatientForm: React.FC = () => {
     try {
       const response = await axios.post('http://localhost:5173/new/inpatients', inPatient);
       console.log(response.data.message);
+      toast.success("Patient Added sucessfully!")
       setInPatient({
       email: '',
       firstName: '',
@@ -65,7 +67,7 @@ const InPatientForm: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container">
       <h1 className="text-xl font-bold text-gray-800 mb-6">Admit a patient</h1>
       <form onSubmit={handleSubmit} className="bg-white rounded-lg px-8 pt-6 pb-8 mb-4">
         <div className="mb-4">

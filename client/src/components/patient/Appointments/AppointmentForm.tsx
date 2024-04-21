@@ -1,164 +1,149 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-interface Appointment {
-  apptID: string;
-  apptDate: string;
-  apptPatient: string;
-  apptTime: string;
-  apptDoctor: string;
-  apptDisease: string;
-  paymentStatus: string;
-  transactionID: string;
+interface AppointmentFormProps {
+  doctorEmail: string;
 }
 
-const AppointmentForm: React.FC = () => {
-  const [formData, setFormData] = useState<Appointment>({
-    apptID: "",
-    apptDate: "",
-    apptPatient: "",
-    apptTime: "",
-    apptDoctor: "",
-    apptDisease: "",
-    paymentStatus: "",
-    transactionID: ""
-  });
+interface DoctorData {
+  _id: string;
+  fullName: string;
+  email: string;
+  daysAvailable: string[];
+  startTime: string;
+  endTime: string;
+}
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
-  };
+const AppointmentForm: React.FC<AppointmentFormProps> = ({ doctorEmail }) => {
+  const [apptDate, setApptDate] = useState('');
+  const [apptTime, setApptTime] = useState('');
+  const [apptDisease, setApptDisease] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [doctorData, setDoctorData] = useState<DoctorData | null>(null);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const history = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const fetchDoctorData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5173/getdoctorbyemail/${doctorEmail}`);
+        setDoctorData(response.data);
+      } catch (error) {
+        console.error('Error fetching doctor data:', error);
+        setError('Error fetching doctor data');
+      }
+    };
+
+    fetchDoctorData();
+  }, [doctorEmail]);
+
+  useEffect(() => {
+    if (doctorData && doctorData.startTime && doctorData.endTime) {
+      const start = new Date(`1970-01-01T${doctorData.startTime}`);
+      const end = new Date(`1970-01-01T${doctorData.endTime}`);
+      const availableTimes = [];
+
+      for (let time = start; time <= end; time.setMinutes(time.getMinutes() + 30)) {
+        availableTimes.push(time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      }
+
+      setAvailableTimes(availableTimes);
+    } else {
+      setAvailableTimes([]);
+    }
+  }, [doctorData]);
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
     try {
-      const response = await axios.post("/api/appointments", formData);
+      const apptPatient = localStorage.getItem('userEmail');
+      if (!apptPatient) {
+        throw new Error('User email not found');
+      }
+      const appointmentData = {
+        apptDate,
+        apptPatient,
+        apptTime,
+        apptDoctor: doctorEmail,
+        apptDisease,
+      };
+      const response = await axios.post('http://localhost:5173/bookappointment', appointmentData);
       console.log(response.data);
-      // Handle success (redirect, show message, etc.)
+      history('/appointment/success');
     } catch (error) {
-      console.error("Error saving appointment:", error);
-      // Handle error (show error message, etc.)
+      console.error('Error booking appointment:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
-      <h2 className="font-bold text-lg mb-4">New Appointment</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="apptID" className="block mb-1">
-            Appointment ID:
-          </label>
-          <input
-            type="text"
-            id="apptID"
-            name="apptID"
-            value={formData.apptID}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="apptDate" className="block mb-1">
-            Appointment Date:
+    <form onSubmit={handleFormSubmit} className="w-full max-w-md">
+      <div className="flex flex-wrap -mx-3 mb-6">
+        <div className="w-full px-3 mb-6">
+          <label htmlFor="apptDate" className="block text-gray-700 text-sm font-bold mb-2">
+            Date
           </label>
           <input
             type="date"
             id="apptDate"
-            name="apptDate"
-            value={formData.apptDate}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
+            value={apptDate}
+            onChange={(e) => setApptDate(e.target.value)}
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="apptPatient" className="block mb-1">
-            Patient Name:
+        <div className="w-full px-3 mb-6">
+          <label htmlFor="apptTime" className="block text-gray-700 text-sm font-bold mb-2">
+            Time
           </label>
-          <input
-            type="text"
-            id="apptPatient"
-            name="apptPatient"
-            value={formData.apptPatient}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="apptTime" className="block mb-1">
-            Appointment Time:
-          </label>
-          <input
-            type="text"
+          <select
             id="apptTime"
-            name="apptTime"
-            value={formData.apptTime}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
-          />
+            value={apptTime}
+            onChange={(e) => setApptTime(e.target.value)}
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          >
+            <option value="">Select Time</option>
+            {availableTimes.map((time, index) => (
+              <option key={index} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="mb-4">
-          <label htmlFor="apptDoctor" className="block mb-1">
-            Doctor Name:
-          </label>
-          <input
-            type="text"
-            id="apptDoctor"
-            name="apptDoctor"
-            value={formData.apptDoctor}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="apptDisease" className="block mb-1">
-            Disease:
+        <div className="w-full px-3 mb-6">
+          <label htmlFor="apptDisease" className="block text-gray-700 text-sm font-bold mb-2">
+            Disease
           </label>
           <input
             type="text"
             id="apptDisease"
-            name="apptDisease"
-            value={formData.apptDisease}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
+            value={apptDisease}
+            onChange={(e) => setApptDisease(e.target.value)}
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="paymentStatus" className="block mb-1">
-            Payment Status:
-          </label>
-          <input
-            type="text"
-            id="paymentStatus"
-            name="paymentStatus"
-            value={formData.paymentStatus}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
-          />
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        <div className="w-full px-3 mb-6">
+          <button
+            type="submit"
+            className={`bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Booking...' : 'Book Appointment'}
+          </button>
         </div>
-        <div className="mb-4">
-          <label htmlFor="transactionID" className="block mb-1">
-            Transaction ID:
-          </label>
-          <input
-            type="text"
-            id="transactionID"
-            name="transactionID"
-            value={formData.transactionID}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-1 w-full"
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Save Appointment
-        </button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 

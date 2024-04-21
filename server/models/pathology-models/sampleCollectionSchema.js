@@ -6,11 +6,11 @@ const sampleCollectionSchema = new Schema({
         type: String,
         required: true
     },
-    doctorName: {
+    appointmentDate: {
         type: String,
         required: true
     },
-    appointmentDate: {
+    appointmentTime: {
         type: String,
         required: true
     },
@@ -20,7 +20,7 @@ const sampleCollectionSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Sample Pending', 'Test Pending', 'Test Completed'],
+        enum: ['Sample Pending', 'Test Pending', 'Test Completed', 'Cancelled'],
         default: 'Sample Pending'
     },
     testID: {
