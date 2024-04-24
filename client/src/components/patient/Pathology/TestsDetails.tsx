@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
+
 
 interface LabTest {
   _id: string;
@@ -30,7 +31,8 @@ const TestDetails: React.FC = () => {
     [date: string]: string[];
   }>({});
 
-  useEffect(() => {
+
+useEffect(() => {
     const fetchLabTest = async () => {
       try {
         const response = await axios.get(`http://localhost:5173/singlelabtest?id=${id}`);
