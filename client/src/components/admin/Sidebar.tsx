@@ -69,7 +69,7 @@ const Sidebar = () => {
         </li>
         {/* logout button at the bottom */}
         <div className="absolute bottom-0 w-full left-0 p-4">
-          <button onClick={handleLogout} className="btn border-none bg-error w-full text-center text-white">
+          <button onClick={handleLogout} className="btn border-error bg-white w-full text-center text-error hover:bg-error hover:text-white">
             
             Logout
           </button>

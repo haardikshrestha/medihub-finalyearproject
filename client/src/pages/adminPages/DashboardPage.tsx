@@ -61,6 +61,7 @@ const DashboardPage = () => {
       <div className="mt-6">
       <Gender/>
       </div>
+      
     </div>
   );
 };

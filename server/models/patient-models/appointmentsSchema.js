@@ -11,15 +11,14 @@ const appointmentSchema = new mongoose.Schema({
     // transactionID: { type: String, required: true }
 });
 
-// Define a pre-save hook to automatically set apptStatus based on paymentStatus
-// appointmentSchema.pre('save', function(next) {
-//     if (this.paymentStatus === 'paid') {
-//         this.apptStatus = 'scheduled';
-//     } else {
-//         this.apptStatus = 'pending';
-//     }
-//     next();
-// });
+appointmentSchema.pre('save', function(next) {
+    if (this.paymentStatus === 'paid') {
+        this.apptStatus = 'scheduled';
+    } else {
+        this.apptStatus = 'pending';
+    }
+    next();
+});
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 

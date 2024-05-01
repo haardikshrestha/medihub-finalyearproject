@@ -66,7 +66,7 @@ const Login = () => {
         if (role === "admin") {
           navigate("/admin");
         } else if (role === "user") {
-          alert(`User login successful`);
+          toast.success("Welcome back! You have logged in sucessfully!")
           const emailExists = response1.data.emailExists;
           navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
         } else if (role === "doctor") {

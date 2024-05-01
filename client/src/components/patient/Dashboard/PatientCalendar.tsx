@@ -12,7 +12,7 @@ interface SampleCollection {
 
 const PatientCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Set the initial selected date to today
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); 
   const [schedule, setSchedule] = useState<SampleCollection[]>([]);
 
   useEffect(() => {
@@ -93,6 +93,8 @@ const PatientCalendar: React.FC = () => {
             .toString()
             .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
           const currentDateValue = new Date(dateString);
+          const isCurrentDay =
+            currentDateValue.toDateString() === new Date().toDateString();
           const isSelected =
             selectedDate?.toDateString() === currentDateValue.toDateString();
           const hasData = schedule.some(
@@ -106,6 +108,8 @@ const PatientCalendar: React.FC = () => {
               className={`w-10 h-10 flex items-center justify-center text-center cursor-pointer text-sm relative ${
                 isSelected
                   ? "bg-[#91BF77] text-white rounded-full hover:bg-[#83ac6b]"
+                  : isCurrentDay
+                  ? "bg-gray-200 text-gray-600 rounded-full"
                   : "hover:bg-gray-200 hover:rounded-full"
               }`}
               onClick={() => setSelectedDate(currentDateValue)}
@@ -114,11 +118,6 @@ const PatientCalendar: React.FC = () => {
               {isSelected && hasData && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-10 h-10 bg-transparent border-2 border-amber-300 rounded-full"></div>
-                </div>
-              )}
-              {isSelected && hasData && (
-                <div className="absolute top-0 right-0 bottom-1 -mt-5 -mr-2  text-amber-300 text-4xl">
-                  •
                 </div>
               )}
             </div>
@@ -197,7 +196,7 @@ const PatientCalendar: React.FC = () => {
                   selectedDate.toDateString()
               ).length === 0 && (
                 <div className="flex items-center justify-center bg-gray-200 p-2 rounded-md mt-10">
-                  <span role="img" aria-label="Happy emoji">
+                  <span role="img" >
                     🙂
                   </span>
                   <span className="ml-2 text-sm">

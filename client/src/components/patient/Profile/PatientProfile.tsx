@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import axios from "axios";
 import {
   FaEdit,
@@ -8,7 +8,9 @@ import {
   FaHeartbeat,
   FaTint,
   FaBirthdayCake,
-  FaTransgenderAlt
+  FaTransgenderAlt,
+  FaVenus,
+  FaMars,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -53,12 +55,12 @@ const PatientProfile: React.FC = () => {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const updatedPatient = updatePatientData(
       editedPatient,
       e.target.name,
-      e.target.value
+      e.target.value,
     );
     setEditedPatient(updatedPatient);
   };
@@ -71,26 +73,26 @@ const PatientProfile: React.FC = () => {
         .then((response) => {
           setPatient(response.data.patient);
           setEditMode(false);
-          toast.success("Patient profile updated successfully"); // Show success toast
+          toast.success("Patient profile updated successfully");
         })
         .catch((error) => {
           if (error.response && error.response.status === 400) {
-            toast.error(error.response.data.message); // Show error message from the backend
+            toast.error(error.response.data.message);
           } else {
             console.error("Error updating patient profile:", error);
-            toast.error("An error occurred while updating the profile."); // Show generic error toast
+            toast.error("An error occurred while updating the profile.");
           }
         });
     } else {
       console.error("Email not found in localStorage");
-      toast.error("Email not found in localStorage."); // Show error toast
+      toast.error("Email not found in localStorage.");
     }
   };
 
   const updatePatientData = (
     patient: PatientData | null,
     field: string,
-    value: string
+    value: string,
   ): PatientData => {
     if (!patient) {
       throw new Error("Patient data is null");
@@ -102,6 +104,15 @@ const PatientProfile: React.FC = () => {
     };
   };
 
+  const renderGenderIcon = () => {
+    if (patient?.gender === "male") {
+      return <FaMars className="text-blue-400 mr-2" size={18} />;
+    } else if (patient?.gender === "female") {
+      return <FaVenus className=" text-pink-500 mr-2" size={18} />;
+    } else {
+      return <FaTransgenderAlt className="text-gray-500 mr-2" size={18} />;
+    }
+  };
 
   return (
     <div className=" mx-auto bg-white rounded-lg overflow-hidden">
@@ -220,21 +231,9 @@ const PatientProfile: React.FC = () => {
               <FaTransgenderAlt className="text-[#91BF77] mr-2" size={18} />
               <p className="text-gray-700 font-semibold">Gender:</p>
             </div>
-            {editMode ? (
-              <select
-                name="gender"
-                value={editedPatient?.gender || ""}
-                onChange={handleInputChange}
-                className="text-gray-600 border border-gray-300 rounded py-2 px-3 w-full"
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            ) : (
-              <p className="text-gray-600">{patient?.gender}</p>
-            )}
+            <div>
+              {renderGenderIcon()}
+            </div>
           </div>
         </div>
         {editMode && (

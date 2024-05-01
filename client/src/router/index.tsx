@@ -60,6 +60,7 @@ import InPatientsPage from "@/pages/adminPages/patient/InPatientsPage";
 import ViewTestHistory from "@/pages/patientPages/Pathology/ViewTestHistory";
 import CreateTestPage from "@/pages/pathologistPages/CreateTestPage";
 import DoctorDetails from "@/pages/patientPages/Doctors/DoctorDetails";
+import DoctorProfile from "@/components/doctor/Profile/DoctorProfile";
 const AppRouter = () => {
   const patientUser = {
     name: "John Doe",
@@ -115,6 +116,7 @@ const AppRouter = () => {
             <Route path="/doctor/surgeries" element={<DoctorSurgeries />} />
             <Route path="/doctor/pathology" element={<DoctorPathology />} />
             <Route path="/doctor/settings" element={<DoctorSettings />} />
+            <Route path="/doctor/profile" element={<DoctorProfile />} />
           </Route>
         </Route>
         <Route path="/">

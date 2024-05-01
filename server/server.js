@@ -869,6 +869,7 @@ app.get("/doctors/findexpertise", async (req, res) => {
   }
 });
 
+
 app.post("/patientsinfo", async (req, res) => {
   try {
     const {
@@ -893,6 +894,7 @@ app.post("/patientsinfo", async (req, res) => {
       return res.status(400).json({ error: "User must be at least 18 years old." });
     }
 
+    // Save patient information to the database
     const newPatient = new Patient({
       email,
       firstName,
@@ -903,10 +905,86 @@ app.post("/patientsinfo", async (req, res) => {
       address,
       bloodgroup,
     });
-
     await newPatient.save();
 
-    res.status(201).json({ message: "Patient information saved successfully" });
+    const mailOptions = {
+      from: 'app.medihub@gmail.com',
+      to: email,
+      subject: 'Patient Information',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    
+              body {
+                font-family: 'Poppins', sans-serif;
+                background-color: #f7f7f7;
+                margin: 0;
+                padding: 0;
+              }
+    
+              .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+              }
+    
+              h1 {
+                color: #333333;
+                text-align: center;
+                margin-bottom: 30px;
+              }
+    
+              p {
+                color: #555555;
+                line-height: 1.6;
+                margin-bottom: 20px;
+              }
+    
+              .patient-info {
+                background-color: #f9f9f9;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+              }
+    
+              .patient-info p {
+                margin-bottom: 10px;
+              }
+    
+              .patient-info p:last-child {
+                margin-bottom: 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Patient Information</h1>
+              <p>Hello ${firstName},</p>
+              <p>Here is your patient information:</p>
+              <div class="patient-info">
+                <p><strong>First Name:</strong> ${firstName}</p>
+                <p><strong>Last Name:</strong> ${lastName}</p>
+                <p><strong>Gender:</strong> ${gender}</p>
+                <p><strong>Date of Birth:</strong> ${dateofbirth}</p>
+                <p><strong>Chronic Illness:</strong> ${chronicillness}</p>
+                <p><strong>Address:</strong> ${address}</p>
+                <p><strong>Blood Group:</strong> ${bloodgroup}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(201).json({ message: "Patient information saved successfully and email sent" });
   } catch (error) {
     console.error("Error saving patient information:", error);
     res.status(500).json(error);
@@ -916,6 +994,19 @@ app.post("/patientsinfo", async (req, res) => {
 app.get("/patients/:email", async (req, res) => {
   try {
     const patient = await Patient.findOne({ email: req.params.email });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+    res.status(200).json(patient);
+  } catch (error) {
+    console.error("Error fetching patient details:", error);
+    res.status(500).json(error);
+  }
+});
+
+app.get("/doctors/:email", async (req, res) => {
+  try {
+    const patient = await Doctors.findOne({ email: req.params.email });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -1360,21 +1451,30 @@ MediHub Team`,
 //according to expertise:
 app.get("/getdoctorsbyexpertise/:expertise", async (req, res) => {
   const { expertise } = req.params;
-
   try {
     // Find doctors with the specified expertise
     const doctors = await Doctors.find({ expertise });
 
     if (!doctors || doctors.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No doctors found with the specified expertise." });
+      return res.status(404).json({
+        success: false,
+        message: "No doctors found with the specified expertise.",
+        data: null,
+      });
     }
 
-    res.status(200).json(doctors);
+    res.status(200).json({
+      success: true,
+      message: "Doctors fetched successfully.",
+      data: doctors,
+    });
   } catch (error) {
     console.error("Error fetching doctors by expertise:", error);
-    res.status(500).json(error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching doctors.",
+      data: null,
+    });
   }
 });
 

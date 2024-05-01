@@ -92,13 +92,13 @@ const LabTestForm: React.FC = () => {
       )}
       {formVisible && (
         <form
-          onSubmit={handleSubmit}
-          className="absolute top-0 right-0 p-6 bg-white rounded-md border flex flex-col w-2/3 mt-7 mb-4 mr-6"
-          style={{
-            maxWidth: "400px",
-            transform: formVisible ? "translateX(0)" : "translateX(100%)",
-          }}
-        >
+        onSubmit={handleSubmit}
+        className="absolute top-0 right-0 p-6 bg-white rounded-md border flex flex-col w-full md:w-2/3 mt-7 mb-4 mr-6"
+        style={{
+          maxWidth: "400px",
+          transform: formVisible ? "translateX(0)" : "translateX(100%)",
+        }}
+      >
           <h2 className="text-2xl font-semibold mb-6">Add New Lab Test</h2>
           <div className="mb-4">
             <label htmlFor="testName" className="block text-gray-700 font-bold mb-2">
@@ -136,17 +136,17 @@ const LabTestForm: React.FC = () => {
               <div key={index} className="flex items-center mb-2">
                 <input
                   type="text"
-                  placeholder="Enter test field name"
+                  placeholder="Test field name"
                   value={field.fieldName}
                   onChange={(e) => handleFieldChange(index, "fieldName", e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-indigo-500"
+                  className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-indigo-500 w-1/2"
                 />
                 <input
                   type="text"
-                  placeholder="Enter normal range"
+                  placeholder="Normal range"
                   value={field.normalRange}
                   onChange={(e) => handleFieldChange(index, "normalRange", e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-indigo-500 ml-2"
+                  className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-indigo-500 ml-2 w-1/2"
                 />
                 {index !== 0 && (
                   <button
