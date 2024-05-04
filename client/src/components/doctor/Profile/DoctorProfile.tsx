@@ -41,7 +41,7 @@ const DoctorProfile: React.FC = () => {
     const email = localStorage.getItem("email");
     if (email) {
       axios
-        .get(`http://localhost:5173/doctors/${email}`)
+        .get(`http://localhost:5173/getdoctorbyemail/${email}`)
         .then((response) => {
           setDoctor(response.data);
           setEditedDoctor(response.data);

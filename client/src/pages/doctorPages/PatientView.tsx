@@ -34,7 +34,6 @@ const PatientView: React.FC = () => {
         console.error("Error fetching patient:", error);
       }
     };
-
     if (email) {
       fetchPatient();
     }
@@ -49,62 +48,83 @@ const PatientView: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="container mx-auto max-w-5xl">
       <div className="flex justify-between items-center mb-8">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+          className="bg-white text-black px-4 py-2 rounded-lg hover:bg-[#7da466] transition-colors duration-200"
         >
           Back
         </button>
-        <h1 className="text-3xl font-bold text-gray-800">Patient Information</h1>
+        <h1 className="text-3xl font-bold text-black">Patient Information</h1>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-lg shadow-md p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-lg border border-[#b3db9c] p-8">
         <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Personal Information</h3>
-          <div className="space-y-2">
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Email:</span> {patient?.email}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Name:</span>{" "}
-              {`${patient?.firstName} ${patient?.lastName}`}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Gender:</span> {patient?.gender}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Date of Birth:</span>{" "}
-              {patient?.dateofbirth}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Chronic Illness:</span>{" "}
-              {patient?.chronicillness}
-            </p>
+          <h3 className="text-xl font-bold text-black mb-4 border-b-2 border-[#91BF77] pb-2">
+            Personal Information
+          </h3>
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Email
+              </span>
+              <p className="text-black">{patient?.email}</p>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Name
+              </span>
+              <p className="text-black">{`${patient?.firstName} ${patient?.lastName}`}</p>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Address
+              </span>
+              <p className="text-black">{patient?.address}</p>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Date of Birth
+              </span>
+              <p className="text-black">{patient?.dateofbirth}</p>
+            </div>
           </div>
         </div>
         <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Additional Information</h3>
-          <div className="space-y-2">
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Address:</span> {patient?.address}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-bold text-gray-800">Blood Group:</span>{" "}
-              {patient?.bloodgroup}
-            </p>
+          <h3 className="text-xl font-bold text-black mb-4 border-b-2 border-[#91BF77] pb-2">
+            Medical Information
+          </h3>
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Chronic Illness
+              </span>
+              <p className="text-black">{patient?.chronicillness}</p>
+            </div>
+
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Blood Group
+              </span>
+              <p className="text-black">{patient?.bloodgroup}</p>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold  bg-[#91BF77] text-white py-1 px-3 rounded-full mr-4">
+                Gender
+              </span>
+              <p className="text-black">{patient?.gender}</p>
+            </div>
           </div>
         </div>
       </div>
       {!showDiagnosisForm && (
-        <div>
+        <div className="flex justify-center mt-8">
           <button
             onClick={handleAddDiagnosis}
-            className="bg-[#8AC185] p-3 rounded-xl mt-5 text-sm flex items-center"
+            className="bg-white text-black py-3 px-6 rounded-full hover:bg-[#7da466] hover:text-white transition-colors duration-200 flex items-center"
           >
-            <BsPlus className="inline-block mr-2" size={24} />
-            Add Diagnosis
+            <BsPlus className="inline-block mr-2" size={24} /> Add Diagnosis
           </button>
         </div>
       )}

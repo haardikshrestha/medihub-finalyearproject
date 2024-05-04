@@ -20,8 +20,8 @@ const SampleCollection = require("./models/pathology-models/sampleCollectionSche
 const InPatient = require("./models/patient-models/inPatientSchema");
 const PatientDiagnosis = require("./models/patient-models/patientDiagnosisSchema");
 const LabReport = require("./models/pathology-models/labReportSchema");
-
 const app = express();
+app.use(express.json());
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
@@ -48,6 +48,16 @@ mongoose
 
 app.use(bodyParser.json());
 app.use(cors());
+const doctorRouter = require("./router/doctor.router.js");
+app.use(doctorRouter)
+const appointmentRouter = require("./router/appointment.router.js");
+app.use(appointmentRouter)
+const hospitalRouter = require("./router/hospital.router.js");
+app.use(hospitalRouter)
+const pathologistRouter = require("./router/pathologist.router.js");
+app.use(pathologistRouter)
+const patientRouter = require("./router/patient.router.js");
+app.use(patientRouter)
 
 console.log("Adding admin....");
 const checkAdmin = async () => {
@@ -78,9 +88,6 @@ const checkAdmin = async () => {
 
 checkAdmin();
 
-{
-  /* Send email */
-}
 const transporter = nodemailer.createTransport({
   service: process.env.SERVICE,
   auth: {
@@ -222,17 +229,6 @@ app.post("/postregister", async (req, res) => {
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find().select("-password");
-    res.status(200).json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// Fetch users with role "doctor"
-app.get("/doctors", async (req, res) => {
-  try {
-    const users = await User.find({ role: "doctor" }).select("-password");
     res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -501,162 +497,6 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
-app.post("/doctor/resetpassword", async (req, res) => {
-  try {
-    const { email, newPassword } = req.body;
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the saltRounds
-
-    // Update the user's password in the database
-    await User.findOneAndUpdate({ email }, { password: hashedPassword });
-
-    const mailOptions = {
-      from: process.env.USER,
-      to: email,
-      subject: "Your new password",
-      text: `Dear User,
-
-Your password has been reset successfully. Here is your new password:
-
-Password: ${newPassword}
-
-Please change your password after logging in for security reasons.
-
-Regards,
-Your Application Team`,
-    };
-
-    // Send the email
-    await transporter.sendMail(mailOptions);
-
-    res
-      .status(200)
-      .json({
-        message:
-          "Password reset successfully. Check your email for the new password.",
-      });
-  } catch (error) {
-    console.error("Error resetting password:", error);
-    res.status(500).json(error);
-  }
-});
-//get wards
-app.get("/wards", async (req, res) => {
-  try {
-    const wards = await Ward.find();
-    res.json(wards);
-  } catch (error) {
-    console.error("Error fetching wards:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-//add ward - working
-app.post("/newward", async (req, res) => {
-  try {
-    const { wardId } = req.body;
-
-    const existingWard = await Ward.findOne({ wardId });
-    if (existingWard) {
-      return res.status(400).json({ message: "Ward ID already exists" });
-    }
-
-    const newWard = new Ward({
-      wardId,
-    });
-
-    const savedWard = await newWard.save();
-
-    res.status(201).json(savedWard);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(error);
-  }
-});
-
-//delete ward - working
-app.post("/deleteward", async (req, res) => {
-  try {
-    const { wardId } = req.body;
-
-    const deletedWard = await Ward.findOneAndDelete({ wardId });
-
-    if (!deletedWard) {
-      return res.status(404).json({ message: "Ward not found" });
-    }
-
-    res.status(200).json({ message: "Ward deleted successfully", deletedWard });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(error);
-  }
-});
-
-// Fetch users with role "doctors"
-app.get("/getdoctors", async (req, res) => {
-  try {
-    const doctors = await User.find({ role: "doctor" }).select("-password");
-    res.status(200).json(doctors);
-  } catch (error) {
-    console.error("Error fetching doctors:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-//get pathologists
-app.get("/getpathologists", async (req, res) => {
-  try {
-    const pathologists = await User.find({ role: "pathologist" }).select(
-      "-password"
-    );
-    res.status(200).json(pathologists);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-//get departments
-app.get("/getdepartments", async (req, res) => {
-  try {
-    const departments = await Department.find();
-    res.json(departments);
-  } catch (error) {
-    console.error("Error fetching departments:", error);
-    res.status(500).json({ error: "Internal Server departments" });
-  }
-});
-
-//get department names
-app.get("/getdepartmentnames", async (req, res) => {
-  try {
-    const departments = await Department.find();
-
-    const departmentNames = departments.map((department) => department.depName);
-
-    res.json(departmentNames);
-  } catch (error) {
-    console.error("Error fetching departments:", error);
-    res.status(500).json(error);
-  }
-});
-
-//check if patient exists
-app.post("/checkpatient", async (req, res) => {
-  try {
-    const { email } = req.body;
-    const patient = await Patient.findOne({ email });
-    const emailExists = patient !== null;
-
-    res.json({ emailExists });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-//get gender of patient
 app.get("/getgender", async (req, res) => {
   try {
     // Query the database to get gender distribution
@@ -674,351 +514,15 @@ app.get("/getgender", async (req, res) => {
   }
 });
 
-// Route to save doctor details
-// Route to get all doctors
-app.get("/api/doctors", async (req, res) => {
-  try {
-    const allDoctors = await Doctors.find();
-    res.status(200).json(allDoctors);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(error);
-  }
-});
-
-app.post("/newdoctor", async (req, res) => {
-  const {
-    fullname,
-    emailaddress,
-    phonenumber,
-    expertise,
-    degree,
-    school,
-    nmc,
-    startTime,
-    endTime,
-    daysAvailable,
-    fees,
-    password,
-  } = req.body;
-
-  try {
-    // Check if the email already exists in the users collection
-    let existingUser = await User.findOne({ email: emailaddress });
-
-    // If the user doesn't exist, create a new user
-    if (!existingUser) {
-      // Create a new user instance
-      existingUser = new User({
-        email: emailaddress,
-        password: password, // Note: Password should be hashed before saving, for production use
-        role: "doctor", // Set the user's role to 'doctor'
-      });
-
-      // Save the new user to the database
-      await existingUser.save();
-    }
-
-    // Create a new doctor instance
-    const newDoctor = new Doctor({
-      nmc,
-      email: emailaddress,
-      expertise,
-      degree,
-      school,
-      startTime,
-      endTime,
-      daysAvailable,
-      fees,
-    });
-
-    // Save the new doctor to the database
-    await newDoctor.save();
-
-    res.status(201).json({ message: "Doctor information saved successfully" });
-  } catch (error) {
-    console.error("Error saving doctor information:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.post("/addDepartment", async (req, res) => {
-  try {
-    const { depID, depName, depNameShort } = req.body;
-
-    if (!depID || !depName || !depNameShort) {
-      return res.status(400).json({ error: "Please provide department ID, name, and short name." });
-    }
-
-    const existingDepartmentID = await Department.findOne({ depID });
-    if (existingDepartmentID) {
-      return res.status(400).json({ error: "Department ID is already in use." });
-    }
-
-    const existingDepartmentName = await Department.findOne({ depName });
-    if (existingDepartmentName) {
-      return res.status(400).json({ error: "Department name is already in use." });
-    }
-
-    const existingDepartmentShortName = await Department.findOne({ depNameShort });
-    if (existingDepartmentShortName) {
-      return res.status(400).json({ error: "Department short name is already in use." });
-    }
-
-    const capitalizedShortName = depNameShort.toUpperCase();
-
-    const newDepartment = new Department({
-      depID,
-      depName,
-      depNameShort: capitalizedShortName
-    });
-
-    await newDepartment.save();
-
-    res.status(201).json({ message: "Department added successfully." });
-  } catch (error) {
-    console.error("Error adding department:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-
-
 app.use(express.urlencoded({ extended: false }));
 
-{
-  /* --- APPOINTMENT --- */
-}
 
-app.post("/appointments", async (req, res) => {
+
+
+
+app.put("/patients/:email", async (req, res) => {
   try {
-    // Create a new appointment instance based on the request body
-    const newAppointment = new Appointment({
-      apptID: req.body.apptID,
-      apptDate: req.body.apptDate,
-      apptPatient: req.body.apptPatient,
-      apptTime: req.body.apptTime,
-      apptDoctor: req.body.apptDoctor,
-      apptStatus: req.body.apptStatus,
-      apptDisease: req.body.apptDisease,
-      paymentStatus: req.body.paymentStatus,
-      transactionID: req.body.transactionID,
-    });
-
-    // Save the appointment to the database
-    const savedAppointment = await newAppointment.save();
-
-    res.status(201).json(savedAppointment); // Return the saved appointment as JSON
-  } catch (err) {
-    res.status(400).json({ message: err.message }); // Return an error message if something goes wrong
-  }
-});
-
-app.get("/getappointments", async (req, res) => {
-  try {
-    // Fetch all appointments from the database
-    const appointments = await Appointment.find();
-
-    res.status(200).json(appointments); // Return the appointments as JSON
-  } catch (err) {
-    res.status(500).json({ message: err.message }); // Return an error message if something goes wrong
-  }
-});
-
-app.get("/getappointmentsbyemail", async (req, res) => {
-  try {
-    const { email } = req.query;
-
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-
-    const appointments = await Appointment.find({ email });
-
-    if (appointments.length === 0) {
-      return res.status(404).json({ message: 'No appointments scheduled yet' });
-    }
-
-    res.status(200).json(appointments);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
-app.get("/appointments/count", async (req, res) => {
-  try {
-    // Count all appointments in the database
-    const appointmentCount = await Appointment.countDocuments();
-
-    res.status(200).json({ count: appointmentCount });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.get("/doctors/findexpertise", async (req, res) => {
-  try {
-    const { expertise } = req.body;
-
-    const doctors = await Doctors.find({ expertise });
-
-    res.status(200).json(doctors);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
-app.post("/patientsinfo", async (req, res) => {
-  try {
-    const {
-      email,
-      firstName,
-      lastName,
-      gender,
-      dateofbirth,
-      chronicillness,
-      address,
-      bloodgroup,
-    } = req.body;
-
-    // Calculate age based on date of birth
-    const birthDate = new Date(dateofbirth);
-    const ageDiffMs = Date.now() - birthDate.getTime();
-    const ageDate = new Date(ageDiffMs); // miliseconds from epoch
-    const userAge = Math.abs(ageDate.getUTCFullYear() - 1970);
-
-    // Check if user is at least 18 years old
-    if (userAge < 18) {
-      return res.status(400).json({ error: "User must be at least 18 years old." });
-    }
-
-    // Save patient information to the database
-    const newPatient = new Patient({
-      email,
-      firstName,
-      lastName,
-      gender,
-      dateofbirth,
-      chronicillness,
-      address,
-      bloodgroup,
-    });
-    await newPatient.save();
-
-    const mailOptions = {
-      from: 'app.medihub@gmail.com',
-      to: email,
-      subject: 'Patient Information',
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-    
-              body {
-                font-family: 'Poppins', sans-serif;
-                background-color: #f7f7f7;
-                margin: 0;
-                padding: 0;
-              }
-    
-              .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: #ffffff;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-              }
-    
-              h1 {
-                color: #333333;
-                text-align: center;
-                margin-bottom: 30px;
-              }
-    
-              p {
-                color: #555555;
-                line-height: 1.6;
-                margin-bottom: 20px;
-              }
-    
-              .patient-info {
-                background-color: #f9f9f9;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-              }
-    
-              .patient-info p {
-                margin-bottom: 10px;
-              }
-    
-              .patient-info p:last-child {
-                margin-bottom: 0;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Patient Information</h1>
-              <p>Hello ${firstName},</p>
-              <p>Here is your patient information:</p>
-              <div class="patient-info">
-                <p><strong>First Name:</strong> ${firstName}</p>
-                <p><strong>Last Name:</strong> ${lastName}</p>
-                <p><strong>Gender:</strong> ${gender}</p>
-                <p><strong>Date of Birth:</strong> ${dateofbirth}</p>
-                <p><strong>Chronic Illness:</strong> ${chronicillness}</p>
-                <p><strong>Address:</strong> ${address}</p>
-                <p><strong>Blood Group:</strong> ${bloodgroup}</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.status(201).json({ message: "Patient information saved successfully and email sent" });
-  } catch (error) {
-    console.error("Error saving patient information:", error);
-    res.status(500).json(error);
-  }
-});
-
-app.get("/patients/:email", async (req, res) => {
-  try {
-    const patient = await Patient.findOne({ email: req.params.email });
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
-    res.status(200).json(patient);
-  } catch (error) {
-    console.error("Error fetching patient details:", error);
-    res.status(500).json(error);
-  }
-});
-
-app.get("/doctors/:email", async (req, res) => {
-  try {
-    const patient = await Doctors.findOne({ email: req.params.email });
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
-    res.status(200).json(patient);
-  } catch (error) {
-    console.error("Error fetching patient details:", error);
-    res.status(500).json(error);
-  }
-});
-
-
-const calculateAge = (dateOfBirth) => {
+    const calculateAge = (dateOfBirth) => {
   const today = new Date();
   const birthDate = new Date(dateOfBirth);
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -1033,9 +537,6 @@ const calculateAge = (dateOfBirth) => {
 
   return age;
 };
-
-app.put("/patients/:email", async (req, res) => {
-  try {
     const dateOfBirth = req.body.dateofbirth;
     const age = calculateAge(dateOfBirth);
 
@@ -1130,14 +631,7 @@ app.get("/numberOfData", async (req, res) => {
   }
 });
 
-app.get("/getDepartments", async (req, res) => {
-  try {
-    const departmentNames = await Department.distinct("depName");
-    res.status(200).json(departmentNames);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+
 
 app.get("/getpatients", async (req, res) => {
   try {
@@ -1172,49 +666,9 @@ app.get("/doctor/viewpatients", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-// Function to send email
-async function sendEmail(email, password) {
-  try {
-    // Send mail with defined transport object
-    let info = await transporter.sendMail({
-      from: '"Your Name" <your-email@example.com>',
-      to: email,
-      subject: "Your Account Details",
-      text: `Your account password is: ${password}`,
-      // You can also include HTML content in the email
-      // html: `<p>Your account password is: <strong>${password}</strong></p>`
-    });
 
-    console.log("Email sent: %s", info.messageId);
-  } catch (error) {
-    // Handle email sending errors
-    console.error("Error sending email:", error);
-    throw error; // Re-throw the error to be caught by the caller
-  }
-}
 
-app.post("/surgeries", async (req, res) => {
-  try {
-    const newSurgery = new Surgery(req.body);
-    await newSurgery.save();
-    res
-      .status(201)
-      .send({ message: "Surgery information saved successfully!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(error);
-  }
-});
 
-app.get("/getsurgeries", async (req, res) => {
-  try {
-    const surgeries = await Surgery.find();
-    res.status(200).json(surgeries);
-  } catch (error) {
-    console.error("Error retrieving surgeries:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
 
 //add patient infro through from -> /in
 app.post("/patients/addInfo", async (req, res) => {
@@ -1379,139 +833,6 @@ app.post("/patientsinfo", async (req, res) => {
 });
 
 // ---------------------------------- DOCTORS -------------------------------------------------------------
-app.post("/api/newdoctor", async (req, res) => {
-  try {
-    const {
-      fullName, 
-      nmc,
-      email,
-      expertise,
-      degree,
-      school,
-      startTime,
-      endTime,
-      daysAvailable,
-      fees,
-      password,
-    } = req.body;
-
-    const hashedPassword = await bcrypt.hash(password, 10); 
-
-    const newDoctor = new Doctors({
-      fullName, 
-      nmc,
-      email,
-      expertise,
-      degree,
-      school,
-      startTime,
-      endTime,
-      daysAvailable,
-      fees,
-    });
-
-    await newDoctor.save();
-
-    const newUser = new User({
-      email,
-      password: hashedPassword,
-      role: "doctor",
-    });
-
-    await newUser.save();
-
-    const mailOptions = {
-      from: process.env.USER,
-      to: email,
-      subject: "Your account details",
-      text: `Dear Doctor,
-
-Your account has been created successfully. Here are your login credentials:
-
-Email: ${email}
-Password: ${password}
-
-Please change your password after logging in for security reasons.
-
-Regards,
-MediHub Team`,
-    };
-
-    // Send the email
-    await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ message: "Doctor and user registered successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(error);
-  }
-});
-
-
-//according to expertise:
-app.get("/getdoctorsbyexpertise/:expertise", async (req, res) => {
-  const { expertise } = req.params;
-  try {
-    // Find doctors with the specified expertise
-    const doctors = await Doctors.find({ expertise });
-
-    if (!doctors || doctors.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No doctors found with the specified expertise.",
-        data: null,
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Doctors fetched successfully.",
-      data: doctors,
-    });
-  } catch (error) {
-    console.error("Error fetching doctors by expertise:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while fetching doctors.",
-      data: null,
-    });
-  }
-});
-
-app.get("/getdoctorbyemail/:email", async (req, res) => {
-  const { email } = req.params;
-
-  try {
-    const doctor = await Doctors.findOne({ email });
-
-    if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found with the specified email." });
-    }
-
-    res.status(200).json(doctor);
-  } catch (error) {
-    console.error("Error fetching doctor by email:", error);
-    res.status(500).json(error);
-  }
-});
-
-
-app.delete('/deleteDoctor', async (req, res) => {
-  const { email } = req.query; 
-  try {
-    const doctor = await Doctors.findOne({ email });
-
-    if (!doctor) {
-      return res.status(404).json({ error: 'Doctor not found' });
-    }
-    await Doctors.deleteOne({ email });
-
-    res.status(200).json({ message: 'Doctor deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting doctor:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 app.delete('/deleteUser', async (req, res) => {
   const { email } = req.query; 

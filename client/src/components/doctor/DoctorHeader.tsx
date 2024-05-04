@@ -9,7 +9,7 @@ const DoctorHeader = () => {
     const email = localStorage.getItem("email");
     if (email) {
       axios
-        .get(`http://localhost:5173/doctors/${email}`)
+        .get(`http://localhost:5173/getdoctorbyemail/${email}`)
         .then((response) => {
           const { fullName } = response.data;
           setPatientName(`${fullName}`);
