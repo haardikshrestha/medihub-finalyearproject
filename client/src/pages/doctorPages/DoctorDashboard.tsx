@@ -10,13 +10,17 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const fetchAppointmentCount = async () => {
       try {
-        const response = await fetch("http://localhost:5173/appointments/getdoctor");
+        const currentDateString = currentDate.toISOString().split("T")[0];
+        const response = await fetch(
+          `http://localhost:5173/getappointmentsbydate?date=${currentDateString}`
+        );
+
         if (!response.ok) {
           throw new Error("Failed to fetch appointment count");
         }
-        const data = await response.json();
-        const count = data.appointmentCount;
-        setAppointmentCount(count);
+
+        const appointments = await response.json();
+        setAppointmentCount(appointments.length);
       } catch (error) {
         console.error("Error fetching appointment count:", error);
         setAppointmentCount(null);
@@ -24,7 +28,7 @@ const DoctorDashboard = () => {
     };
 
     fetchAppointmentCount();
-  }, []);
+  }, [currentDate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,10 +43,8 @@ const DoctorDashboard = () => {
     month: "long",
     year: "numeric",
   });
-
   const currentHour = currentDate.getHours();
   let greeting;
-
   if (currentHour < 12) {
     greeting = "Good morning";
   } else if (currentHour >= 12 && currentHour < 18) {
@@ -60,26 +62,6 @@ const DoctorDashboard = () => {
     appointments: 0,
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("http://localhost:5173/numberOfData");
-        const data = await response.json();
-        setInfo(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, []); // July 8th, 2022
-
-  const genderData = {
-    male: 30,
-    female: 40,
-    others: 5,
-    total: 75,
-  };
 
   return (
     <>
@@ -87,26 +69,17 @@ const DoctorDashboard = () => {
         <p>{`${greeting}, Dr. John Doe`}</p>
         <p>{formattedDate}</p>
       </div>
-
       <div className="flex flex-row space-x-5 p-4">
         <div>
-          {/* stats div */}
           <div className=" flex flex-row gap-5">
-            <StatsCard color="blue" title="Appointments" number={appointmentCount} percentage="+41%" />
             <StatsCard
-              color="red"
-              title="Lab Tests"
-              number={11}
-              percentage="+41%"
+              color="blue"
+              title="Appointments"
+              number={appointmentCount}
             />
-            <StatsCard
-              color="green"
-              title="Earnings"
-              number={4}
-              percentage="+41%"
-            />
+            <StatsCard color="red" title="Lab Tests" number={11} />
+            <StatsCard color="green" title="Earnings" number={4} />
           </div>
-
           <div className=" mt-4 flex gap-4">
             <div className="ml-[5px] flex-1">
               <AppointmentCard />

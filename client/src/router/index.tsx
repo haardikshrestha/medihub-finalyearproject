@@ -61,6 +61,13 @@ import ViewTestHistory from "@/pages/patientPages/Pathology/ViewTestHistory";
 import CreateTestPage from "@/pages/pathologistPages/CreateTestPage";
 import DoctorDetails from "@/pages/patientPages/Doctors/DoctorDetails";
 import DoctorProfile from "@/components/doctor/Profile/DoctorProfile";
+import AppointmentHistory from "@/components/patient/Appointments/AppointmentHistory";
+import BedBookingComponent from "@/components/patient/Appointments/BedBooking";
+import WardBookingComponent from "@/components/patient/Appointments/Wards";
+import ViewEditPatients from "@/components/admin/crud/Patients/ViewEditPatients";
+import ViewEditDoctor from "@/components/admin/crud/Doctor/ViewEditDoctor";
+import CreateWard from "@/components/admin/crud/Ward/CreateWard";
+import PatientSettingsPage from "@/pages/patientPages/PatientSettingsPage";
 const AppRouter = () => {
   const patientUser = {
     name: "John Doe",
@@ -101,8 +108,11 @@ const AppRouter = () => {
             <Route path="/admin/inpatients" element={<InPatientsPage />} />
             <Route path="/admin/admission" element={<AdmissionPage />} />
             <Route path="/admin/wards" element={<WardsPage />} />
+            <Route path="/admin/createwards" element={<CreateWard />} />
             <Route path="/admin/revenue" element={<RevenuePage />} />
             <Route path="/admin/labtests" element={<LabTestsPage />} />
+            <Route path="/admin/vieweditpatients" element={<ViewEditPatients />} />
+            <Route path="/admin/vieweditdoctors" element={<ViewEditDoctor />} />
           </Route>
         </Route>
         <Route path="/">
@@ -131,7 +141,7 @@ const AppRouter = () => {
             />
             <Route
               path="/patient/settings"
-              element={<PatientProfiler/>}
+              element={<PatientSettingsPage/>}
             />
             <Route path="/patient/chats" element={<ChatInterface />} />
             <Route path="/patient/pathology" element={<PathologyPage />} />
@@ -139,11 +149,13 @@ const AppRouter = () => {
             <Route path="/patient/appointmentdetails" element={<AppointmentDetails />} />
             <Route path="/patient/medications" element={<Medications />} />
             <Route path="/patient/labtests" element={<LabTests />} />
-            <Route path="/patient/appointmenthistory" element={<Appointments />} />
+            <Route path="/patient/appointmenthistory" element={<AppointmentHistory />} />
             <Route path="/patient/testdetails" element={<TestDetails />} />
             <Route path="/patient/testhistory" element={<ViewTestHistory />} />
             <Route path="/patient/doctordetails" element={<DoctorDetails />} />
-            
+            <Route path="/patient/bedbooking" element={<BedBookingComponent />} />
+            <Route path="/patient/wards" element={<WardBookingComponent />} />
+            <Route path="/patient/notifications" element={<WardBookingComponent />} />
           </Route>
         </Route>
         <Route path="/">

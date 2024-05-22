@@ -1,7 +1,34 @@
 const express = require("express");
 const Patient = require("../models/patient-models/patientSchema");
+const User = require("../models/userSchema");
 const app = express();
 app.use(express.json());
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  service: process.env.SERVICE,
+  auth: {
+    user: process.env.USER,
+    pass: process.env.PASS,
+  },
+});
+
+const generatePatientId = async () => {
+  let patientId;
+  let isUnique = false;
+
+  while (!isUnique) {
+    const randomNumber = Math.floor(Math.random() * 10000);
+    patientId = `PAT${String(randomNumber).padStart(4, "0")}`;
+
+    const existingPatient = await Patient.findOne({ patientId });
+    if (!existingPatient) {
+      isUnique = true;
+    }
+  }
+
+  return patientId;
+};
+
 const patientsInfo = async (req, res) => {
   try {
     const {
@@ -15,21 +42,24 @@ const patientsInfo = async (req, res) => {
       bloodgroup,
     } = req.body;
 
-    // Calculate age based on date of birth
     const birthDate = new Date(dateofbirth);
     const ageDiffMs = Date.now() - birthDate.getTime();
-    const ageDate = new Date(ageDiffMs); // miliseconds from epoch
+    const ageDate = new Date(ageDiffMs);
     const userAge = Math.abs(ageDate.getUTCFullYear() - 1970);
 
-    // Check if user is at least 18 years old
     if (userAge < 18) {
       return res
         .status(400)
         .json({ error: "User must be at least 18 years old." });
     }
+    
 
-    // Save patient information to the database
+    const patientId = await generatePatientId();
+
+    console.log(patientId)
+
     const newPatient = new Patient({
+      patientId,
       email,
       firstName,
       lastName,
@@ -102,6 +132,7 @@ const patientsInfo = async (req, res) => {
                 <p>Hello ${firstName},</p>
                 <p>Here is your patient information:</p>
                 <div class="patient-info">
+                <p><strong>Patient ID:</strong> ${patientId}</p>
                   <p><strong>First Name:</strong> ${firstName}</p>
                   <p><strong>Last Name:</strong> ${lastName}</p>
                   <p><strong>Gender:</strong> ${gender}</p>
@@ -153,10 +184,71 @@ const getPatientbyEmail = async (req, res) => {
   }
 };
 
+const getPatients = async (req, res) => {
+  try {
+    const users = await Patient.find();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching patients:", error);
+    res.status(500).json(error);
+  }
+};
+
+const deletePatientByEmail = async (req, res) => {
+  const session = await Patient.startSession();
+  session.startTransaction();
+  try {
+    const { email } = req.params;
+
+    const deletedPatient = await Patient.findOneAndDelete({ email }).session(session);
+
+    if (!deletedPatient) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    await User.findOneAndDelete({ email }).session(session);
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ message: "Patient deleted successfully" });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error deleting patient:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const updatePatientByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const updatedPatient = req.body;
+    const existingPatient = await Patient.findOne({ email });
+
+    if (!existingPatient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    await Patient.updateOne({ email }, updatedPatient);
+
+    res.status(200).json({ message: "Patient updated successfully" });
+  } catch (error) {
+    console.error("Error updating patient:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const PatientController = {
   patientsInfo,
   checkPatient,
   getPatientbyEmail,
+  getPatients,
+  deletePatientByEmail,
+  updatePatientByEmail, 
 };
+
 
 module.exports = PatientController;

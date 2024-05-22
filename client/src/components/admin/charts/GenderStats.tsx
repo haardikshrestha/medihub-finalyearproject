@@ -40,7 +40,7 @@ const Gender: React.FC = () => {
   const other = genderData.other;
 
   return (
-    <div className="flex flex-col items-center border border-gray-200 w-48 rounded-xl p-6 ">
+    <div className="flex flex-col items-center w-48 rounded-xl p-6 bg-white">
       <h2 className="text-lg font-bold mb-2">Patients</h2>
       <div className="relative w-32 h-32 mt-2">
         <svg viewBox="0 0 36 36" className="absolute transform ">

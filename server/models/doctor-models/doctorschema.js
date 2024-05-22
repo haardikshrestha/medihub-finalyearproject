@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 
 const doctorSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
+  doctorId: { type: String, required: true, unique: true },
+  fullname: { type: String, required: true },
   nmc: { type: String, required: true, unique: true },
   email: { type: String, required: true },
+  phonenumber: { type: String, required: true },
   role: { type: String, default: 'doctor' },
   expertise: { type: String, default: 'null' },
   degree: { type: String, default: 'null' },

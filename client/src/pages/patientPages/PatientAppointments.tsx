@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
-import ViewDoctorsCard from "@/components/patient/Appointments/ViewDoctorsCard";
+import { FaClipboardCheck } from "react-icons/fa";
 import axios from "axios";
 
 interface Department {
@@ -20,7 +20,7 @@ const PatientAppointments = () => {
   const fetchDepartments = async () => {
     try {
       const response = await axios.get<string[]>(
-        "http://localhost:5173/getdepartmentnames"
+        "http://localhost:5173/getdepartmentnames",
       );
       if (response.status === 200) {
         setDepartments(response.data);
@@ -42,7 +42,7 @@ const PatientAppointments = () => {
     setSearchQuery(event.target.value);
     // Filter departments based on the search query
     const filteredDepartments = departments.filter((department) =>
-      department.toLowerCase().includes(event.target.value.toLowerCase())
+      department.toLowerCase().includes(event.target.value.toLowerCase()),
     );
     setDepartments(filteredDepartments);
     // If search query is empty, fetch all departments again
@@ -55,8 +55,12 @@ const PatientAppointments = () => {
     navigate(`/patient/adoctors?department=${departmentName}`);
   };
 
+  const handleViewAppointmentHistory = () => {
+    navigate("/patient/appointmenthistory");
+  };
+
   return (
-    <div className="container">
+    <div className="container relative">
       <form onSubmit={handleSearch} className="relative mb-4 mt-0 flex items-center">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <FaSearch className="w-4 h-4 text-gray-400" />
@@ -98,6 +102,17 @@ const PatientAppointments = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* View Appointment History Button */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <button
+          onClick={handleViewAppointmentHistory}
+          className="bg-gradient-to-br from-[#91BF77] to-[#7da466] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center"
+        >
+          <FaClipboardCheck className="mr-2" size={20} />
+          View Appointment History
+        </button>
       </div>
     </div>
   );

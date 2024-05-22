@@ -160,15 +160,13 @@ export default function Signup() {
               </button>
             </form>
 
-            <div className="mt-6 grid grid-cols-3 items-center text-gray-400">
-              <hr className="border-gray-400" />
-              <p className="text-center text-sm">OR</p>
-              <hr className="border-gray-400" />
-            </div>
+            <div className="mt-6 mb-2 text-gray-400">
+            <hr className="border-gray-300 w-full" />
+          </div>
 
             {/* Add Google Sign Up button here */}
 
-            <div className="mt-3 text-xs flex items-center justify-center text-gray-500 gap-5">
+            <div className="mt-5 text-xs flex items-center justify-center text-gray-500 gap-5">
               <p>Already have an account?</p>
               <button className="py-2 px-5 bg-white text-[#91BF77] border rounded-xl hover:bg-[#91BF77] hover:text-white"
               onClick={goLogin}>

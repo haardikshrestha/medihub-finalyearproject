@@ -1,4 +1,6 @@
 import Card from "@/components/admin/Card";
+import AppointmentSummary from "@/components/admin/charts/AppointmentStats";
+import EarningsChart from "@/components/admin/charts/Earnings";
 import Gender from "@/components/admin/charts/GenderStats";
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
@@ -19,7 +21,6 @@ const DashboardPage = () => {
         const response = await fetch("http://localhost:5173/numberOfData");
         const data = await response.json();
         setInfo(data);
-        
       } catch (error) {
         console.error(error);
       }
@@ -30,38 +31,40 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <ToastContainer /> 
+      <ToastContainer />
       <div className="flex flex-row justify-between">
         <Card
-          number={info.patients} 
+          number={info.patients}
           title="Patients"
           imageUrl="src/assets/admin-images/patient.png"
         />
         <Card
-          number={info.doctors} 
+          number={info.doctors}
           title="Doctors"
           imageUrl="src/assets/admin-images/doctor.png"
         />
         <Card
-          number={info.pathologists} 
+          number={info.pathologists}
           title="Pathologists"
           imageUrl="src/assets/admin-images/pathologist.png"
         />
         <Card
-          number={info.departments}  
+          number={info.departments}
           title="Departments"
           imageUrl="src/assets/admin-images/department.png"
         />
         <Card
-          number={info.wards}  
+          number={info.wards}
           title="Wards"
           imageUrl="src/assets/admin-images/ward.png"
         />
       </div>
       <div className="mt-6">
-      <Gender/>
+        <div className="flex gap-6">
+          <Gender />
+          <AppointmentSummary />
+        </div>
       </div>
-      
     </div>
   );
 };

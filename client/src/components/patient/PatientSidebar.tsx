@@ -1,6 +1,7 @@
-import { TbHome, TbCalendar, TbUser, TbList, TbSettings, TbLogout } from "react-icons/tb";
+import { TbHome, TbCalendar, TbBed , TbSettings, TbLogout } from "react-icons/tb";
 import { FiMessageSquare } from "react-icons/fi";
 import { IoMdMedkit } from "react-icons/io";
+import { IoIosMedical } from "react-icons/io";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/store";
@@ -39,6 +40,16 @@ const PatientSidebar = () => {
             Appointments
           </Link>
         </li>
+        
+        <li className="mb-2">
+          <Link
+            to="/patient/doctors"
+            className="flex items-center hover:text-gray-600 text-sm"
+          >
+            <IoIosMedical className="mr-2" />
+            Doctors
+          </Link>
+        </li>
         <li className="mb-2">
           <Link
             to="/patient/pathology"
@@ -50,6 +61,15 @@ const PatientSidebar = () => {
         </li>
         <li className="mb-2">
           <Link
+            to="/patient/wards"
+            className="flex items-center hover:text-gray-600 text-sm"
+          >
+            <TbBed  className="mr-2" />
+            Admission
+          </Link>
+        </li>
+        <li className="mb-2">
+          <Link
             to="/patient/Settings"
             className="flex items-center hover:text-gray-600 text-sm"
           >
@@ -57,10 +77,9 @@ const PatientSidebar = () => {
             Settings
           </Link>
         </li>
-        {/* logout button at the bottom */}
         <div className="absolute bottom-0 w-full left-0 p-4">
           <button
-            className="btn border-none bg-error w-full text-center text-white"
+            className="btn bg-white text-error border-error w-full text-center hover:bg-error hover:text-white hover:border-error"
             onClick={handlelogout}
           >
             <TbLogout className="mr-2" />

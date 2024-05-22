@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaCalendarAlt, FaUserInjured, FaClock, FaUserMd, FaClipboardCheck, FaHeartbeat, FaChevronLeft, FaChevronRight, FaNotesMedical, FaTrashAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaUserInjured, FaClock, FaUserMd, FaClipboardCheck, FaHeartbeat, FaChevronLeft, FaChevronRight, FaNotesMedical, FaTrashAlt, FaFolder, FaFolderOpen } from "react-icons/fa";
 
 interface Appointment {
   apptID: string;
@@ -18,6 +18,7 @@ const AppointmentsTable: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
+  const [activeTab, setActiveTab] = useState("all");
 
   const getAppointments = async () => {
     try {
@@ -32,13 +33,22 @@ const AppointmentsTable: React.FC = () => {
     getAppointments();
   }, []);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = appointments.slice(indexOfFirstItem, indexOfLastItem);
+  const filteredAppointments = () => {
+    if (activeTab === "all") {
+      return appointments;
+    } else if (activeTab === "today") {
+      return appointments.filter(appointment => appointment.apptStatus === "Pending");
+    } else if (activeTab === "completed") {
+      return appointments.filter(appointment => appointment.apptStatus === "completed");
+    }
+    return [];
+  };
+
+  const currentItems = filteredAppointments().slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
-    const totalPages = Math.ceil(appointments.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredAppointments().length / itemsPerPage);
 
     for (let i = 1; i <= totalPages; i++) {
       pageNumbers.push(
@@ -62,11 +72,42 @@ const AppointmentsTable: React.FC = () => {
   };
 
   const handleNextPage = () => {
-    setCurrentPage(currentPage < Math.ceil(appointments.length / itemsPerPage) ? currentPage + 1 : currentPage);
+    setCurrentPage(currentPage < Math.ceil(filteredAppointments().length / itemsPerPage) ? currentPage + 1 : currentPage);
   };
 
   return (
     <div className="bg-white rounded-b-lg rounded-tr-lg overflow-x-auto">
+      <div className="relative bg-white rounded-lg  overflow-hidden">
+        <div className="flex  border-gray-200">
+          <div
+            className={`p-4 flex items-center cursor-pointer border-r ${
+              activeTab === "all" ? "bg-[#91BF77] text-white" : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setActiveTab("all")}
+          >
+            {activeTab === "all" ? <FaFolderOpen className="mr-2" /> : <FaFolder className="mr-2" />}
+            All
+          </div>
+          <div
+            className={`p-4 flex items-center cursor-pointer border-r ${
+              activeTab === "today" ? "bg-[#91BF77] text-white" : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setActiveTab("today")}
+          >
+            {activeTab === "today" ? <FaFolderOpen className="mr-2" /> : <FaFolder className="mr-2" />}
+            Today
+          </div>
+          <div
+            className={`p-4 flex items-center cursor-pointer rounded-tr-lg ${
+              activeTab === "completed" ? "bg-[#91BF77] text-white" : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setActiveTab("completed")}
+          >
+            {activeTab === "completed" ? <FaFolderOpen className="mr-2" /> : <FaFolder className="mr-2" />}
+            Completed
+          </div>
+        </div>
+      </div>
       <div className="bg-gradient-to-r from-[#91BF77] to-[#75a559] px-6 py-4 text-white flex items-center justify-between">
         <h2 className="text-2xl font-bold">Appointments</h2>
         <FaCalendarAlt size={24} />
@@ -144,7 +185,7 @@ const AppointmentsTable: React.FC = () => {
           <button
             className="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg border hover:bg-gray-200 transition duration-300"
             onClick={handleNextPage}
-            disabled={currentPage === Math.ceil(appointments.length / itemsPerPage)}
+            disabled={currentPage === Math.ceil(filteredAppointments().length / itemsPerPage)}
           >
             Next
             <FaChevronRight className="ml-2" />

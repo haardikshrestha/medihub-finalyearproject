@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import {
-  FaUserMd,
   FaEnvelope,
   FaClock,
   FaCalendarAlt,
@@ -12,7 +11,6 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import DoctorTable from "@/components/admin/crud/Doctor/DoctorTable";
 
 interface Doctor {
   _id?: string;
@@ -33,6 +31,7 @@ const DoctorDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [apptReason, setApptReason] = useState<string>(""); // State for appointment reason
   const location = useLocation();
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
@@ -43,7 +42,6 @@ const DoctorDetails: React.FC = () => {
       try {
         const params = new URLSearchParams(location.search);
         const email = params.get("email");
-        const patientEmail = localStorage.getItem("email");
         if (!email) {
           throw new Error("Email parameter is missing");
         }
@@ -178,11 +176,30 @@ const DoctorDetails: React.FC = () => {
     );
   };
 
-  const handleAppointmentBooking = () => {
-    // Implement your booking logic here
-    console.log("Selected Date:", selectedDate);
-    console.log("Selected Time:", selectedTime);
-    // You can send this information to your backend for processing
+  const handleAppointmentBooking = async () => {
+    try {
+      const patientEmail = localStorage.getItem("email");
+      if (!patientEmail) {
+        throw new Error("Patient email not found in localStorage");
+      }
+
+      const response = await axios.post<any, { data: any }>(
+        "http://localhost:5173/post/doctor/appointment",
+        {
+          apptDate: selectedDate?.toISOString(),
+          apptPatient: patientEmail,
+          apptDoctor: doctor?.email,
+          apptTime: selectedTime,
+          apptReason: apptReason,
+        }
+      );
+
+      console.log("Appointment booked successfully:", response.data);
+      alert("Appointment booked successfully!");
+    } catch (error) {
+      console.error("Error booking appointment:", error);
+      alert("Error booking appointment: " + error);
+    }
   };
 
   const handlePrevMonth = () => {
@@ -374,6 +391,14 @@ const DoctorDetails: React.FC = () => {
                     </div>
                   </div>
                   {selectedDate && renderTimeSlots()}
+                  {/* Input field for appointment reason */}
+                  <input
+                    type="text"
+                    placeholder="Appointment Reason"
+                    value={apptReason}
+                    onChange={(e) => setApptReason(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
                   <button
                     className="bg-[#91BF77] text-white py-2 px-4 rounded-md mt-2 hover:bg-[#91BF77] transition-colors duration-300"
                     onClick={handleAppointmentBooking}

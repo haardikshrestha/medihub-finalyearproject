@@ -18,11 +18,11 @@ dotenv.config();
 
 const getDoctorUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: "doctor" }).select("-password");
+    const users = await Doctors.find()
     res.status(200).json(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error fetching doctors:", error);
+    res.status(500).json(error);
   }
 };
 
@@ -129,6 +129,23 @@ const deleteDoctor = async (req, res) => {
   }
 };
 
+const generateDoctorId = async () => {
+  let doctorId;
+  let isUnique = false;
+
+  while (!isUnique) {
+    const randomNumber = Math.floor(Math.random() * 10000);
+    doctorId = `DOC${String(randomNumber).padStart(4, "0")}`;
+
+    const existingDoctor = await Doctors.findOne({ doctorId });
+    if (!existingDoctor) {
+      isUnique = true;
+    }
+  }
+
+  return doctorId;
+};
+
 const newDoctor = async (req, res) => {
   const {
     fullname,
@@ -144,7 +161,8 @@ const newDoctor = async (req, res) => {
     fees,
     password,
   } = req.body;
-
+  const doctorId = await generateDoctorId();
+  console.log(emailaddress);
   try {
     let existingUser = await User.findOne({ email: emailaddress });
 
@@ -158,10 +176,13 @@ const newDoctor = async (req, res) => {
       await existingUser.save();
     }
 
-    const newDoctor = new Doctor({
+    const newDoctor = new Doctors({
+      doctorId,
+      fullname,
       nmc,
       email: emailaddress,
       expertise,
+      phonenumber,
       degree,
       school,
       startTime,
@@ -175,7 +196,7 @@ const newDoctor = async (req, res) => {
     res.status(201).json({ message: "Doctor information saved successfully" });
   } catch (error) {
     console.error("Error saving doctor information:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json(error);
   }
 };
 

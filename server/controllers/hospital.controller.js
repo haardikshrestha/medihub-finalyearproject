@@ -17,7 +17,7 @@ const getWards = async (req, res) => {
 
 const newWard = async (req, res) => {
   try {
-    const { wardId } = req.body;
+    const { wardId, numberOfBeds, startBedID, endBedID } = req.body;
 
     const existingWard = await Ward.findOne({ wardId });
     if (existingWard) {
@@ -26,6 +26,9 @@ const newWard = async (req, res) => {
 
     const newWard = new Ward({
       wardId,
+      numberOfBeds,
+      startBedID,
+      endBedID
     });
 
     const savedWard = await newWard.save();
@@ -39,20 +42,26 @@ const newWard = async (req, res) => {
 
 const deleteWard = async (req, res) => {
   try {
+    console.log("Let's find the ward to delete...");
     const { wardId } = req.body;
+
+    console.log("Received wardId:", wardId);
 
     const deletedWard = await Ward.findOneAndDelete({ wardId });
 
     if (!deletedWard) {
+      console.log("Ward not found.");
       return res.status(404).json({ message: "Ward not found" });
     }
 
+    console.log("Ward deleted successfully.");
     res.status(200).json({ message: "Ward deleted successfully", deletedWard });
   } catch (error) {
-    console.error(error);
+    console.error("Error deleting ward:", error);
     res.status(500).json(error);
   }
 };
+
 
 const getallDepartments = async (req, res) => {
   try {
@@ -123,7 +132,7 @@ const addDepartment = async (req, res) => {
     res.status(201).json({ message: "Department added successfully." });
   } catch (error) {
     console.error("Error adding department:", error);
-    res.status(500).json({ error: "Internal server error." });
+    res.status(500).json(error);
   }
 };
 
@@ -159,6 +168,62 @@ const getSurgery = async (req, res) => {
   }
 };
 
+const editDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { depID, depName, depNameShort } = req.body;
+
+    const existingDepartment = await Department.findById(id);
+    if (!existingDepartment) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    existingDepartment.depID = depID;
+    existingDepartment.depName = depName;
+    existingDepartment.depNameShort = depNameShort;
+
+    await existingDepartment.save();
+
+    res.status(200).json({ message: "Department updated successfully" });
+  } catch (error) {
+    console.error("Error editing department:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const deleteDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingDepartment = await Department.findById(id);
+    if (!existingDepartment) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    await Department.deleteOne({ _id: id });
+
+    res.status(200).json({ message: "Department deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting department:", error);
+    res.status(500).json(error);
+  }
+};
+
+
+const getDepartmentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const department = await Department.findById(id);
+    if (!department) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+    res.status(200).json(department);
+  } catch (error) {
+    console.error("Error fetching department:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const HospitalController = {
   getWards,
   newWard,
@@ -168,7 +233,10 @@ const HospitalController = {
   addDepartment,
   getdisDepartment,
   addSurgery,
-  getSurgery
+  getSurgery,
+  editDepartment,
+  deleteDepartment,
+  getDepartmentById,
 };
 
 module.exports = HospitalController;

@@ -10,10 +10,23 @@ interface SampleCollection {
   testID: string;
 }
 
+interface Appointment {
+  _id: string;
+  apptID: string;
+  apptDate: string;
+  apptPatient: string;
+  apptTime: string;
+  apptDoctor: string;
+  apptReason: string;
+  apptStatus: string;
+  __v: number;
+}
+
 const PatientCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); 
-  const [schedule, setSchedule] = useState<SampleCollection[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [sampleCollections, setSampleCollections] = useState<SampleCollection[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -24,12 +37,17 @@ const PatientCalendar: React.FC = () => {
       if (!selectedDate) return;
       const userEmail = localStorage.getItem("email");
 
-      const response = await axios.get(
+      const sampleResponse = await axios.get(
         `http://localhost:5173/samplecollections/get/patient/${userEmail}`
       );
-      setSchedule(response.data);
+      setSampleCollections(sampleResponse.data);
+
+      const appointmentResponse = await axios.get(
+        `http://localhost:5173/getappointments`
+      );
+      setAppointments(appointmentResponse.data);
     } catch (error) {
-      console.error("Error fetching schedule:", error);
+      console.error("Error fetching data:", error);
     }
   };
 
@@ -97,9 +115,14 @@ const PatientCalendar: React.FC = () => {
             currentDateValue.toDateString() === new Date().toDateString();
           const isSelected =
             selectedDate?.toDateString() === currentDateValue.toDateString();
-          const hasData = schedule.some(
+          const hasSampleData = sampleCollections.some(
             (item) =>
               new Date(item.appointmentDate).toDateString() ===
+              currentDateValue.toDateString()
+          );
+          const hasAppointment = appointments.some(
+            (item) =>
+              new Date(item.apptDate).toDateString() ===
               currentDateValue.toDateString()
           );
           row.push(
@@ -115,7 +138,7 @@ const PatientCalendar: React.FC = () => {
               onClick={() => setSelectedDate(currentDateValue)}
             >
               <div className="z-10 relative">{day}</div>
-              {isSelected && hasData && (
+              {isSelected && (hasSampleData || hasAppointment) && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-10 h-10 bg-transparent border-2 border-amber-300 rounded-full"></div>
                 </div>
@@ -176,9 +199,9 @@ const PatientCalendar: React.FC = () => {
               })}
             </div>
           </div>
-          <div className="h-48 overflow-y-auto ">
+          <div className="h-48 overflow-y-auto">
             <div className="flex flex-col gap-4 mt-3">
-              {schedule
+              {sampleCollections
                 .filter(
                   (item) =>
                     new Date(item.appointmentDate).toDateString() ===
@@ -190,26 +213,39 @@ const PatientCalendar: React.FC = () => {
                     <div className="text-sm text-gray-500">{item.status}</div>
                   </div>
                 ))}
-              {schedule.filter(
+              {appointments
+                .filter(
+                  (item) =>
+                    new Date(item.apptDate).toDateString() ===
+                    selectedDate.toDateString()
+                )
+                .map((item, index) => (
+                  <div key={index} className="bg-white rounded-lg border p-4">
+                    <div className="text-lg font-bold">Appointment</div>
+                    <div className="text-sm text-gray-500">Dr. {item.apptDoctor}</div>
+                  </div>
+                ))}
+              {(sampleCollections.filter(
                 (item) =>
                   new Date(item.appointmentDate).toDateString() ===
                   selectedDate.toDateString()
-              ).length === 0 && (
+              ).length === 0 &&
+                appointments.filter(
+                  (item) =>
+                    new Date(item.apptDate).toDateString() ===
+                    selectedDate.toDateString()
+                ).length === 0) && (
                 <div className="flex items-center justify-center bg-gray-200 p-2 rounded-md mt-10">
-                  <span role="img" >
-                    🙂
-                  </span>
-                  <span className="ml-2 text-sm">
-                    Nothing scheduled for the day!
-                  </span>
+                  <span role="img">🙂</span>
+                  <span className="ml-2 text-sm">Nothing scheduled for the day!</span>
                 </div>
-             )}
-           </div>
-         </div>
-       </div>
-     )}
-   </div>
- );
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default PatientCalendar;

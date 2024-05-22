@@ -110,19 +110,19 @@ const PatientDetails: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <DashboardCard
               title="Medication"
-              value={5}
+              value={0}
               viewAllLink="/patient/medications"
               color="#91BF77"
             />
             <DashboardCard
               title="Appointments"
-              value={3}
+              value={1}
               viewAllLink="/patient/appointmenthistory"
               color="#F6AD55"
             />
             <DashboardCard
               title="Lab Results"
-              value={2}
+              value={1}
               viewAllLink="/patient/labtests"
               color="#4299E1"
             />

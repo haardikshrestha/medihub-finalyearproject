@@ -56,20 +56,87 @@ const getappointmentsbyemail = async (req, res) => {
 };
 
 const countAppointments = async (req, res) => {
-    try {
-      const appointmentCount = await Appointment.countDocuments();
-  
-      res.status(200).json({ count: appointmentCount });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+  try {
+    const appointmentCount = await Appointment.countDocuments();
+
+    res.status(200).json({ count: appointmentCount });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const postDoctorAppointment = async (req, res) => {
+  const generateRandomId = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let id = '';
+    for (let i = 0; i < 5; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      id += characters.charAt(randomIndex);
     }
+    return id;
   };
+
+  try {
+    const { apptDate, apptPatient, apptTime, apptDoctor, apptReason } = req.body;
+
+    const existingAppointments = await Appointment.find({
+      apptDate,
+      apptTime,
+      apptDoctor,
+    });
+
+    if (existingAppointments.length > 0) {
+      return res.status(400).json({ message: "Appointment time is already booked" });
+    }
+
+    let apptID = generateRandomId();
+    let existingAppointment = await Appointment.findOne({ apptID });
+    while (existingAppointment) {
+      apptID = generateRandomId();
+      existingAppointment = await Appointment.findOne({ apptID });
+    }
+
+    const newAppointment = new Appointment({
+      apptID,
+      apptDate,
+      apptPatient,
+      apptTime,
+      apptDoctor,
+      apptReason,
+    });
+
+    await newAppointment.save();
+    res.status(201).json(newAppointment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
+};
+
+const getAppointmentsByDate = async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date is required" });
+    }
+
+    const appointments = await Appointment.find({ apptDate: date });
+
+    res.status(200).json(appointments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 const AppointmentController = {
   postAppointments,
   getAppointments,
   getappointmentsbyemail,
-  countAppointments
+  countAppointments,
+  postDoctorAppointment,
+  getAppointmentsByDate
 };
 
 module.exports = AppointmentController;

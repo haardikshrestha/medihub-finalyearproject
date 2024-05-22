@@ -115,16 +115,16 @@ const PatientProfile: React.FC = () => {
   };
 
   return (
-    <div className=" mx-auto bg-white rounded-lg overflow-hidden">
+    <div className="mx-auto bg-white rounded-lg overflow-hidden border">
       <div className="bg-gradient-to-r from-[#91BF77] to-[#75a559] py-6 px-8 flex justify-between items-center">
         <div className="flex items-center">
           <img
-            className="h-24 w-24 rounded-full object-cover mr-6"
+            className="h-32 w-32 rounded-full object-cover mr-6 border-4 border-white"
             src="/src/assets/profile.png"
             alt={`${patient?.firstName} ${patient?.lastName}'s avatar`}
           />
           <div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-3xl font-bold text-white">
               {patient?.firstName} {patient?.lastName}
             </h2>
             <p className="text-gray-200">Patient</p>
@@ -137,21 +137,21 @@ const PatientProfile: React.FC = () => {
           <FaEdit className="mr-2" /> {editMode ? "Cancel" : "Edit Profile"}
         </button>
       </div>
-      <div className="py-4 px-8 border">
-        <h3 className="text-xl font-semibold mb-4 mt-2">Personal Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div>
-            <div className="flex items-center mb-2">
-              <FaEnvelope className="text-[#91BF77] mr-2" size={18} />
+      <div className="py-4 px-8 border-t">
+        <h3 className="text-2xl font-semibold mb-6 mt-2 text-center">
+          Personal Information
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gray-100 rounded-lg p-6 shadow-md">
+            <div className="flex items-center mb-4">
+              <FaEnvelope className="text-[#91BF77] mr-2" size={20} />
               <p className="text-gray-700 font-semibold">Email:</p>
             </div>
-            <div>
-              <p className="text-gray-600">{patient?.email}</p>
-            </div>
+            <p className="text-gray-600">{patient?.email}</p>
           </div>
-          <div>
-            <div className="flex items-center mb-2">
-              <FaMapMarkerAlt className="text-[#91BF77] mr-2" size={18} />
+          <div className="bg-gray-100 rounded-lg p-6 shadow-md">
+            <div className="flex items-center mb-4">
+              <FaMapMarkerAlt className="text-[#91BF77] mr-2" size={20} />
               <p className="text-gray-700 font-semibold">Address:</p>
             </div>
             {editMode ? (
@@ -166,9 +166,9 @@ const PatientProfile: React.FC = () => {
               <p className="text-gray-600">{patient?.address}</p>
             )}
           </div>
-          <div>
-            <div className="flex items-center mb-2 ">
-              <FaHeartbeat className="text-[#91BF77] mr-2" size={18} />
+          <div className="bg-gray-100 rounded-lg p-6 shadow-md">
+            <div className="flex items-center mb-4">
+              <FaHeartbeat className="text-[#91BF77] mr-2" size={20} />
               <p className="text-gray-700 font-semibold">Chronic Illness:</p>
             </div>
             {editMode ? (
@@ -183,9 +183,9 @@ const PatientProfile: React.FC = () => {
               <p className="text-gray-600">{patient?.chronicillness}</p>
             )}
           </div>
-          <div>
-            <div className="flex items-center mb-2 mt-3">
-              <FaTint className="text-[#91BF77] mr-2" size={18} />
+          <div className="bg-gray-100 rounded-lg p-6 shadow-md">
+            <div className="flex items-center mb-4">
+              <FaTint className="text-[#91BF77] mr-2" size={20} />
               <p className="text-gray-700 font-semibold">Blood Group:</p>
             </div>
             {editMode ? (
@@ -209,9 +209,9 @@ const PatientProfile: React.FC = () => {
               <p className="text-gray-600">{patient?.bloodgroup}</p>
             )}
           </div>
-          <div>
-            <div className="flex items-center mb-2 mt-3">
-              <FaBirthdayCake className="text-[#91BF77] mr-2" size={18} />
+          <div className="bg-gray-100 rounded-lg p-6 shadow-md">
+            <div className="flex items-center mb-4">
+              <FaBirthdayCake className="text-[#91BF77] mr-2" size={20} />
               <p className="text-gray-700 font-semibold">Date of Birth:</p>
             </div>
             {editMode ? (
@@ -226,23 +226,21 @@ const PatientProfile: React.FC = () => {
               <p className="text-gray-600">{patient?.dateofbirth}</p>
             )}
           </div>
-          <div>
-            <div className="flex items-center mb-2 mt-3">
-              <FaTransgenderAlt className="text-[#91BF77] mr-2" size={18} />
+          <div className="bg-gray-100 rounded-lg p-6 shadow-md">
+            <div className="flex items-center mb-4">
+              <FaTransgenderAlt className="text-[#91BF77] mr-2" size={20} />
               <p className="text-gray-700 font-semibold">Gender:</p>
             </div>
-            <div>
-              {renderGenderIcon()}
-            </div>
+            <div>{renderGenderIcon()}</div>
           </div>
         </div>
         {editMode && (
           <div className="flex justify-center">
             <button
-              className="bg-[#91BF77] text-white py-2 px-4 w-[100px] rounded hover:bg-[#75a559] transition duration-300"
+              className="bg-[#91BF77] text-white py-2 px-6 rounded-full hover:bg-[#75a559] transition duration-300 shadow-md"
               onClick={handleSaveProfile}
             >
-              Save
+              Save Profile
             </button>
           </div>
         )}

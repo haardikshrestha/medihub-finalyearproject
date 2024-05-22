@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import CreateWard from "./CreateWard";
-
+import { useNavigate } from "react-router-dom";
 interface Ward {
   _id: string;
   wardId: string;
@@ -9,6 +8,7 @@ interface Ward {
 
 const WardTable = () => {
   const [wards, setWards] = useState<Ward[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchWards = async () => {
@@ -25,7 +25,7 @@ const WardTable = () => {
 
   const handleDelete = async (wardId: string) => {
     try {
-      const response = await axios.post("http://localhost:5173/deleteward", wardId );
+      const response = await axios.post("http://localhost:5173/deleteward", {wardId} );
       if (response.status === 200) {
         setWards((prevWards) => prevWards.filter((ward) => ward._id !== wardId));
         alert("Ward deleted successfully");
@@ -38,6 +38,10 @@ const WardTable = () => {
     }
   };
 
+  const handle  = async () => {
+    navigate("/admin/createwards");
+  }
+
   return (
     <div>
       <div className="flex justify-between mb-2">
@@ -45,7 +49,7 @@ const WardTable = () => {
           <span className="text-gray-500 mr-2">Total Wards:</span>
           <span className="font-bold">{wards.length}</span>
         </div>
-        <CreateWard />
+        <button onClick={handle} className="bg-green-400 py-2 px-3 rounded-lg"> Add Ward</button>
       </div>
 
       <div className="overflow-x-auto">

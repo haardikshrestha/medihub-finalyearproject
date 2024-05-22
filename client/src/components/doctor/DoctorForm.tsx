@@ -40,7 +40,9 @@ const DoctorForm: React.FC = () => {
     // Fetch expertise list
     const fetchExpertiseList = async () => {
       try {
-        const response = await axios.get<string[]>("http://localhost:5173/getdepartmentnames");
+        const response = await axios.get<string[]>(
+          "http://localhost:5173/getdepartmentnames",
+        );
         setExpertiseList(response.data);
       } catch (error) {
         console.error("Error fetching expertise list:", error);
@@ -55,28 +57,33 @@ const DoctorForm: React.FC = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let generatedPassword = "";
     for (let i = 0; i < 8; i++) {
-      generatedPassword += characters.charAt(Math.floor(Math.random() * characters.length));
+      generatedPassword += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
     }
     setPassword(generatedPassword);
   };
+
+  console.log(fullName);
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setLoading(true);
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5173/api/newdoctor", {
+      const response = await fetch("http://localhost:5173/newdoctor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullName, // Include fullName in the request body
-          nmc: nmcNumber,
-          email: emailAddress,
+          fullname: fullName,
+          emailaddress: emailAddress,
+          phonenumber: phoneNumber,
           expertise,
           degree,
           school,
+          nmc: nmcNumber,
           startTime,
           endTime,
           daysAvailable: selectedDays.filter((day) => day.selected).map((day) => day.day),
@@ -126,9 +133,10 @@ const DoctorForm: React.FC = () => {
             id="fullname"
             className="mt-1 p-2.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)} // Update the full name state
+            onChange={(e) => setFullName(e.target.value)} 
           />
         </div>
+
         {/* Email Address */}
         <div className="mb-4">
           <label
@@ -231,10 +239,7 @@ const DoctorForm: React.FC = () => {
         </div>
 
         <div className="mb-4">
-          <label
-            htmlFor="startTime"
-            className="block text-sm font-medium text-gray-600"
-          >
+          <label htmlFor="startTime" className="block text-sm font-medium text-gray-600">
             Start Time
           </label>
           <select
@@ -338,11 +343,7 @@ const DoctorForm: React.FC = () => {
           className="col-span-2 w-2/4 bg-[#ACE86C] text-white p-2 rounded-md hover:bg-[#93d34d] focus:outline-none focus:ring focus:border-blue-300 mx-auto block"
           disabled={loading}
         >
-          {loading ? (
-            <FaSpinner className="animate-spin mr-2" />
-          ) : (
-            "Submit"
-          )}
+          {loading ? <FaSpinner className="animate-spin mr-2" /> : "Submit"}
         </button>
       </form>
     </div>
