@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 
 const FirstLogin = () => {
   const [isMounted, setIsMounted] = useState(true);
@@ -19,21 +21,18 @@ const FirstLogin = () => {
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleResetPassword = async () => {
     try {
-      // Check if the passwords match
       if (newPassword !== confirmPassword) {
         notifyError("Passwords do not match. Please enter matching passwords.");
         return;
       }
-      console.log("ok");
-      // Call the server endpoint to update the password
       await axios.post("http://localhost:5173/staff/updatepassword", { email, newPassword });
-      
-      alert("Password updated successfully!");
-      // Redirect the user to the login page or any other appropriate page
+      notifySuccess("Password updated successfully!");
       navigate("/login");
     } catch (error) {
       console.error("Reset Password Error:", error);
@@ -42,64 +41,58 @@ const FirstLogin = () => {
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Left Panel */}
-      <div className="bg-lime-300 w-1/2 relative overflow-hidden flex items-center justify-center">
-        <img src="src/assets/Signin.png" alt="" className="h-full w-full object-cover" />
-      </div>
-
-      {/* Right Panel */}
-      <div className="bg-slate-50 w-1/2 flex flex-col justify-evenly py-10 text-center">
-        <section className="w-3/4 mx-auto flex flex-col gap-10">
-          {/* Title Section */}
-          <div className="title">
-            <h3 className="text-gray-800 text-2xl font-bold py-4">Reset Password</h3>
-            <p className="w-3/4 text-gray-400 mx-auto text-sm">
-              Please enter your new password.
-            </p>
-          </div>
-
-          <form className="flex flex-col gap-5">
-            {/* New Password Input */}
+    <section className="bg-[#D6E3C8] min-h-screen flex items-center justify-center">
+      <ToastContainer />
+      <div className="bg-gray-100 flex rounded-2xl max-w-lg p-6 items-center">
+        <div className="w-full text-center">
+          <h2 className="font-bold text-2xl text-black mb-4">Reset Password</h2>
+          <p className="text-gray-400 mb-8">Please enter your new password.</p>
+          <form className="flex flex-col gap-4">
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 name="newPassword"
                 placeholder="New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
+                className="w-full py-2 px-3 rounded-xl bg-gray-100 outline-none border-solid border-gray-400"
               />
+              <span
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? <HiEyeOff /> : <HiEye />}
+              </span>
             </div>
-
-            {/* Confirm Password Input */}
             <div className="flex border rounded-xl relative hover:border-lime-500">
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full py-2 px-3 rounded-xl bg-slate-50 outline-none border-solid border-slate-400"
+                className="w-full py-2 px-3 rounded-xl bg-gray-100 outline-none border-solid border-gray-400"
               />
-            </div>
-
-            {/* Submit Button */}
-            <div className="input-button">
-              <button
-                type="button"
-                onClick={handleResetPassword}
-                className="w-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-xl py-2 text-gray-50 text-sm"
+              <span
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                Reset Password
-              </button>
+                {showConfirmPassword ? <HiEyeOff /> : <HiEye />}
+              </span>
             </div>
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              className="bg-[#91BF77] rounded-xl text-white py-2 text-sm flex items-center justify-center"
+            >
+              Reset Password
+            </button>
           </form>
-        </section>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

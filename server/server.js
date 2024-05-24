@@ -58,7 +58,8 @@ const pathologistRouter = require("./router/pathologist.router.js");
 app.use(pathologistRouter)
 const patientRouter = require("./router/patient.router.js");
 app.use(patientRouter)
-
+const diagnosisRouter = require("./router/diagnosis.router.js");
+app.use(diagnosisRouter)
 console.log("Adding admin....");
 const checkAdmin = async () => {
   try {
@@ -808,21 +809,39 @@ app.post("/patientsinfo", async (req, res) => {
       firstName,
       lastName,
       gender,
-      dateofbirth,
-      chronicillness,
+      dateOfBirth,
+      chronicIllness,
       address,
-      bloodgroup,
+      bloodGroup,
     } = req.body;
 
+    // Check for empty fields
+    if (!email || !firstName || !lastName || !gender || !dateOfBirth || !chronicIllness || !address || !bloodGroup) {
+      return res.status(400).send("All fields are required");
+    }
+
+    // Check age requirement (not under 18)
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      return res.status(400).send("Patient must be 18 years or older");
+    }
+
+    // Save the patient
     const newPatient = new Patient({
       email,
       firstName,
       lastName,
       gender,
-      dateofbirth,
-      chronicillness,
+      dateOfBirth,
+      chronicIllness,
       address,
-      bloodgroup,
+      bloodGroup,
     });
     await newPatient.save();
     res.status(201).send("Patient registered successfully");
@@ -831,6 +850,7 @@ app.post("/patientsinfo", async (req, res) => {
     res.status(500).send("Failed to register patient");
   }
 });
+
 
 // ---------------------------------- DOCTORS -------------------------------------------------------------
 
@@ -2021,6 +2041,22 @@ app.post('/submit/test', async (req, res) => {
 });
 //------------------------------------------------------------------
 
+app.get('/downloadreport/:id', async (req, res) => {
+  try {
+    const labReport = await LabReport.findById(req.params.id);
+
+    if (!labReport) {
+      return res.status(404).json({ message: 'Lab report not found' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${labReport.filename}"`);
+    res.send(labReport.pdfBuffer);
+  } catch (error) {
+    console.error('Error downloading lab report:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // ------------------- lab reports ----------------------
 

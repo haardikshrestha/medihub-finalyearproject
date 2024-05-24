@@ -43,7 +43,7 @@ const getappointmentsbyemail = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const appointments = await Appointment.find({ email });
+    const appointments = await Appointment.find({ apptPatient: email });
 
     if (appointments.length === 0) {
       return res.status(404).json({ message: "No appointments scheduled yet" });
@@ -129,6 +129,55 @@ const getAppointmentsByDate = async (req, res) => {
   }
 };
 
+const mongoose = require('mongoose');
+
+const cancelAppointment = async (req, res) => {
+  const { _id } = req.params;
+
+  try {
+    const appointment = await Appointment.findOneAndUpdate(
+      { _id: mongoose.Types.ObjectId.createFromHexString(_id) },
+      { apptStatus: "Cancelled" },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json({ message: "Appointment cancelled successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getPositionInQueue = async (req, res) => {
+  try {
+    const { appointmentId } = req.query;
+
+    if (!appointmentId) {
+      return res.status(400).json({ message: "Appointment ID is required" });
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const appointmentsOnSameDay = await Appointment.find({
+      apptDate: appointment.apptDate,
+      apptStatus: 'Pending'
+    }).sort({ apptDate: 1, apptTime: 1 });
+
+    const position = appointmentsOnSameDay.findIndex(appt => appt._id.toString() === appointmentId) + 1;
+
+    res.status(200).json({ position });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 const AppointmentController = {
   postAppointments,
@@ -136,7 +185,9 @@ const AppointmentController = {
   getappointmentsbyemail,
   countAppointments,
   postDoctorAppointment,
-  getAppointmentsByDate
+  getAppointmentsByDate,
+  cancelAppointment,
+  getPositionInQueue
 };
 
 module.exports = AppointmentController;

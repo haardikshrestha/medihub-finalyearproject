@@ -1,6 +1,9 @@
 const express = require("express");
 const Patient = require("../models/patient-models/patientSchema");
 const User = require("../models/userSchema");
+const Appointment = require("../models/patient-models/appointmentsSchema");
+const SampleCollection = require("../models/pathology-models/sampleCollectionSchema");
+
 const app = express();
 app.use(express.json());
 const nodemailer = require("nodemailer");
@@ -241,6 +244,20 @@ const updatePatientByEmail = async (req, res) => {
   }
 };
 
+const patientNumbersStat = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const sampleCollectionCount = await SampleCollection.countDocuments({ patientEmail: email });
+
+    const appointmentCount = await Appointment.countDocuments({ patientEmail: email });
+
+    res.json({ sampleCollectionCount, appointmentCount });
+  } catch (error) {
+    console.log('Error fetching patient numbers stat:', error);
+    res.status(500).json(error);
+  }
+};
+
 const PatientController = {
   patientsInfo,
   checkPatient,
@@ -248,6 +265,7 @@ const PatientController = {
   getPatients,
   deletePatientByEmail,
   updatePatientByEmail, 
+  patientNumbersStat
 };
 
 

@@ -7,6 +7,7 @@ import {
   FaCalendarAlt,
   FaUniversity,
   FaMoneyBillWave,
+  FaCertificate,
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -14,7 +15,7 @@ import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 
 interface Doctor {
   _id?: string;
-  fullName: string;
+  fullname: string;
   expertise: string;
   email: string;
   degree: string;
@@ -191,11 +192,12 @@ const DoctorDetails: React.FC = () => {
           apptDoctor: doctor?.email,
           apptTime: selectedTime,
           apptReason: apptReason,
-        }
+        },
       );
 
       console.log("Appointment booked successfully:", response.data);
       alert("Appointment booked successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error booking appointment:", error);
       alert("Error booking appointment: " + error);
@@ -211,6 +213,7 @@ const DoctorDetails: React.FC = () => {
   };
 
   const renderCalendar = () => {
+    const today = new Date();
     const startDay = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
@@ -255,25 +258,36 @@ const DoctorDetails: React.FC = () => {
           const dateString = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1)
             .toString()
             .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-          const isSelected =
-            selectedDate?.toDateString() === new Date(dateString).toDateString();
-          const isAvailable = isDateAvailable(new Date(dateString)); // Check if the date is available
+          const dateObj = new Date(dateString);
+          const isSelected = selectedDate?.toDateString() === dateObj.toDateString();
+          const isAvailable = isDateAvailable(dateObj);
+          const isPastDate = dateObj < today;
+          const isDisabled = !isAvailable || isPastDate;
+
           row.push(
             <div
               key={dateString}
               className={`w-10 h-10 flex items-center justify-center text-center cursor-pointer text-sm ${
                 isSelected
                   ? "bg-[#91BF77] text-white rounded-full"
-                  : isAvailable
+                  : isAvailable && !isPastDate
                   ? "hover:bg-gray-200 rounded-full"
-                  : "text-gray-400"
+                  : isPastDate
+                  ? "text-gray-400"
+                  : "text-gray-300"
               }`}
-              onClick={() => isAvailable && setSelectedDate(new Date(dateString))} // Only allow selection if available
+              onClick={() => !isDisabled && setSelectedDate(dateObj)}
             >
-              {isAvailable ? (
+              {isAvailable && !isPastDate ? (
                 day
               ) : (
-                <span className="block text-center w-4 h-4 bg-gray-400 rounded-full"></span>
+                <span
+                  className={`block mx-auto rounded-full ${
+                    isPastDate || !isAvailable
+                      ? "w-2 h-2 bg-gray-400"
+                      : "w-4 h-4 bg-gray-400"
+                  }`}
+                ></span>
               )}
             </div>,
           );
@@ -289,7 +303,6 @@ const DoctorDetails: React.FC = () => {
 
     return calendar;
   };
-
   return (
     <div className="flex flex-col md:flex-row w-full">
       <div className="w-full">
@@ -299,28 +312,32 @@ const DoctorDetails: React.FC = () => {
           <p className="text-red-500 text-center">{error}</p>
         ) : doctor ? (
           <div className="bg-white rounded-lg border overflow-hidden">
-            <div className="bg-gradient-to-r from-[#91BF77] to-[#7da466] p-8 text-white flex items-center">
-              <h3 className="text-3xl font-semibold">Dr. {doctor.fullName}</h3>
+            <div className="bg-gradient-to-r from-[#91BF77] to-[#7da466] p-8 text-white flex items-center justify-between">
+              <h3 className="text-3xl font-semibold">Dr. {doctor.fullname}</h3>
+              <div className="flex items-center">
+                <FaEnvelope className="text-white mr-2" />
+                <a href={`mailto:${doctor.email}`} className="text-white hover:underline">
+                  {doctor.email}
+                </a>
+              </div>
             </div>
 
             {/* Doctor Information */}
             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-2xl font-semibold text-gray-800 mb-4">
-                  Contact Information
-                </h4>
-                <div className="flex items-center mb-2">
-                  <FaEnvelope className="text-[#91BF77] mr-2" />
-                  <p className="text-gray-700">{doctor.email}</p>
-                </div>
+              <div className="bg-[#f8f8f8] p-6 rounded-lg border">
+                <h4 className="text-2xl font-semibold text-gray-800 mb-4">Expertise</h4>
                 <div className="flex items-center mb-2">
                   <FaUniversity className="text-[#91BF77] mr-2" />
                   <p className="text-gray-700">
                     {doctor.degree} from {doctor.school}
                   </p>
                 </div>
+                <div className="flex items-center mb-2">
+                  <FaCertificate className="text-[#91BF77] mr-2" />
+                  <p className="text-gray-700">{doctor.expertise}</p>
+                </div>
               </div>
-              <div>
+              <div className="bg-[#f8f8f8] p-6 rounded-lg border">
                 <h4 className="text-2xl font-semibold text-gray-800 mb-4">
                   Availability
                 </h4>
@@ -348,8 +365,8 @@ const DoctorDetails: React.FC = () => {
                 Book Appointment
               </h4>
 
-              <div className="flex">
-                <div className="w-2/5">
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-2/5 mb-4 md:mb-0">
                   <div className="bg-white rounded-xl border p-4">
                     <div className="flex justify-between items-center mb-4">
                       <div
@@ -376,31 +393,47 @@ const DoctorDetails: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col w-full ml-10 gap-3">
-                  <div className="">
-                    <p className="text-gray-800 font-semibold mb-2">Selected Date:</p>
-                    <div className="flex">
-                      <DatePicker
-                        selected={selectedDate}
-                        onChange={handleDateChange}
-                        minDate={new Date()}
-                        filterDate={isDateAvailable}
-                        dateFormat="yyyy-MM-dd"
-                        className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      />
+                <div className="flex flex-col w-full md:w-3/5 md:ml-6 gap-3">
+                  {selectedDate && (
+                    <div className="mt-4 flex items-center">
+                      <FaCalendarAlt className="text-[#91BF77] mr-2" />
+                      <p className="text-gray-700">
+                        Your selected date:{" "}
+                        {selectedDate.toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
                     </div>
-                  </div>
+                  )}
                   {selectedDate && renderTimeSlots()}
-                  {/* Input field for appointment reason */}
-                  <input
-                    type="text"
-                    placeholder="Appointment Reason"
-                    value={apptReason}
-                    onChange={(e) => setApptReason(e.target.value)}
-                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                  <div className="mb-4">
+                    <label
+                      htmlFor="appointmentReason"
+                      className="text-gray-800 font-semibold mb-2"
+                    >
+                      Reason for Appointment (Max 50 characters):
+                    </label>
+                    <input
+                      type="text"
+                      id="appointmentReason"
+                      maxLength={50}
+                      value={apptReason}
+                      onChange={(e) => setApptReason(e.target.value)}
+                      className="w-full border rounded-md p-2 mt-1"
+                      placeholder="Enter the reason for your appointment"
+                    />
+                    <p
+                      className={`text-sm mt-1 ${
+                        apptReason.length >= 50 ? "text-red-500" : "text-gray-500"
+                      }`}
+                    >
+                      {apptReason.length}/50 characters
+                    </p>
+                  </div>
                   <button
-                    className="bg-[#91BF77] text-white py-2 px-4 rounded-md mt-2 hover:bg-[#91BF77] transition-colors duration-300"
+                    className="bg-[#91BF77] text-white py-3 px-6 rounded-full mt-2 hover:bg-[#7da466] transition-colors duration-300"
                     onClick={handleAppointmentBooking}
                     disabled={!selectedDate || !selectedTime}
                   >

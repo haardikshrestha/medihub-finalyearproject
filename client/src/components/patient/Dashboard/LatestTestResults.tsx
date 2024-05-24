@@ -13,8 +13,8 @@ interface SampleData {
 
 const LatestTestResults: React.FC = () => {
   const [latestResult, setLatestResult] = useState<SampleData | null>(null);
-  
-const email = localStorage.getItem("email");
+
+  const email = localStorage.getItem("email");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +35,7 @@ const email = localStorage.getItem("email");
     };
 
     fetchData();
-  }, []);
+  }, [email]);
 
   const getStatusColor = (status: string): string => {
     switch (status) {
@@ -94,7 +94,12 @@ const email = localStorage.getItem("email");
             <FaFilePdf className="text-red-500 text-xl" />
           </>
         ) : (
-          <p>No test results available.</p>
+          <div className="text-center w-full">
+            <p className="text-gray-600 font-semibold">No test results available.</p>
+            <Link to="/patient/pathology">
+              <button className="bg-[#91BF77] text-white px-4 py-2 rounded hover:bg-[#7da466]">Schedule Test</button>
+            </Link>
+          </div>
         )}
       </div>
     </div>

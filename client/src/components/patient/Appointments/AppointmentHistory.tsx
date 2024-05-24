@@ -4,7 +4,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import { FaTrashAlt, FaFilter } from 'react-icons/fa';
+import { FaTrashAlt, FaFilter, FaThList } from 'react-icons/fa';
+import BackButton from '@/components/BackButton';
 
 interface Appointment {
   _id: string;
@@ -22,16 +23,20 @@ const AppointmentHistory = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('All');
+  const [positions, setPositions] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
-    // Fetch appointment data from the backend
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get('http://localhost:5173/getappointments');
+        const email = localStorage.getItem('email');
+        const response = await axios.get('http://localhost:5173/getappointmentsbyemail', {
+          params: { email }
+        });
         setAppointments(response.data);
         setFilteredAppointments(response.data);
       } catch (error) {
         console.error('Error fetching appointments:', error);
+        toast.error('Error fetching appointments');
       }
     };
 
@@ -55,23 +60,50 @@ const AppointmentHistory = () => {
       buttons: [
         {
           label: 'Yes',
-          onClick: () => {
-            // Simulating the cancellation process
-            toast.success('Appointment canceled successfully!');
-            // Here, you can make an API call to cancel the appointment on the server
-            // and update the appointments state accordingly
+          onClick: async () => {
+            try {
+              await axios.post(`http://localhost:5173/appointments/${appointmentId}/cancel`);
+              toast.success('Appointment canceled successfully!');
+              const email = localStorage.getItem('email');
+              const response = await axios.get('http://localhost:5173/getappointmentsbyemail', {
+                params: { email }
+              });
+              setAppointments(response.data);
+              setFilteredAppointments(response.data);
+            } catch (error) {
+              console.error('Error cancelling appointment:', error);
+              toast.error('Failed to cancel appointment');
+            }
           },
         },
         {
           label: 'No',
-          onClick: () => {}, // Do nothing
+          onClick: () => {},
         },
       ],
     });
   };
 
+  const fetchPositionInQueue = async (appointmentId: string) => {
+    try {
+      const response = await axios.get('http://localhost:5173/getpositioninqueue', {
+        params: { appointmentId }
+      });
+      setPositions(prev => ({ ...prev, [appointmentId]: response.data.position }));
+    } catch (error) {
+      console.error('Error fetching position in queue:', error);
+    }
+  };
+
+  useEffect(() => {
+    filteredAppointments
+      .filter(appt => appt.apptStatus === 'Pending')
+      .forEach(appt => fetchPositionInQueue(appt._id));
+  }, [filteredAppointments]);
+
   return (
     <div className="bg-gradient-to-br from-green-100 to-blue-100 min-h-screen py-12 rounded-lg">
+      <BackButton />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Appointment History</h2>
         <div className="flex justify-center mb-6">
@@ -144,9 +176,15 @@ const AppointmentHistory = () => {
                       <FaTrashAlt />
                     </button>
                   )}
+                  {appointment.apptStatus === 'Pending' && positions[appointment._id] && (
+                    <div className="bg-purple-500 text-white px-3 py-1 rounded-lg ml-2 flex items-center shadow-md">
+                      <FaThList className="mr-2" />
+                      <span>Position {positions[appointment._id]}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="p-6 bg-white">
+              <div className="p-6 bg-white flex justify-between items-center">
                 <span className="text-gray-600 text-sm">
                   {new Date(appointment.apptDate).toLocaleDateString()} - {appointment.apptTime}
                 </span>

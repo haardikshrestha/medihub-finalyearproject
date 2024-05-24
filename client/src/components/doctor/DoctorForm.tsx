@@ -54,7 +54,7 @@ const DoctorForm: React.FC = () => {
 
   // Generate random password function
   const generateRandomPassword = () => {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-";
     let generatedPassword = "";
     for (let i = 0; i < 8; i++) {
       generatedPassword += characters.charAt(

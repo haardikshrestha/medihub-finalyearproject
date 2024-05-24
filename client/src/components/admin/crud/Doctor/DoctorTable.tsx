@@ -9,7 +9,7 @@ interface Doctor {
   _id: string;
   fullname: string;
   email: string;
-  nmc: string; // Added nmc field
+  nmc: string; 
   expertise: string;
 }
 
@@ -58,24 +58,11 @@ const DoctorTable: React.FC = () => {
         {
           label: "No",
           onClick: () => {
-            /* No action required */
           },
         },
       ],
     });
   };
-
-  // const handleDeleteConfirm = async (doctorEmail: string) => {
-  //   try {
-  //     await axios.delete(`http://localhost:5173/deleteDoctor?email=${encodeURIComponent(doctorEmail)}`);
-  
-  //     await axios.delete(`http://localhost:5173/deleteUser?email=${encodeURIComponent(doctorEmail)}`);
-      
-  //     setDoctors(doctors.filter(doctor => doctor.email !== doctorEmail));
-  //   } catch (error) {
-  //     console.error('Error deleting doctor:', error);
-  //   }
-  // };
 
   return (
     <div>

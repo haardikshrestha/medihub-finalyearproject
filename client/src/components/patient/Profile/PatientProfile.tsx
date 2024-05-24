@@ -57,15 +57,58 @@ const PatientProfile: React.FC = () => {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const updatedPatient = updatePatientData(
-      editedPatient,
-      e.target.name,
-      e.target.value,
-    );
+    const { name, value } = e.target;
+  
+    if (name === "address" && value.trim() === "") {
+      toast.error("Address cannot be empty.");
+      return;
+    }
+  
+    if (name === "chronicillness" && value.length > 30) {
+      toast.error("Chronic illness description cannot exceed 30 characters.");
+      return;
+    }
+  
+    if (name === "dateofbirth") {
+      const birthDate = new Date(value);
+      const currentDate = new Date();
+      const age = currentDate.getFullYear() - birthDate.getFullYear();
+      
+      if (age < 18) {
+        toast.error("Patient must be at least 18 years old.");
+        return;
+      }
+    }
+  
+    const updatedPatient = updatePatientData(editedPatient, name, value);
     setEditedPatient(updatedPatient);
   };
-
+  
   const handleSaveProfile = () => {
+    if (!editedPatient?.address || editedPatient?.address.trim() === "") {
+      toast.error("Address cannot be empty.");
+      return;
+    }
+  
+    if (!editedPatient?.chronicillness || editedPatient?.chronicillness.trim() === "") {
+      toast.error("Chronic illness description cannot be empty.");
+      return;
+    }
+  
+    if (editedPatient?.chronicillness && editedPatient?.chronicillness.length > 30) {
+      toast.error("Chronic illness description cannot exceed 30 characters.");
+      return;
+    }
+  
+    const editedBirthDate = new Date(editedPatient?.dateofbirth || "");
+    const currentDate = new Date();
+    const age = currentDate.getFullYear() - editedBirthDate.getFullYear();
+  
+    if (age < 18) {
+      toast.error("Patient must be at least 18 years old.");
+      return;
+    }
+  
     const email = localStorage.getItem("email");
     if (email) {
       axios
@@ -88,6 +131,8 @@ const PatientProfile: React.FC = () => {
       toast.error("Email not found in localStorage.");
     }
   };
+  
+  
 
   const updatePatientData = (
     patient: PatientData | null,

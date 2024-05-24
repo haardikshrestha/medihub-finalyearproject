@@ -38,41 +38,39 @@ const PatientCalendar: React.FC = () => {
       const userEmail = localStorage.getItem("email");
 
       const sampleResponse = await axios.get(
-        `http://localhost:5173/samplecollections/get/patient/${userEmail}`
+        `http://localhost:5173/samplecollections/get/patient/${userEmail}`,
       );
       setSampleCollections(sampleResponse.data);
 
       const appointmentResponse = await axios.get(
-        `http://localhost:5173/getappointments`
+        `http://localhost:5173/getappointments`,
       );
-      setAppointments(appointmentResponse.data);
+      const filteredAppointments = appointmentResponse.data.filter(
+        (appointment: Appointment) => appointment.apptPatient === userEmail,
+      );
+      setAppointments(filteredAppointments);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-
   const handlePrevMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    );
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-    );
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
   const renderCalendar = () => {
     const startDay = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
-      1
+      1,
     ).getDay();
     const daysInMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() + 1,
-      0
+      0,
     ).getDate();
 
     const calendar = [];
@@ -86,7 +84,7 @@ const PatientCalendar: React.FC = () => {
             {weekday}
           </div>
         ))}
-      </div>
+      </div>,
     );
 
     for (let week = 0; week < 6; week++) {
@@ -96,18 +94,16 @@ const PatientCalendar: React.FC = () => {
           row.push(
             <div key={`empty-${i}`} className="w-10 text-gray-400">
               {" "}
-            </div>
+            </div>,
           );
         } else if (day > daysInMonth) {
           row.push(
             <div key={`empty-${week * 7 + i}`} className="w-10 text-gray-400">
               {" "}
-            </div>
+            </div>,
           );
         } else {
-          const dateString = `${currentDate.getFullYear()}-${(
-            currentDate.getMonth() + 1
-          )
+          const dateString = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1)
             .toString()
             .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
           const currentDateValue = new Date(dateString);
@@ -118,12 +114,11 @@ const PatientCalendar: React.FC = () => {
           const hasSampleData = sampleCollections.some(
             (item) =>
               new Date(item.appointmentDate).toDateString() ===
-              currentDateValue.toDateString()
+              currentDateValue.toDateString(),
           );
           const hasAppointment = appointments.some(
             (item) =>
-              new Date(item.apptDate).toDateString() ===
-              currentDateValue.toDateString()
+              new Date(item.apptDate).toDateString() === currentDateValue.toDateString(),
           );
           row.push(
             <div
@@ -143,7 +138,7 @@ const PatientCalendar: React.FC = () => {
                   <div className="w-10 h-10 bg-transparent border-2 border-amber-300 rounded-full"></div>
                 </div>
               )}
-            </div>
+            </div>,
           );
           day++;
         }
@@ -151,7 +146,7 @@ const PatientCalendar: React.FC = () => {
       calendar.push(
         <div key={`week-${week}`} className="flex">
           {row}
-        </div>
+        </div>,
       );
     }
 
@@ -188,9 +183,7 @@ const PatientCalendar: React.FC = () => {
         <div className="mt-4">
           <hr className="mb-4" />
           <div className="text-center">
-            <div className="text-sm font-semibold text-gray-800 mb-1">
-              Your Schedule
-            </div>
+            <div className="text-sm font-semibold text-gray-800 mb-1">Your Schedule</div>
             <div className="text-md font-bold text-[#91BF77] mb-1">
               {selectedDate.toLocaleDateString("en-US", {
                 weekday: "long",
@@ -205,41 +198,95 @@ const PatientCalendar: React.FC = () => {
                 .filter(
                   (item) =>
                     new Date(item.appointmentDate).toDateString() ===
-                    selectedDate.toDateString()
+                    selectedDate.toDateString(),
                 )
                 .map((item, index) => (
-                  <div key={index} className="bg-white rounded-lg border p-4">
-                    <div className="text-lg font-bold">{item.testName}</div>
-                    <div className="text-sm text-gray-500">{item.status}</div>
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg border p-4 flex items-center relative"
+                  >
+                    <div
+                      className={`bg-green-100 text-green-700 p-2 rounded-full mr-4 ${
+                        item.status === "Test Completed" ? "bg-green-500 text-white" : ""
+                      }`}
+                    >
+                      <span role="img" aria-label="Test">
+                        🧪
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold">{item.testName}</div>
+                      <div className="text-sm text-gray-500 flex items-center">
+                        {item.status}
+                        {item.status === "Pending" && (
+                          <div className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full ml-2">
+                            Pending
+                          </div>
+                        )}
+                        {item.status === "Completed" && (
+                          <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full ml-2">
+                            Completed
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               {appointments
                 .filter(
                   (item) =>
                     new Date(item.apptDate).toDateString() ===
-                    selectedDate.toDateString()
+                    selectedDate.toDateString(),
                 )
                 .map((item, index) => (
-                  <div key={index} className="bg-white rounded-lg border p-4">
-                    <div className="text-lg font-bold">Appointment</div>
-                    <div className="text-sm text-gray-500">Dr. {item.apptDoctor}</div>
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg border p-4 flex items-center relative"
+                  >
+                    <div
+                      className={`bg-blue-100 text-blue-700 p-2 rounded-full mr-4 ${
+                        item.apptStatus === "Test Completed"
+                          ? "bg-green-500 text-white"
+                          : item.apptStatus === "Pending"
+                          ? "bg-yellow-500 text-white"
+                          : ""
+                      }`}
+                    >
+                      <span role="img" aria-label="Appointment">
+                        📅
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold">Appointment</div>
+                      <div className="text-sm text-gray-500 flex items-center">
+                        Dr. {item.apptDoctor}
+                      </div>
+                      {item.apptStatus === "Pending" && (
+                        <div className="text-sm text-yellow-500">Pending</div>
+                      )}
+                    </div>
                   </div>
                 ))}
-              {(sampleCollections.filter(
+
+              {sampleCollections.filter(
                 (item) =>
                   new Date(item.appointmentDate).toDateString() ===
-                  selectedDate.toDateString()
+                  selectedDate.toDateString(),
               ).length === 0 &&
                 appointments.filter(
                   (item) =>
                     new Date(item.apptDate).toDateString() ===
-                    selectedDate.toDateString()
-                ).length === 0) && (
-                <div className="flex items-center justify-center bg-gray-200 p-2 rounded-md mt-10">
-                  <span role="img">🙂</span>
-                  <span className="ml-2 text-sm">Nothing scheduled for the day!</span>
-                </div>
-              )}
+                    selectedDate.toDateString(),
+                ).length === 0 && (
+                  <div className="flex items-center justify-center bg-gray-100 p-4 rounded-md mt-10">
+                    <span role="img" aria-label="Smiling face">
+                      🙂
+                    </span>
+                    <span className="ml-2 text-sm font-medium">
+                      You have no scheduled events for this day!
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
         </div>

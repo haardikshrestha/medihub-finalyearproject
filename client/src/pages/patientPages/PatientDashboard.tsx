@@ -9,6 +9,8 @@ import axios from "axios";
 const PatientDetails: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [greeting, setGreeting] = useState("");
+  const [sampleCollectionCount, setSampleCollectionCount] = useState(0);
+  const [appointmentCount, setAppointmentCount] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -21,7 +23,8 @@ const PatientDetails: React.FC = () => {
 
   useEffect(() => {
     setGreeting(getGreeting());
-  }, []); 
+    fetchPatientNumbers();
+  }, []);
 
   const formattedDate = currentDate.toLocaleDateString("en-US", {
     day: "numeric",
@@ -44,25 +47,43 @@ const PatientDetails: React.FC = () => {
     return greetingMessage;
   };
 
+  const fetchPatientNumbers = async () => {
+    try {
+      const email = localStorage.getItem("email");
+      if (email) {
+        const response = await axios.get(`http://localhost:5173/patientstatnum`, {
+          params: { email: email }
+        });
+        const { sampleCollectionCount, appointmentCount } = response.data;
+        setSampleCollectionCount(sampleCollectionCount);
+        setAppointmentCount(appointmentCount);
+      } else {
+        console.error("Email not found in localStorage");
+      }
+    } catch (error) {
+      console.error("Error fetching patient numbers:", error);
+    }
+  };
+
   interface DashboardCardProps {
     title: string;
     value: number;
     viewAllLink: string;
-    color: string; 
+    color: string;
   }
 
   const DashboardCard: React.FC<DashboardCardProps> = ({
     title,
     value,
     viewAllLink,
-    color, 
+    color,
   }) => {
     return (
       <div className="bg-white rounded-lg border p-[17px] flex flex-col items-center">
         <h3 className="text-md  mb-4">{title}</h3>
         <div className="flex items-center justify-center mb-4">
           <div
-            style={{ backgroundColor: color }} 
+            style={{ backgroundColor: color }}
             className="rounded-full h-16 w-16 flex items-center justify-center text-white"
           >
             <span className="text-xl font-bold">{value}</span>
@@ -101,7 +122,9 @@ const PatientDetails: React.FC = () => {
     <>
       <ToastContainer className={"mt-14"} />
       <div className="mb-5 flex justify-between">
-        <p className="font-bold">{greeting}, {patientName}!</p>
+        <p className="font-bold">
+          {greeting}, {patientName}!
+        </p>
         <p className="font-bold">{formattedDate}</p>
       </div>
       <div className="flex gap-5">
@@ -109,21 +132,21 @@ const PatientDetails: React.FC = () => {
         <div className="flex flex-col gap-4 w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <DashboardCard
-              title="Medication"
-              value={0}
-              viewAllLink="/patient/medications"
+              title="Sample Collection"
+              value={sampleCollectionCount}
+              viewAllLink="/patient/samplecollection"
               color="#91BF77"
             />
             <DashboardCard
               title="Appointments"
-              value={1}
+              value={appointmentCount}
               viewAllLink="/patient/appointmenthistory"
               color="#F6AD55"
             />
             <DashboardCard
               title="Lab Results"
-              value={1}
-              viewAllLink="/patient/labtests"
+              value={0}
+              viewAllLink="/patient/testhistory"
               color="#4299E1"
             />
           </div>

@@ -61,15 +61,6 @@ const PatientSidebar = () => {
         </li>
         <li className="mb-2">
           <Link
-            to="/patient/wards"
-            className="flex items-center hover:text-gray-600 text-sm"
-          >
-            <TbBed  className="mr-2" />
-            Admission
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
             to="/patient/Settings"
             className="flex items-center hover:text-gray-600 text-sm"
           >

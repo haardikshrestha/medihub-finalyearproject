@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 interface DoctorData {
   _id: string;
-  fullName: string;
+  fullname: string;
   nmc: string;
   email: string;
   role: string;
@@ -111,10 +111,10 @@ const DoctorProfile: React.FC = () => {
           <img
             className="h-32 w-32 rounded-full object-cover mr-6 border-4 border-white"
             src="/src/assets/profile.png"
-            alt={`${doctor?.fullName}'s avatar`}
+            alt={`${doctor?.fullname}'s avatar`}
           />
           <div>
-            <h2 className="text-3xl font-bold text-white">{doctor?.fullName}</h2>
+            <h2 className="text-3xl font-bold text-white">{doctor?.fullname}</h2>
             <p className="text-gray-200 flex items-center">
               <FaUserMd className="mr-2" /> Doctor
             </p>

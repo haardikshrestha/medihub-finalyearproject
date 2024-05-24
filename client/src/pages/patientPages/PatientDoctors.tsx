@@ -1,84 +1,209 @@
-import AppointmentForm from "@/components/patient/Appointments/AppointmentForm";
-import React from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaSearch, FaClipboardCheck, FaFilter } from "react-icons/fa";
+import axios from "axios";
+
+interface Doctor {
+  _id: string;
+  fullname: string;
+  email: string;
+  expertise: string;
+  degree: string;
+  school: string;
+  startTime: string;
+  endTime: string;
+  daysAvailable: string[];
+  fees: string;
+}
+
+interface Department {
+  depName: string;
+}
 
 const PatientDoctors = () => {
-  const doctors = [
-    {
-      id: 1,
-      name: "Dr. Ram Pandey",
-      specialities: ["Cardiology"],
-      image: "/src/assets/2.png",
-    },
-    {
-      id: 2,
-      name: "Dr. Harry Potter",
-      specialities: ["Pediatrics"],
-      image: "/src/assets/doc.png",
-    },
-  ];
+  const navigate = useNavigate();
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    fetchDoctors();
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchQuery, selectedDepartment]);
+
+  const fetchDoctors = async () => {
+    try {
+      const response = await axios.get<Doctor[]>("http://localhost:5173/api/doctors");
+      if (response.status === 200) {
+        setDoctors(response.data);
+        setFilteredDoctors(response.data);
+      } else {
+        console.error("Failed to fetch doctors");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get<Department[]>("http://localhost:5173/getdepartments");
+      if (response.status === 200) {
+        const departmentNames = response.data.map((department) => department.depName);
+        setDepartments(departmentNames);
+      } else {
+        console.error("Failed to fetch departments");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleDepartmentFilter = (department: string) => {
+    setSelectedDepartment(department);
+    setIsDropdownOpen(false);
+  };
+
+  const applyFilters = () => {
+    let filtered = doctors;
+
+    if (searchQuery) {
+      filtered = filtered.filter((doctor) =>
+        doctor.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doctor.expertise.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedDepartment) {
+      filtered = filtered.filter((doctor) =>
+        doctor.expertise.includes(selectedDepartment)
+      );
+    }
+
+    setFilteredDoctors(filtered);
+  };
+
+  const navigator = (email: string) => {
+    navigate(`/patient/doctordetails?email=${encodeURIComponent(email)}`);
+  };
+
+  const handleViewAppointmentHistory = () => {
+    navigate("/patient/appointmenthistory");
+  };
 
   return (
-    // <div className="bg-gray-100 min-h-screen">
-    //   <label className="mb-5 text-sm font-medium text-gray-900 sr-only dark:text-white">
-    //     Search
-    //   </label>
-    //   <div className="relative">
-    //     <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-    //       <svg
-    //         className="w-4 h-4 text-gray-500 dark:text-gray-400"
-    //         aria-hidden="true"
-    //         xmlns="http://www.w3.org/2000/svg"
-    //         fill="none"
-    //         viewBox="0 0 20 20"
-    //       >
-    //         <path
-    //           stroke="currentColor"
-    //           stroke-linecap="round"
-    //           stroke-linejoin="round"
-    //           stroke-width="2"
-    //           d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-    //         />
-    //       </svg>
-    //     </div>
-    //     <input
-    //       type="search"
-    //       id="default-search"
-    //       className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50  "
-    //       placeholder="Search Doctors"
-    //       required
-    //     />
-    //     <button
-    //       type="submit"
-    //       className="text-white absolute end-2.5 bottom-2.5 bg-lime-500 hover:bg-lime-600 focus:ring-4 focus:outline-none focus:ring-lime-300 font-medium rounded-lg text-sm px-4 py-2"
-    //     >
-    //       Search
-    //     </button>
-    //   </div>
-    //   <main className="container mx-auto mt-4">
-    //     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    //       {doctors.map((doctor) => (
-    //         <div
-    //           key={doctor.id}
-    //           className="bg-white p-6 rounded-lg shadow mb-6 text-center"
-    //         >
-    //           <img
-    //             src={doctor.image}
-    //             alt={`Dr. ${doctor.name}`}
-    //             className="w-full h-32 object-cover mb-4 rounded-md"
-    //           />
-    //           <h2 className="text-xl font-medium mb-2 text-gray-800">{doctor.name}</h2>
-    //           <p className="text-gray-600 text-sm mb-4">
-    //             {doctor.specialities.join(", ")}
-    //           </p>
-    //           <button className="bg-lime-500 text-white rounded-full px-4 py-2 hover:bg-lime-600">
-    //             View Profile
-    //           </button>
-    //         </div>
-    //       ))}
-    //     </section>
-    //   </main>
-    // </div>
-    <AppointmentForm/>
+    <div className="container relative">
+      <div className="flex items-center justify-between mb-4">
+        <form onSubmit={handleSearch} className="relative flex-grow mr-4">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <FaSearch className="w-4 h-4 text-gray-400" />
+          </div>
+          <input
+            type="search"
+            id="default-search"
+            className="block w-full py-3 pl-10 text-sm border-gray-300 rounded-full bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Search Doctors"
+            value={searchQuery}
+            onChange={handleInputChange}
+            required
+          />
+        </form>
+        <div className="relative">
+          <button
+            type="button"
+            className="flex items-center justify-center bg-[#91BF77] hover:bg-[#7da466] text-white text-sm py-2 px-4 rounded-full transition-colors duration-300"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <FaFilter className="mr-2" />
+            Filter
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute top-full right-0 mt-3 bg-white rounded-md border">
+              <ul className="py-2">
+                <li
+                  className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => handleDepartmentFilter("")}
+                >
+                  All
+                </li>
+                {departments.map((department) => (
+                  <li
+                    key={department}
+                    className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleDepartmentFilter(department)}
+                  >
+                    {department}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+      {filteredDoctors.length === 0 ? (
+        <div className="text-center text-gray-500 py-8">
+          <p>No doctors found.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {filteredDoctors.map((doctor) => (
+            <div
+              key={doctor._id}
+              className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-sm"
+            >
+              <div className="flex items-center justify-center h-32 bg-gray-100">
+                <img
+                  src="/src/assets/doc.png"
+                  alt="Doctor Icon"
+                  className="h-20 w-20 object-cover rounded-full"
+                />
+              </div>
+              <div className="py-4 px-4 flex flex-col items-center">
+                <h2 className="text-center text-gray-700 font-medium text-lg mb-2">
+                  {doctor.fullname}
+                </h2>
+                <p className="text-center text-gray-500 text-sm mb-2">
+                  {doctor.expertise}
+                </p>
+                <button
+                  type="button"
+                  className="bg-[#91BF77] hover:bg-[#7da466] text-white text-sm py-2 px-4 rounded-full w-2/3 transition-colors duration-300"
+                  onClick={() => navigator(doctor.email)}
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* View Appointment History Button */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <button
+          onClick={handleViewAppointmentHistory}
+          className="bg-gradient-to-br from-[#91BF77] to-[#7da466] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center"
+        >
+          <FaClipboardCheck className="mr-2" size={20} />
+          View Appointment History
+        </button>
+      </div>
+    </div>
   );
 };
 

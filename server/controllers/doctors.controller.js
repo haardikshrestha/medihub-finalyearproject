@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/userSchema");
 const Doctors = require("../models/doctor-models/doctorschema");
 const app = express();
+
 app.use(express.json());
 const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
@@ -161,18 +162,19 @@ const newDoctor = async (req, res) => {
     fees,
     password,
   } = req.body;
+
   const doctorId = await generateDoctorId();
-  console.log(emailaddress);
+
   try {
     let existingUser = await User.findOne({ email: emailaddress });
 
     if (!existingUser) {
+      const hashedPassword = await bcrypt.hash(password, 10);
       existingUser = new User({
         email: emailaddress,
-        password: password, 
-        role: "doctor", 
+        password: hashedPassword,
+        role: "doctor",
       });
-
       await existingUser.save();
     }
 
@@ -193,12 +195,104 @@ const newDoctor = async (req, res) => {
 
     await newDoctor.save();
 
+    const emailTemplate = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>Doctor Credentials</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 20px;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+          }
+          h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          h2 {
+            color: #6c757d;
+            margin-bottom: 15px;
+          }
+          p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+          }
+          ul {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 30px;
+          }
+          li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+          }
+          li::before {
+            content: "\\2022";
+            color: #007bff;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Doctor Credentials</h1>
+          <h2>Personal Information</h2>
+          <p>Full Name: ${fullname}</p>
+          <p>Email Address: ${emailaddress}</p>
+          <p>Phone Number: ${phonenumber}</p>
+
+          <h2>Professional Qualifications</h2>
+          <ul>
+            <li>Expertise: ${expertise}</li>
+            <li>Degree: ${degree}</li>
+            <li>School: ${school}</li>
+            <li>NMC Registration Number: ${nmc}</li>
+          </ul>
+
+          <h2>Availability</h2>
+          <p>Start Time: ${startTime}</p>
+          <p>End Time: ${endTime}</p>
+          <p>Days Available: ${daysAvailable}</p>
+          <p>Fees: ${fees}</p>
+
+          <h2>Login Credentials</h2>
+          <p>Email: ${emailaddress}</p>
+          <p>Password: ${password}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: 'your-email@example.com', // replace with your email address
+      to: emailaddress,
+      subject: 'Doctor Registration Details',
+      html: emailTemplate,
+    });
+
     res.status(201).json({ message: "Doctor information saved successfully" });
   } catch (error) {
     console.error("Error saving doctor information:", error);
     res.status(500).json(error);
   }
 };
+
+
 
 const DoctorController = {
   getDoctorUsers,
