@@ -1,20 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { useAppDispatch } from "@/app/store";
-import { setIsAuthenticated } from "@/app/authSlice";
 
 const Login = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5173/users");
+      console.log(res.data);
+    } catch (error) {
+      console.error("Error fetching users", error);
+    }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -24,45 +34,64 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const {
-        data: { token, role },
-      } = await axios.post("http://localhost:5173/login", {
+      const response = await axios.post("http://localhost:5173/login", {
         email,
         password,
       });
 
-      const {
-        data: { emailExists },
-      } = await axios.post("http://localhost:5173/checkpatient", { email });
-      const {
-        data: { verified },
-      } = await axios.post("http://localhost:5173/checkverify", { email });
+      const response1 = await axios.post("http://localhost:5173/checkpatient", {
+        email,
+      });
 
+      const verified = await axios.post("http://localhost:5173/checkverify", {
+        email,
+      });
+
+      const { token, role } = response.data;
       localStorage.setItem("token", token);
-      localStorage.setItem("email", email);
-      localStorage.setItem("role", role);
+      console.log(token);
 
-      dispatch(setIsAuthenticated(true));
+      if (
+        role === "admin" ||
+        role === "user" ||
+        role === "doctor" ||
+        role == "pathologist"
+      ) {
+        const successMessage = role === "admin" ? "Admin" : "User";
+        setEmail("");
+        setPassword("");
+        fetchUsers();
+        setLoading(false);
 
-      if (role === "admin") {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.setItem("isLoggedIn_admin", "true");
-        navigate("/admin");
-      } else if (role === "user") {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.setItem("isLoggedIn_patient", "true");
-        toast.success("Welcome back! You have logged in successfully!");
-        navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
-      } else if (role === "doctor" || role === "pathologist") {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.setItem("isLoggedIn_doctor", "true");
-        localStorage.setItem("isLoggedIn_pathologist", "true");
-        const path = verified ? role : "staff/reset";
-        navigate(`/${role}?email=${email}`);
-      } else {
-        toast.error("Unauthorized access detected!");
-        dispatch(setIsAuthenticated(false)); 
-        navigate("/"); 
+        if (role === "admin") {
+          navigate("/admin");
+        } else if (role === "user") {
+          toast.success("Welcome back! You have logged in sucessfully!")
+          const emailExists = response1.data.emailExists;
+          navigate(emailExists ? `/patient?email=${email}` : `/in?email=${email}`);
+        } else if (role === "doctor") {
+          if (verified.data.verified) {
+            console.log("hello doc");
+            navigate("/doctor?email=" + email);
+          } else {
+            navigate(`/staff/reset?email=${email}`);
+          }
+        } else if (role === "pathologist") {
+          console.log("entered");
+          if (verified.data.verified) {
+            console.log("yes");
+            navigate("/pathologist?email=" + email);
+          } else {
+            console.log("no");
+            navigate(`/staff/reset?email=${email}`);
+          }
+        }
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("email", email);
+        localStorage.setItem("role", role);
+
+        window.location.reload();
       }
     } catch (error) {
       handleLoginError(error);
@@ -73,10 +102,14 @@ const Login = () => {
   const handleLoginError = (error: any) => {
     if (error.response && error.response.data) {
       const { data } = error.response;
+
       if (data.error) {
         toast.error(data.error);
       } else if (data.errors) {
-        data.errors.forEach((err: { msg: string }) => toast.error(err.msg));
+        const errors = data.errors;
+        errors.forEach((err: { msg: string }) => alert(err.msg));
+      } else {
+        console.error("Login Error!", error);
       }
     } else {
       console.error("Login Error!", error);
@@ -168,7 +201,7 @@ const Login = () => {
             <Link to={"/resetask"}>
               <button
                 className="bg-gray-100 border border-[#91BF77] rounded-xl text-[#91BF77] py-2 text-sm w-full hover:bg-[#91BF77] hover:text-white transition duration-300"
-                type="button"
+                type="submit"
               >
                 Forgot Password?
               </button>
