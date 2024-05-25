@@ -1,19 +1,20 @@
-import { TbHome, TbCalendar, TbBed , TbSettings, TbLogout } from "react-icons/tb";
-import { FiMessageSquare } from "react-icons/fi";
-import { IoMdMedkit } from "react-icons/io";
-import { IoIosMedical } from "react-icons/io";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { TbHome, TbCalendar, TbSettings, TbLogout } from "react-icons/tb";
+import { IoMdMedkit, IoIosMedical } from "react-icons/io";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/store";
+import { logout } from "@/app/authSlice";
 
 const PatientSidebar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const handlelogout = () => {
+
+  const handleLogout = () => {
+    dispatch(logout());
     localStorage.removeItem("email");
     localStorage.removeItem("role");
     navigate("/login");
   };
+
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
@@ -40,7 +41,6 @@ const PatientSidebar = () => {
             Appointments
           </Link>
         </li>
-        
         <li className="mb-2">
           <Link
             to="/patient/doctors"
@@ -71,7 +71,7 @@ const PatientSidebar = () => {
         <div className="absolute bottom-0 w-full left-0 p-4">
           <button
             className="btn bg-white text-error border-error w-full text-center hover:bg-error hover:text-white hover:border-error"
-            onClick={handlelogout}
+            onClick={handleLogout}
           >
             <TbLogout className="mr-2" />
             Logout

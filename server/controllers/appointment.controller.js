@@ -132,12 +132,14 @@ const getAppointmentsByDate = async (req, res) => {
 const mongoose = require('mongoose');
 
 const cancelAppointment = async (req, res) => {
-  const { _id } = req.params;
+  const { apptID } = req.body;
+  console.log("jhi")
+  console.log(apptID);
 
   try {
     const appointment = await Appointment.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId.createFromHexString(_id) },
-      { apptStatus: "Cancelled" },
+      { apptID: apptID }, 
+      { $set: { apptStatus: "Cancelled" } }, 
       { new: true }
     );
 
@@ -151,6 +153,7 @@ const cancelAppointment = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 const getPositionInQueue = async (req, res) => {
   try {

@@ -37,7 +37,6 @@ import AppointmentDetails from "@/components/patient/Appointments/AppointmentDet
 import PathologistLayout from "@/layouts/PathologistLayout";
 import PathologistForm from "@/components/pathologist/PathologistForm";
 import PathologistDashboard from "@/pages/pathologistPages/PathologistDashboard";
-import PathologistsPatients from "@/pages/pathologistPages/PathologistPatients";
 import PathologistTests from "@/pages/pathologistPages/PathologistTests";
 import PathologistAppointments from "@/pages/pathologistPages/PathologistAppointments";
 import PathologistSettings from "@/pages/pathologistPages/PathologistSettings";
@@ -45,7 +44,6 @@ import FirstLogin from "@/pages/login/FirstLogin";
 import Tests from "@/pages/adminPages/pathology/Tests";
 import TestDetails from "@/components/patient/Pathology/TestsDetails";
 import DoctorList from "@/pages/patientPages/AppointmentDoctors";
-
 import PatientProfiler from "@/components/patient/Profile/PatientProfile";
 import Medications from "@/components/patient/Dashboard/Info/Medications";
 import LabTests from "@/components/patient/Dashboard/Info/LabTests";
@@ -68,35 +66,19 @@ import ViewEditPatients from "@/components/admin/crud/Patients/ViewEditPatients"
 import ViewEditDoctor from "@/components/admin/crud/Doctor/ViewEditDoctor";
 import CreateWard from "@/components/admin/crud/Ward/CreateWard";
 import PatientSettingsPage from "@/pages/patientPages/PatientSettingsPage";
+
 const AppRouter = () => {
-  const patientUser = {
-    name: "John Doe",
-    avatar: "https://example.com/patient-avatar.jpg",
-    bio: "Looking for quality healthcare services.",
-    email: "john.doe@example.com",
-    phone: "+1 555-555-5555",
-    address: "123 Main Street, Anytown USA",
-    medicalHistory: "John has a history of high blood pressure and diabetes.",
-    blood: "A+",
-    ill: "Diabetes",
-    appointments: [
-      {
-        date: "2023-04-15",
-        doctor: "Dr. Jane Smith",
-        reason: "Annual Check-up",
-      },
-      {
-        date: "2023-05-01",
-        doctor: "Dr. Michael Johnson",
-        reason: "Follow-up appointment",
-      },
-    ],
-  };
   return (
     <Router>
       <Routes>
-      <Route path="/" element={<Login />} />
-        <Route path="/">
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/otp" element={<OTP />} />
+        <Route path="/reset" element={<ResetPassword />} />
+        <Route path="/resetask" element={<ResetAsk />} />
+        <Route path="/staff/reset" element={<FirstLogin />} />
+        <Route element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<DashboardPage />} />
             <Route path="/admin/departments" element={<DepartmentsPage />} />
@@ -114,8 +96,7 @@ const AppRouter = () => {
             <Route path="/admin/vieweditpatients" element={<ViewEditPatients />} />
             <Route path="/admin/vieweditdoctors" element={<ViewEditDoctor />} />
           </Route>
-        </Route>
-        <Route path="/">
+
           <Route element={<DoctorLayout />}>
             <Route path="/doctor" element={<DoctorDashboard />} />
             <Route path="/doctor/patients" element={<DoctorPatients />} />
@@ -128,21 +109,14 @@ const AppRouter = () => {
             <Route path="/doctor/settings" element={<DoctorSettings />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
           </Route>
-        </Route>
-        <Route path="/">
+
           <Route element={<PatientLayout />}>
             <Route path="/patient" element={<PatientDashboard />} />
             <Route path="/patient/doctors" element={<PatientDoctors />} />
             <Route path="/patient/appointments" element={<PatientAppointments />} />
             <Route path="/patient/adoctors" element={<DoctorList />} />
-            <Route
-              path="/patient/profile"
-              element={<PatientProfiler/>}
-            />
-            <Route
-              path="/patient/settings"
-              element={<PatientSettingsPage/>}
-            />
+            <Route path="/patient/profile" element={<PatientProfiler />} />
+            <Route path="/patient/settings" element={<PatientSettingsPage />} />
             <Route path="/patient/chats" element={<ChatInterface />} />
             <Route path="/patient/pathology" element={<PathologyPage />} />
             <Route path="/patient/packages" element={<PatientHealth />} />
@@ -157,33 +131,19 @@ const AppRouter = () => {
             <Route path="/patient/wards" element={<WardBookingComponent />} />
             <Route path="/patient/notifications" element={<WardBookingComponent />} />
           </Route>
-        </Route>
-        <Route path="/">
+
           <Route element={<PathologistLayout />}>
             <Route path="/pathologist" element={<PathologistDashboard />} />
-            <Route
-              path="/pathologist/appointments"
-              element={<PathologistAppointments />}
-            />
-            <Route path="/pathologist/patients" element={<PathologistsPatients />} />
+            <Route path="/pathologist/appointments" element={<PathologistAppointments />} />
             <Route path="/pathologist/pathology" element={<PathologistTests />} />
             <Route path="/pathologist/settings" element={<PathologistSettings />} />
             <Route path="/pathologist/createtest" element={<CreateTestPage />} />
           </Route>
+
+          <Route path="/in" element={<Initial />} />
+          <Route path="/ind" element={<DoctorForm />} />
+          <Route path="/inp" element={<PathologistForm />} />
         </Route>
-
-        <Route path="/in" element={<Initial />} />
-        <Route path="/ind" element={<DoctorForm />} />
-        <Route path="/inp" element={<PathologistForm />} />
-        <Route path="/patient" element={<PatientLayout />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/otp" element={<OTP />} />
-        <Route path="/reset" element={<ResetPassword />} />
-        <Route path="/resetask" element={<ResetAsk />} />
-        <Route path="/doctor" element={<DoctorLayout />} />
-
-        <Route path="/staff/reset" element={<FirstLogin />} />
       </Routes>
     </Router>
   );

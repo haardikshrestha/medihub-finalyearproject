@@ -1,8 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-
 import { RootState } from "./store";
 
-// dummy auth mechanism
 const isAuthenticated = localStorage.getItem("isLoggedIn") === "true";
 
 export interface AuthState {
@@ -15,15 +13,19 @@ const initialState: AuthState = {
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: initialState,
+  initialState,
   reducers: {
     setIsAuthenticated(state, action: { type: string; payload: boolean }) {
-      localStorage.setItem("isLoggedIn", action.payload.toString());
-      state.isAuthenticated = action.payload;
+      const { payload } = action;
+      localStorage.setItem("isLoggedIn", payload.toString());
+      state.isAuthenticated = payload;
     },
     logout(state) {
-      state.isAuthenticated = false;
       localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("token");
+      localStorage.removeItem("email");
+      localStorage.removeItem("role");
+      state.isAuthenticated = false;
     },
   },
 });

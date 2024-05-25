@@ -8,7 +8,7 @@ router.get("/getappointmentsbyemail", AppointmentController.getappointmentsbyema
 router.get("/appointments/count", AppointmentController.countAppointments);
 router.post("/post/doctor/appointment", AppointmentController.postDoctorAppointment);
 router.get("/getappointmentsbydate", AppointmentController.getAppointmentsByDate); 
-router.post("/appointments/:id/cancel", AppointmentController.cancelAppointment);
+router.post("/appointmentcancel", AppointmentController.cancelAppointment);
 router.post("/getpositioninqueue", AppointmentController.getPositionInQueue);
 
 

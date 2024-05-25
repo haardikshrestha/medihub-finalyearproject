@@ -9,23 +9,17 @@ const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking authentication status
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000); // Adjust time as needed
-  }, []);
+    setLoading(false); 
+  }, [isAuthenticated]);
 
   if (loading) {
-    // You can render a loading indicator here
     return <div>Loading...</div>;
   }
 
   if (!isAuthenticated) {
-    // If not authenticated, redirect to login
     return <Login />;
   }
 
-  // If authenticated, render the nested routes
   return <Outlet />;
 };
 
