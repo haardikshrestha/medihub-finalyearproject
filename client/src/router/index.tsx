@@ -66,6 +66,8 @@ import ViewEditPatients from "@/components/admin/crud/Patients/ViewEditPatients"
 import ViewEditDoctor from "@/components/admin/crud/Doctor/ViewEditDoctor";
 import CreateWard from "@/components/admin/crud/Ward/CreateWard";
 import PatientSettingsPage from "@/pages/patientPages/PatientSettingsPage";
+import PathologistProfile from "@/components/pathologist/profile/PathologistProfile";
+import TestResultsView from "@/pages/pathologistPages/TestResultsView";
 
 const AppRouter = () => {
   return (
@@ -78,7 +80,7 @@ const AppRouter = () => {
         <Route path="/reset" element={<ResetPassword />} />
         <Route path="/resetask" element={<ResetAsk />} />
         <Route path="/staff/reset" element={<FirstLogin />} />
-        <Route element={<ProtectedRoute />}>
+        {/* <Route element={<ProtectedRoute />}> */}
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<DashboardPage />} />
             <Route path="/admin/departments" element={<DepartmentsPage />} />
@@ -138,12 +140,14 @@ const AppRouter = () => {
             <Route path="/pathologist/pathology" element={<PathologistTests />} />
             <Route path="/pathologist/settings" element={<PathologistSettings />} />
             <Route path="/pathologist/createtest" element={<CreateTestPage />} />
+            <Route path="/pathologist/profile" element={<PathologistProfile />} />
+            <Route path="/pathologist/test-results" element={<TestResultsView />} />
           </Route>
 
           <Route path="/in" element={<Initial />} />
           <Route path="/ind" element={<DoctorForm />} />
           <Route path="/inp" element={<PathologistForm />} />
-        </Route>
+        
       </Routes>
     </Router>
   );

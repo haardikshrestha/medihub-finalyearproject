@@ -41,7 +41,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mt-5">
+    <div className="bg-white rounded-lg border p-6 mt-5">
       <h2 className="text-lg font-semibold mb-4">Add Diagnosis</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

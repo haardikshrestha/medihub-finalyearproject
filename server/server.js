@@ -60,6 +60,8 @@ const patientRouter = require("./router/patient.router.js");
 app.use(patientRouter)
 const diagnosisRouter = require("./router/diagnosis.router.js");
 app.use(diagnosisRouter)
+const counterRouter = require("./router/counter.route.js");
+app.use(counterRouter)
 console.log("Adding admin....");
 const checkAdmin = async () => {
   try {
@@ -1935,12 +1937,20 @@ app.get("/getbyid/sample/:sampleId", async (req, res) => {
   }
 });
 
-//mail and save:
 app.post('/submit/test', async (req, res) => {
   try {
     const { labTest, user, fieldValues, comment } = req.body;
 
-    // Generate HTML for the PDF lab report
+    const emptyFields = Object.values(fieldValues).some(value => value.trim() === '');
+    if (emptyFields || !comment.trim()) {
+      return res.status(400).json({ message: 'Please fill in all fields before submitting.' });
+    }
+
+    const nonNumericFields = Object.values(fieldValues).some(value => isNaN(parseFloat(value)));
+    if (nonNumericFields) {
+      return res.status(400).json({ message: 'Field values must be numbers.' });
+    }
+
     const html = `
       <html>
         <head>

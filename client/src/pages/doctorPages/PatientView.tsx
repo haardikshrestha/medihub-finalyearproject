@@ -122,7 +122,7 @@ const PatientView: React.FC = () => {
         <div className="flex justify-center mt-8">
           <button
             onClick={handleAddDiagnosis}
-            className="bg-white text-black py-3 px-6 rounded-full hover:bg-[#7da466] hover:text-white transition-colors duration-200 flex items-center"
+            className=" py-3 px-6 rounded-full bg-[#7da466] hover:bg-[#668753] text-white transition-colors duration-200 flex items-center"
           >
             <BsPlus className="inline-block mr-2" size={24} /> Add Diagnosis
           </button>

@@ -66,8 +66,17 @@ const CreateTestPage = () => {
     e.preventDefault();
     setIsLoading(true);
   
+    const emptyField = Object.values(fieldValues).some((value) => value.trim() === '');
+    console.log('Empty Field:', emptyField);
+    console.log('Field Values:', fieldValues);
+    if (emptyField) {
+      toast.error('Please fill in all fields before submitting.');
+      setIsLoading(false);
+      return;
+    }
+  
     try {
-      const response = await axios.post("http://localhost:5173/submit/test", {
+      const response = await axios.post('http://localhost:5173/submit/test', {
         labTest,
         user,
         fieldValues,
@@ -76,13 +85,13 @@ const CreateTestPage = () => {
   
       console.log(response.data.message);
   
-      const updatedStatus = "Test Completed";
+      const updatedStatus = 'Test Completed';
       await axios.put(`http://localhost:5173/samplecollections/${sampleId}/updateStatus`, { status: updatedStatus });
-      toast.success("Lab Report saved and sent to the patient sucessfully!");
+      toast.success('Lab Report saved and sent to the patient successfully!');
       navigate(-1);
-  
     } catch (error) {
-      console.error("Error submitting lab report:", error);
+      console.error('Error submitting lab report:', error);
+      toast.error('An error occurred. Make sure all you have recorded all the fields in numbers.');
     } finally {
       setIsLoading(false);
     }
@@ -176,11 +185,6 @@ const CreateTestPage = () => {
             {isLoading ? "Submitting..." : "Submit"}
           </button>
         </form>
-      )}
-      {isLoading && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center bg-black bg-opacity-50">
-          <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-12 w-12 animate-spin"></div>
-        </div>
       )}
     </div>
   );

@@ -1,5 +1,4 @@
-import { TbHome, TbCalendar, TbUser, TbList, TbSettings, TbLogout } from "react-icons/tb";
-
+import { TbHome, TbCalendar, TbListDetails, TbLogout } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
@@ -8,6 +7,7 @@ const PathologistSidebar = () => {
   const handleLogout = () => {
     navigate("/login");
   };
+
   return (
     <div className="drawer-side">
       <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
@@ -37,7 +37,15 @@ const PathologistSidebar = () => {
             Appointments
           </Link>
         </li>
-        
+        <li className="mb-2">
+          <Link
+            to="/pathologist/test-results"
+            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
+          >
+            <TbListDetails className="mr-2" />
+            Test Results
+          </Link>
+        </li>
         <div className="absolute bottom-0 w-full left-0 p-4">
           <button
             className="btn border-none bg-error w-full text-center text-white"

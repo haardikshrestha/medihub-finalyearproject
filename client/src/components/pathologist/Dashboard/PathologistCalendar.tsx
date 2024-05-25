@@ -6,7 +6,7 @@ interface Appointment {
   _id: string;
   patientEmail: string;
   appointmentDate: string;
-  appointmentTime: string;
+  appointmentTime: string; // Keep this field to show the appointment time
   testName: string;
   status: string;
   testID: string;
@@ -41,7 +41,7 @@ const PathologistCalendar: React.FC = () => {
 
   const renderAppointments = () => {
     if (!selectedDate) return null;
-    const selectedDateString = selectedDate.toISOString().slice(0, 10); 
+    const selectedDateString = selectedDate.toISOString().slice(0, 10);
     const selectedAppointments = appointments.filter(
       (appointment) => appointment.appointmentDate === selectedDateString
     );
@@ -59,8 +59,16 @@ const PathologistCalendar: React.FC = () => {
 
     return selectedAppointments.map((appointment) => (
       <div key={appointment._id} className="bg-white rounded-lg border p-4 mb-4">
-        <div className="text-lg font-bold">{appointment.testName}</div>
-        <div className="text-sm text-gray-500">{appointment.status}</div>
+        <div className="text-lg font-bold flex items-center">
+          <span
+            className={`inline-block w-3 h-3 rounded-full mr-2 ${
+              appointment.status === "Test Pending" ? "bg-yellow-500" : "bg-green-500"
+            }`}
+          ></span>
+          {appointment.testName}
+        </div>
+        <div className="text-sm text-gray-500">Status: {appointment.status}</div>
+        <div className="text-sm text-gray-500">Time: {appointment.appointmentTime}</div>
       </div>
     ));
   };
@@ -137,7 +145,6 @@ const PathologistCalendar: React.FC = () => {
 
     return calendar;
   };
-
 
   return (
     <div

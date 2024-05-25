@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-
 
 interface LabTest {
   _id: string;
@@ -31,8 +30,7 @@ const TestDetails: React.FC = () => {
     [date: string]: string[];
   }>({});
 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchLabTest = async () => {
       try {
         const response = await axios.get(`http://localhost:5173/singlelabtest?id=${id}`);
@@ -80,8 +78,6 @@ useEffect(() => {
     setFormData({ ...formData, [name]: value });
   };
 
-  
-
   useEffect(() => {
     const fetchPatientEmail = async () => {
       const email = await localStorage.getItem("email");
@@ -97,47 +93,59 @@ useEffect(() => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
-    const { appointmentDate, appointmentTime} = formData;
-  
-    if (!appointmentDate || !appointmentTime ) {
-      toast.error('Please fill all required details.');
+
+    const { appointmentDate, appointmentTime } = formData;
+
+    if (!appointmentDate || !appointmentTime) {
+      toast.error("Please fill all required details.");
       return;
     }
-  
+
     try {
       if (labTest) {
         const takenTimes = existingAppointments[appointmentDate] || [];
-  
+
         if (takenTimes.includes(appointmentTime)) {
-          toast.error('Selected time is already taken. Please choose a different time.');
+          toast.error("Selected time is already taken. Please choose a different time.");
         } else {
           confirmAlert({
-            title: 'Confirm Appointment',
+            title: "Confirm Appointment",
             message: `Are you sure you want to schedule the ${labTest.testName} test on ${appointmentDate} at ${appointmentTime}?`,
             buttons: [
               {
-                label: 'Yes',
+                label: "Yes",
                 onClick: async () => {
                   try {
-                    const updatedFormData = { ...formData, testName: labTest.testName, testID: labTest._id, patientEmail };
-                    await axios.post('http://localhost:5173/scheduleSample', updatedFormData);
-                    setFormData({ ...formData, appointmentDate: '', appointmentTime: '' });
-                    toast.success('You have scheduled an appointment successfully!');
+                    const updatedFormData = {
+                      ...formData,
+                      testName: labTest.testName,
+                      testID: labTest._id,
+                      patientEmail,
+                    };
+                    await axios.post(
+                      "http://localhost:5173/scheduleSample",
+                      updatedFormData,
+                    );
+                    setFormData({
+                      ...formData,
+                      appointmentDate: "",
+                      appointmentTime: "",
+                    });
+                    toast.success("You have scheduled an appointment successfully!");
                   } catch (error) {
                     handleError(error);
                   }
-                }
+                },
               },
               {
-                label: 'No',
-                onClick: () => {}
-              }
-            ]
+                label: "No",
+                onClick: () => {},
+              },
+            ],
           });
         }
       } else {
-        throw new Error('Lab test data is missing.');
+        throw new Error("Lab test data is missing.");
       }
     } catch (error) {
       handleError(error);
@@ -187,9 +195,12 @@ useEffect(() => {
     return options;
   };
 
-  const handleESewaPayment = () => {
-    console.log("Initiating eSewa payment for Rs. ", labTest?.testPrice);
-  };
+
+  const today = new Date();
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowFormatted = tomorrow.toISOString().split("T")[0];
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center mt-14">
@@ -216,6 +227,7 @@ useEffect(() => {
             <input
               type="date"
               name="appointmentDate"
+              min={tomorrowFormatted} // Set min attribute to tomorrow's date
               value={formData.appointmentDate}
               onChange={handleChange}
               placeholder="Appointment Date"
@@ -237,16 +249,9 @@ useEffect(() => {
               Schedule
             </button>
           </form>
-          
-          <button
-              onClick={handleESewaPayment}
-              className="w-full px-4 py-2 mt-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300"
-            >
-              Pay with eSewa (Rs. {labTest.testPrice})
-            </button>
+
         </div>
       )}
-      
     </div>
   );
 };
