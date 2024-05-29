@@ -2,6 +2,8 @@ import Calendar from "@/components/doctor/Calendar";
 import StatsCard from "@/components/doctor/Dashboard/StatsCard";
 import { useState, useEffect } from "react";
 import AppointmentCard from "@/components/doctor/Dashboard/AppointmentCard";
+import DiagnosisList from "./DiagnosisDoctor";
+import DiagnosisCard from "./DiagnosisDoctor";
 
 const DoctorDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -78,11 +80,11 @@ const DoctorDashboard = () => {
               number={appointmentCount}
             />
             <StatsCard color="red" title="Lab Tests" number={11} />
-            <StatsCard color="green" title="Earnings" number={4} />
+            <StatsCard color="green" title="Diagnosis" number={4} />
           </div>
           <div className=" mt-4 flex gap-4">
             <div className="ml-[5px] flex-1">
-              <AppointmentCard />
+              {/* <AppointmentCard /> */}
             </div>
           </div>
         </div>

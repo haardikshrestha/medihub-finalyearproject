@@ -13,5 +13,6 @@ router.delete("/deleteDepartment/:id", HospitalController.deleteDepartment);
 router.get("/getDepartmentsDistinct", HospitalController.getdisDepartment);
 router.post("/surgeries", HospitalController.addSurgery);
 router.get("/getsurgeries", HospitalController.getSurgery);
+router.post('/addnote/:id', HospitalController.addNote);
 
 module.exports = router;

@@ -26,7 +26,6 @@ const LatestTestResults: React.FC = () => {
           (item) => item.status === "Test Completed"
         );
         if (completedTests.length > 0) {
-          // Set the latest completed test result
           setLatestResult(completedTests[0]);
         }
       } catch (error) {

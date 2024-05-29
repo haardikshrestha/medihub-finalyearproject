@@ -24,21 +24,21 @@ const LatestAppointment: React.FC = () => {
   useEffect(() => {
     const fetchLatestAppointment = async () => {
       try {
+        const userEmail = localStorage.getItem("email"); 
+
         const response = await axios.get<Appointment[]>(
-          "http://localhost:5173/getappointments",
+          `http://localhost:5173/getappointments?email=${userEmail}`
         );
         const now = new Date();
 
-        // Filter future appointments
         const futureAppointments = response.data.filter(
           (appointment) => new Date(appointment.apptDate) > now,
         );
 
         if (futureAppointments.length > 0) {
-          const latestAppointment = futureAppointments[0]; // Assuming the first appointment is the latest
+          const latestAppointment = futureAppointments[0]; 
           setAppointment(latestAppointment);
 
-          // Calculate days left
           const appointmentDate = new Date(latestAppointment.apptDate);
           const daysLeft = Math.ceil(
             (appointmentDate.getTime() - now.getTime()) / (1000 * 3600 * 24),

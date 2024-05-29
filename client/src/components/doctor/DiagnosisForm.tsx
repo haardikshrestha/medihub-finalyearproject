@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { FaClock, FaUtensils } from "react-icons/fa";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+
+interface Medication {
+  name: string;
+  dosage: string;
+  timeOfDay: string;
+  beforeOrAfterEating: string;
+}
 
 interface DiagnosisFormProps {
   onCancel: () => void;
@@ -7,15 +15,16 @@ interface DiagnosisFormProps {
 
 const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
   const [diagnosis, setDiagnosis] = useState("");
-  const [medications, setMedications] = useState<{ name: string; dosage: string; timeOfDay: string; beforeOrAfterEating: string }[]>([
+  const [medications, setMedications] = useState<Medication[]>([
     { name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" },
   ]);
   const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string>("");
 
   const handleMedicationChange = (
     index: number,
-    key: keyof (typeof medications)[0],
-    value: string,
+    key: keyof Medication,
+    value: string
   ) => {
     const updatedMedications = [...medications];
     updatedMedications[index][key] = value;
@@ -23,7 +32,10 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
   };
 
   const handleAddMedication = () => {
-    setMedications([...medications, { name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" }]);
+    setMedications([
+      ...medications,
+      { name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" },
+    ]);
   };
 
   const handleRemoveMedication = (index: number) => {
@@ -32,16 +44,52 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
     setMedications(newMedications);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting Diagnosis:", { diagnosis, medications, notes });
-    setDiagnosis("");
-    setMedications([{ name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" }]);
-    setNotes("");
+    try {
+      if (!diagnosis || !medications.every(isMedicationValid)) {
+        setError("Please fill out all fields.");
+        return;
+      }
+      const patientEmail = new URLSearchParams(window.location.search).get(
+        "email"
+      );
+      const doctorEmail = localStorage.getItem("email");
+
+      const diagnosisData = {
+        patientEmail,
+        doctorEmail,
+        diagnosis,
+        medications,
+        notes,
+      };
+
+      const response = await axios.post(
+        "http://localhost:5173/postdiagnosis",
+        diagnosisData
+      );
+      console.log(response.data);
+
+      setDiagnosis("");
+      setMedications([
+        { name: "", dosage: "", timeOfDay: "", beforeOrAfterEating: "" },
+      ]);
+      setNotes("");
+      setError("");
+      toast.success("Diagnosis Saved!")
+    } catch (error) {
+      console.error("Error submitting diagnosis:", error);
+      setError("Error submitting diagnosis. Please try again.");
+      toast.error("Failed to save diagnosis!")
+    }
   };
+
+  const isMedicationValid = (medication: Medication) =>
+    medication.name && medication.dosage && medication.timeOfDay && medication.beforeOrAfterEating;
 
   return (
     <div className="bg-white rounded-lg border p-6 mt-5">
+      <ToastContainer/>
       <h2 className="text-lg font-semibold mb-4">Add Diagnosis</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -76,11 +124,13 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
                 onChange={(e) => handleMedicationChange(index, "name", e.target.value)}
                 className="mt-1 p-3 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:border-blue-300"
                 placeholder="Enter medication"
+                required
               />
               <select
                 value={medication.dosage}
                 onChange={(e) => handleMedicationChange(index, "dosage", e.target.value)}
                 className="mt-1 ml-2 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
               >
                 <option value="">Select dosage (mg)</option>
                 <option value="100">100 mg</option>
@@ -91,6 +141,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
                 value={medication.timeOfDay}
                 onChange={(e) => handleMedicationChange(index, "timeOfDay", e.target.value)}
                 className="mt-1 ml-2 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
               >
                 <option value="">Time of the day</option>
                 <option value="Morning">Morning</option>
@@ -102,6 +153,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
                 value={medication.beforeOrAfterEating}
                 onChange={(e) => handleMedicationChange(index, "beforeOrAfterEating", e.target.value)}
                 className="mt-1 ml-2 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
               >
                 <option value="">Before or after eating</option>
                 <option value="Before">Before</option>
@@ -141,15 +193,16 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
             rows={4}
           />
         </div>
+        {error && <div className="text-red-500 mb-4">{error}</div>}
         <div className="flex justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="mr-2 bg-gray-400 text-white px-4 py-2 rounded-lg"
+            className="mr-2 bg-gray-400 text-white px-4 py-2 rounded-lg focus:outline-none hover:bg-gray-500"
           >
             Cancel
           </button>
-          <button type="submit" className="bg-[#8AC185] text-white px-4 py-2 rounded-lg">
+          <button type="submit" className="bg-[#8AC185] text-white px-4 py-2 rounded-lg focus:outline-none hover:bg-[#6E9E73]">
             Submit
           </button>
         </div>
@@ -159,3 +212,4 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ onCancel }) => {
 };
 
 export default DiagnosisForm;
+

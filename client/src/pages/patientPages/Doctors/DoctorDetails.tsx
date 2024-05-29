@@ -9,9 +9,15 @@ import {
   FaMoneyBillWave,
   FaCertificate,
 } from "react-icons/fa";
-import DatePicker from "react-datepicker";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import "react-datepicker/dist/react-datepicker.css";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import { ToastContainer, toast } from "react-toastify";
+
+interface Appointment {
+  apptTime: string;
+}
 
 interface Doctor {
   _id?: string;
@@ -35,7 +41,7 @@ const DoctorDetails: React.FC = () => {
   const [apptReason, setApptReason] = useState<string>(""); // State for appointment reason
   const location = useLocation();
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-
+  const [existingAppointments, setExistingAppointments] = useState<Appointment[]>([]);
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       setIsLoading(true);
@@ -60,9 +66,22 @@ const DoctorDetails: React.FC = () => {
     fetchDoctorDetails();
   }, [location.search]);
 
-  const handleDateChange = (date: Date | null) => {
+  const handleDateChange = async (date: Date | null) => {
     setSelectedDate(date);
     setSelectedTime(null);
+    setExistingAppointments([]);
+
+    if (date) {
+      try {
+        const formattedDate = date.toISOString().split("T")[0];
+        const response = await axios.get<Appointment[]>(
+          `http://localhost:5173/getAppointmentsByDate?date=${formattedDate}`,
+        );
+        setExistingAppointments(response.data);
+      } catch (error) {
+        console.error("Error fetching existing appointments:", error);
+      }
+    }
   };
 
   const handleTimeChange = (time: string) => {
@@ -132,7 +151,15 @@ const DoctorDetails: React.FC = () => {
         minute: "numeric",
         hour12: true,
       });
-      timeSlots.push(formattedTime);
+
+      // Check if the current time is already booked
+      const isBooked = existingAppointments.some(
+        (appointment: Appointment) => appointment.apptTime === formattedTime,
+      );
+
+      if (!isBooked) {
+        timeSlots.push(formattedTime);
+      }
 
       currentTime.setMinutes(currentTime.getMinutes() + 20);
     }
@@ -178,30 +205,45 @@ const DoctorDetails: React.FC = () => {
   };
 
   const handleAppointmentBooking = async () => {
-    try {
-      const patientEmail = localStorage.getItem("email");
-      if (!patientEmail) {
-        throw new Error("Patient email not found in localStorage");
-      }
-
-      const response = await axios.post<any, { data: any }>(
-        "http://localhost:5173/post/doctor/appointment",
+    confirmAlert({
+      title: 'Confirm Appointment',
+      message: 'Are you sure you want to book this appointment?',
+      buttons: [
         {
-          apptDate: selectedDate?.toISOString(),
-          apptPatient: patientEmail,
-          apptDoctor: doctor?.email,
-          apptTime: selectedTime,
-          apptReason: apptReason,
+          label: 'Yes',
+          onClick: async () => {
+            try {
+              const patientEmail = localStorage.getItem('email');
+              if (!patientEmail) {
+                throw new Error('Patient email not found in localStorage');
+              }
+  
+              const response = await axios.post<any, { data: any }>(
+                'http://localhost:5173/post/doctor/appointment',
+                {
+                  apptDate: selectedDate?.toISOString(),
+                  apptPatient: patientEmail,
+                  apptDoctor: doctor?.email,
+                  apptTime: selectedTime,
+                  apptReason: apptReason,
+                }
+              );
+  
+              console.log('Appointment booked successfully:', response.data);
+              toast.success('Appointment booked successfully!');
+              window.location.reload();
+            } catch (error: any) {
+              console.error('Error booking appointment:', error);
+              toast.error("Error scheduling, make sure you have saved all the information.");
+            }
+          }
         },
-      );
-
-      console.log("Appointment booked successfully:", response.data);
-      alert("Appointment booked successfully!");
-      window.location.reload();
-    } catch (error) {
-      console.error("Error booking appointment:", error);
-      alert("Error booking appointment: " + error);
-    }
+        {
+          label: 'No',
+          onClick: () => { }
+        }
+      ]
+    });
   };
 
   const handlePrevMonth = () => {
@@ -276,7 +318,7 @@ const DoctorDetails: React.FC = () => {
                   ? "text-gray-400"
                   : "text-gray-300"
               }`}
-              onClick={() => !isDisabled && setSelectedDate(dateObj)}
+              onClick={() => !isDisabled && handleDateChange(dateObj)}
             >
               {isAvailable && !isPastDate ? (
                 day

@@ -56,7 +56,6 @@ const AppointmentHistory = () => {
   };
 
   const handleCancelAppointment = (appointmentId: string) => {
-    console.log(appointmentId)
     confirmAlert({
       title: "Cancel Appointment",
       message: "Are you sure you want to cancel this appointment?",
@@ -69,8 +68,7 @@ const AppointmentHistory = () => {
               if (!appointment) {
                 throw new Error("Appointment not found");
               }
-              const apptID = appointment.apptID; 
-              await axios.post(`http://localhost:5173/appointmentcancel`, { apptID });
+              await axios.put(`http://localhost:5173/updateappointment/${appointmentId}`, { status: "Cancelled" });
               toast.success("Appointment canceled successfully!");
               const email = localStorage.getItem("email");
               const response = await axios.get(
@@ -191,43 +189,45 @@ const AppointmentHistory = () => {
                   <span
                     className={`text-sm font-semibold px-3 py-1 rounded-full mr-2 ${
                       appointment.apptStatus === "Pending"
-                        ? "bg-yellow-500 text-white shadow-md"
-                        : appointment.apptStatus === "Scheduled"
-                        ? "bg-blue-500 text-white shadow-md"
-                        : "bg-green-500 text-white shadow-md"
-                    }`}
+                          ? "bg-yellow-500 text-white shadow-md"
+                          : appointment.apptStatus === "Scheduled"
+                              ? "bg-blue-500 text-white shadow-md"
+                              : appointment.apptStatus === "Cancelled"
+                                  ? "bg-red-500 text-white shadow-md" 
+                                  : "bg-green-500 text-white shadow-md"
+                  }`}
                   >
                     {appointment.apptStatus}
                   </span>
                   {appointment.apptStatus === "Pending" && (
                     <button
                       className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors duration-300 ml-2 shadow-md"
-                      onClick={() =>handleCancelAppointment(appointment.apptID)}
+                      onClick={() =>handleCancelAppointment(appointment._id)}
                     >
                       <FaTrashAlt />
                     </button>
                   )}
                   {appointment.apptStatus === "Pending" && positions[appointment._id] && (
-                    <div className="bg-purple-500 text-white px-3 py-1 rounded-lg ml-2 flex items-center shadow-md">
-                      <FaThList className="mr-2" />
-                      <span>Position {positions[appointment._id]}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="p-6 bg-white flex justify-between items-center">
-                <span className="text-gray-600 text-sm">
-                  {new Date(appointment.apptDate).toLocaleDateString()} -{" "}
-                  {appointment.apptTime}
-                </span>
+                    <div className="bg-purple-500 text-white px-3 py-1 rounded-lg ml-2 flex items-center">
+                    <FaThList className="mr-2" />
+                    <span>Position {positions[appointment._id]}</span>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-        </div>
-        <ToastContainer />
+            <div className="p-6 bg-white flex justify-between items-center">
+              <span className="text-gray-600 text-sm">
+                {new Date(appointment.apptDate).toLocaleDateString()} -{" "}
+                {appointment.apptTime}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
+      <ToastContainer />
     </div>
-  );
+  </div>
+);
 };
 
 export default AppointmentHistory;

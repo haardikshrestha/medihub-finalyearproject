@@ -10,8 +10,8 @@ const LabTest = require("../models/pathology-models/labtestSchema");
 const TestResult = require("../models/pathology-models/testResultSchema");
 const SampleCollection = require("../models/pathology-models/sampleCollectionSchema");
 const InPatient = require("../models/patient-models/inPatientSchema");
-const PatientDiagnosis = require("../models/patient-models/patientDiagnosisSchema");
 const LabReport = require("../models/pathology-models/labReportSchema");
+const Diagnosis = require("../models/diagnosisSchema.js");
 
 const countStats = async (req, res) => {
     try {
@@ -40,11 +40,10 @@ const countStats = async (req, res) => {
 
 const countDataByPatientEmail = async (req, res) => {
     try {
-        const email = req.body.email;
+        const email = req.params.email;
         const stats = {
-            appointments: await Appointment.countDocuments({ patientEmail: email }),
-            inPatients: await InPatient.countDocuments({ patientEmail: email }),
-            patientDiagnoses: await PatientDiagnosis.countDocuments({ patientEmail: email }),
+            appointments: await Appointment.countDocuments({ apptPatient: email }),
+            diagnosis: await Diagnosis.countDocuments({ patientEmail: email }),
             labReports: await LabReport.countDocuments({ patientEmail: email })
         };
         res.json(stats);
@@ -56,18 +55,19 @@ const countDataByPatientEmail = async (req, res) => {
 
 const countDataByDoctorEmail = async (req, res) => {
     try {
-        const email = req.params.email;
+        const email = req.body.email;
         const stats = {
-            appointments: await Appointment.countDocuments({ doctorEmail: email }),
-            surgeries: await Surgery.countDocuments({ doctorEmail: email }),
-            // Add more counts for other schemas related to doctor if needed
+            appointments: await Appointment.countDocuments({ apptDoctor: email }),
+            diagnosis: await Diagnosis.countDocuments({ doctorEmail: email }),
+            labReports: await LabReport.countDocuments({ doctorEmail: email })
         };
         res.json(stats);
     } catch (error) {
-        console.error("Error counting data by doctor email:", error);
+        console.error("Error counting data by patient email:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
 
 const countSampleCollectionsByStatus = async (req, res) => {
     try {

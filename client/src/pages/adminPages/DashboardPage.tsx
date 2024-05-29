@@ -2,6 +2,7 @@ import Card from "@/components/admin/Card";
 import AppointmentSummary from "@/components/admin/charts/AppointmentStats";
 import EarningsChart from "@/components/admin/charts/Earnings";
 import Gender from "@/components/admin/charts/GenderStats";
+import AdminFeedbackView from "@/components/admin/feedback/ViewFeedbacks";
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -62,8 +63,10 @@ const DashboardPage = () => {
       <div className="mt-6">
         <div className="flex gap-6">
           <Gender />
-          <AppointmentSummary />
+          <AdminFeedbackView/>
+          {/* <AppointmentSummary /> */}
         </div>
+        
       </div>
     </div>
   );

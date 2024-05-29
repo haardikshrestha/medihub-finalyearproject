@@ -53,6 +53,17 @@ const Sidebar = () => {
           </Link>
         </li>
         <li className="mb-2">
+          <Link to="/admin/surgery" className="flex items-center hover:text-gray-600 text-sm">
+            Surgery
+          </Link>
+        </li>
+        
+        <li className="mb-2">
+          <Link to="/admin/revenue" className="flex items-center hover:text-gray-600 text-sm">
+            Appointments
+          </Link>
+        </li>
+        <li className="mb-2">
           <Link to="/admin/departments" className="flex items-center hover:text-gray-600 text-sm">
             Departments
           </Link>
@@ -60,11 +71,6 @@ const Sidebar = () => {
         <li className="mb-2">
           <Link to="/admin/wards" className="flex items-center hover:text-gray-600 text-sm">
             Wards
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link to="/admin/revenue" className="flex items-center hover:text-gray-600 text-sm">
-            Revenue
           </Link>
         </li>
         {/* logout button at the bottom */}

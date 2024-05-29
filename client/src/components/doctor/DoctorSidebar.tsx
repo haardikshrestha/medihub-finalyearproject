@@ -2,6 +2,8 @@ import { TbHome, TbCalendar, TbUser, TbList, TbSettings, TbLogout } from "react-
 import { IoMdMedkit } from "react-icons/io";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { IoMdPulse } from "react-icons/io"; 
+
 
 const DoctorSidebar = () => {
   const navigate = useNavigate();
@@ -43,6 +45,15 @@ const DoctorSidebar = () => {
         </li>
         <li className="mb-2">
           <Link
+            to="/doctor/diagnosis"
+            className="flex items-center hover:text-gray-600 text-sm"
+          >
+            <IoMdPulse className="mr-2" /> 
+            Diagnosis
+          </Link>
+        </li>
+        <li className="mb-2">
+          <Link
             to="/doctor/patients"
             className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
           >
@@ -57,24 +68,6 @@ const DoctorSidebar = () => {
           >
             <IoMdMedkit className="mr-2" />
             Surgeries
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
-            to="/doctor/pathology"
-            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
-          >
-            <TbList className="mr-2" />
-            Pathology
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link
-            to="/doctor/settings"
-            className="flex items-center hover:text-gray-600 text-sm active:bg-gray-300"
-          >
-            <TbSettings className="mr-2" />
-            Settings
           </Link>
         </li>
         {/* logout button at the bottom */}

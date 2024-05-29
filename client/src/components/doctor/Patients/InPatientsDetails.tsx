@@ -45,24 +45,41 @@ const InPatientDetails: React.FC = () => {
     }
   };
 
+  const handleAddDiagnosis = () => {
+    if (inPatient && inPatient.email) {
+      navigate(`/doctor/patients/view?email=${inPatient.email}`);
+    }
+  };
+
   if (!inPatient) {
     return <div>Loading...</div>;
   }
+
+  // Filter out _id and __v from the patient details
+  const filteredInPatient = Object.entries(inPatient).filter(([key]) => key !== '_id' && key !== '__v');
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Inpatient Details</h1>
-        {inPatient.status === 'admitted' ? (
+        <div>
           <button
-            className="bg-[#FF7F00] hover:bg-[#FFA500] text-white font-bold py-2 px-4 rounded-lg"
-            onClick={handleDischargePatient}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mr-2"
+            onClick={handleAddDiagnosis}
           >
-            Discharge Patient
+            Add Diagnosis
           </button>
-        ) : (
-          <p className="text-gray-500">Patient Discharged</p>
-        )}
+          {inPatient.status === 'admitted' ? (
+            <button
+              className="bg-[#FF7F00] hover:bg-[#FFA500] text-white font-bold py-2 px-4 rounded-lg"
+              onClick={handleDischargePatient}
+            >
+              Discharge Patient
+            </button>
+          ) : (
+            <p className="text-gray-500">Patient Discharged</p>
+          )}
+        </div>
       </div>
       <div className="bg-white rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:px-6 bg-gray-100">
@@ -70,7 +87,7 @@ const InPatientDetails: React.FC = () => {
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
           <dl className="sm:divide-y sm:divide-gray-200">
-            {Object.entries(inPatient).map(([key, value]) => (
+            {filteredInPatient.map(([key, value]) => (
               <div key={key} className="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500 capitalize">{key}</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:col-span-2">{value}</dd>

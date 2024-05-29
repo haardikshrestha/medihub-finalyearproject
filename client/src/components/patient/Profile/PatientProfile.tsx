@@ -13,6 +13,7 @@ import {
   FaMars,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface PatientData {
   _id: string;
@@ -58,57 +59,57 @@ const PatientProfile: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-  
+
     if (name === "address" && value.trim() === "") {
       toast.error("Address cannot be empty.");
       return;
     }
-  
+
     if (name === "chronicillness" && value.length > 30) {
       toast.error("Chronic illness description cannot exceed 30 characters.");
       return;
     }
-  
+
     if (name === "dateofbirth") {
       const birthDate = new Date(value);
       const currentDate = new Date();
       const age = currentDate.getFullYear() - birthDate.getFullYear();
-      
+
       if (age < 18) {
         toast.error("Patient must be at least 18 years old.");
         return;
       }
     }
-  
+
     const updatedPatient = updatePatientData(editedPatient, name, value);
     setEditedPatient(updatedPatient);
   };
-  
+
   const handleSaveProfile = () => {
     if (!editedPatient?.address || editedPatient?.address.trim() === "") {
       toast.error("Address cannot be empty.");
       return;
     }
-  
+
     if (!editedPatient?.chronicillness || editedPatient?.chronicillness.trim() === "") {
       toast.error("Chronic illness description cannot be empty.");
       return;
     }
-  
+
     if (editedPatient?.chronicillness && editedPatient?.chronicillness.length > 30) {
       toast.error("Chronic illness description cannot exceed 30 characters.");
       return;
     }
-  
+
     const editedBirthDate = new Date(editedPatient?.dateofbirth || "");
     const currentDate = new Date();
     const age = currentDate.getFullYear() - editedBirthDate.getFullYear();
-  
+
     if (age < 18) {
       toast.error("Patient must be at least 18 years old.");
       return;
     }
-  
+
     const email = localStorage.getItem("email");
     if (email) {
       axios
@@ -131,8 +132,6 @@ const PatientProfile: React.FC = () => {
       toast.error("Email not found in localStorage.");
     }
   };
-  
-  
 
   const updatePatientData = (
     patient: PatientData | null,
@@ -279,6 +278,16 @@ const PatientProfile: React.FC = () => {
             <div>{renderGenderIcon()}</div>
           </div>
         </div>
+        {!editMode && (
+          <Link to={"/resetask"}>
+            <button
+              className="bg-white border border-[#91BF77] rounded-xl text-[#91BF77] py-2 text-sm w-full hover:bg-[#91BF77] hover:text-white transition duration-300"
+              type="submit"
+            >
+              Forgot Password?
+            </button>
+          </Link>
+        )}
         {editMode && (
           <div className="flex justify-center">
             <button

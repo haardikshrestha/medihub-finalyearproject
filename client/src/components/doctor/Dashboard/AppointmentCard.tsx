@@ -1,56 +1,42 @@
-import "./AppointmentCard.css";
-import {
-  FaArrowRight,
-  FaClock,
-  FaNotesMedical,
-  FaUserAlt,
-  FaVenusMars,
-} from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import AppointmentCard from "./AppointmentCard";
 
-const AppointmentCard = () => {
+interface Appointment {
+  id: string;
+  date: string;
+  time: string;
+  patient: string;
+}
+
+const AppointmentsDashboard: React.FC = () => {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await axios.get<Appointment[]>(
+          "http://localhost:5173/getappointments"
+        );
+        setAppointments(response.data);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
   return (
-    <div className="border rounded-xl" style={{ height: "330px" }}>
-      <p className="flex justify-center font-bold ml-2 mt-5 mb-2">
-        Today's appointments:
-      </p>
-      <div
-        className="appointment-container px-4 py-2"
-        style={{ overflowY: "auto", height: "84.2%" }}
-      >
-        <div className="mt-4 appointment-card flex items-center p-4 bg-white rounded-xl mb-4 border ">
-          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
-            <img
-              src="src\assets\pfp.png"
-              alt=""
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          </div>
-          <div className="ml-4 flex flex-col">
-            <h3 className="text-md font-semibold text-gray-800">Hardik Shrestha</h3>
-            <div className="flex mt-3 gap-4">
-              <div className="flex items-center mr-6">
-                <FaClock className="text-gray-500 mr-3" />
-                <p className="text-gray-600 text-sm">11:00 AM</p>
-              </div>
-              <div className="flex items-center mr-6">
-                <FaUserAlt className="text-gray-500 mr-3" />
-                <p className="text-gray-600 text-sm">Age: 32</p>
-              </div>
-              <div className="flex items-center mt-1">
-                <FaNotesMedical className="text-gray-500 mr-3" />
-                <p className="text-gray-600 text-sm">Fever</p>
-              </div>
-            </div>
-          </div>
-          <div className="ml-auto">
-            <button className="bg-gray-200 flex items-center justify-center text-white rounded-full w-12 h-12 hover:bg-gray-300">
-              <FaArrowRight className="text-gray-500" />
-            </button>
-          </div>
-        </div>
+    <div>
+      <h2 className="text-2xl font-semibold mb-4">Appointments Dashboard</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {appointments.map((appointment) => (
+          <AppointmentCard key={appointment.id} appointment={appointment} />
+        ))}
       </div>
     </div>
   );
 };
 
-export default AppointmentCard;
+export default AppointmentsDashboard;

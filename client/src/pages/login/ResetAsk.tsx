@@ -7,24 +7,26 @@ import { HiAtSymbol } from "react-icons/hi";
 
 const ResetAsk = () => {
   const [email, setEmail] = useState("");
+  const [isSending, setIsSending] = useState(false); 
   const navigate = useNavigate();
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSending(true); 
 
     try {
-      // Make an API call to initiate the password reset process
       const response = await axios.post("http://localhost:5173/reset-password", { email });
 
       toast.success(response.data.message);
 
-      // Navigate back to the login page after 2 seconds
       setTimeout(() => {
         navigate("/login");
       }, 2000);
     } catch (error) {
       console.error('Password Reset Error:', error);
       toast.error('Error initiating password reset. Please try again.');
+    } finally {
+      setIsSending(false); 
     }
   };
 
@@ -55,8 +57,9 @@ const ResetAsk = () => {
             <button
               type="submit"
               className="bg-[#91BF77] rounded-xl text-white py-2 text-sm flex items-center justify-center"
+              disabled={isSending} 
             >
-              Send Link
+              {isSending ? "Sending..." : "Send Link"} 
             </button>
           </form>
           <p className="text-center text-gray-400 text-sm mt-4">

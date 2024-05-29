@@ -18,8 +18,8 @@ const LabTest = require("./models/pathology-models/labtestSchema");
 const TestResult = require("./models/pathology-models/testResultSchema");
 const SampleCollection = require("./models/pathology-models/sampleCollectionSchema");
 const InPatient = require("./models/patient-models/inPatientSchema");
-const PatientDiagnosis = require("./models/patient-models/patientDiagnosisSchema");
 const LabReport = require("./models/pathology-models/labReportSchema");
+const Diagnosis = require("./models/diagnosisSchema.js");
 const app = express();
 app.use(express.json());
 const crypto = require("crypto");
@@ -58,8 +58,12 @@ const pathologistRouter = require("./router/pathologist.router.js");
 app.use(pathologistRouter)
 const patientRouter = require("./router/patient.router.js");
 app.use(patientRouter)
+
+
 const diagnosisRouter = require("./router/diagnosis.router.js");
 app.use(diagnosisRouter)
+
+
 const counterRouter = require("./router/counter.route.js");
 app.use(counterRouter)
 console.log("Adding admin....");
@@ -249,6 +253,175 @@ app.get("/pathologists", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+app.post('/postdiagnosis', async (req, res) => {
+  try {
+    const { patientEmail, doctorEmail, diagnosis, medications, notes } = req.body;
+
+    if (!doctorEmail || !patientEmail || !diagnosis || !medications || !notes.trim()) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    const html = `
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+            }
+            h1 {
+              color: #333;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            th, td {
+              padding: 8px;
+              text-align: left;
+              border-bottom: 1px solid #ddd;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Diagnosis Report</h1>
+          <p>Doctor Email: ${doctorEmail}</p>
+          <p>Patient Email: ${patientEmail}</p>
+          <p>Diagnosis: ${diagnosis}</p>
+          <h2>Medications</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Dosage</th>
+                <th>Time of Day</th>
+                <th>Before/After Eating</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${medications.map(medication => `
+                <tr>
+                  <td>${medication.name}</td>
+                  <td>${medication.dosage}</td>
+                  <td>${medication.timeOfDay}</td>
+                  <td>${medication.beforeOrAfterEating}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <p>Notes: ${notes}</p>
+        </body>
+      </html>
+    `;
+
+    // Generate PDF from HTML
+    const pdfBuffer = await new Promise((resolve, reject) => {
+      pdf.create(html).toBuffer((err, buffer) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(buffer);
+        }
+      });
+    });
+
+    // Save PDF in the database
+    const newDiagnosis = new Diagnosis({
+      doctorEmail,
+      patientEmail,
+      diagnosis,
+      medications,
+      notes,
+      pdfBuffer,
+    });
+
+    const savedDiagnosis = await newDiagnosis.save();
+
+    // Send PDF to the patient via email
+    const mailOptions = {
+      from: 'your-email@gmail.com', // Replace with your email address
+      to: patientEmail,
+      subject: 'Diagnosis Report',
+      text: 'Please find attached your diagnosis report.',
+      attachments: [
+        {
+          filename: `diagnosis-report-${patientEmail}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Diagnosis submitted successfully', diagnosis: savedDiagnosis });
+  } catch (error) {
+    console.error('Error submitting diagnosis:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.get('/diagnosis/:id', async (req, res) => {
+  try {
+    const diagnosis = await Diagnosis.findById(req.params.id);
+    if (!diagnosis) {
+      return res.status(404).json({ message: 'Diagnosis not found' });
+    }
+    res.status(200).json({ diagnosis });
+  } catch (error) {
+    console.error('Error fetching diagnosis:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.get('/diagnosis', async (req, res) => {
+  try {
+    const diagnosis = await Diagnosis.find();
+    if (!diagnosis) {
+      return res.status(404).json({ message: 'Diagnosis not found' });
+    }
+    res.status(200).json({ diagnosis });
+  } catch (error) {
+    console.error('Error fetching diagnosis:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// View PDF Endpoint
+app.get('/diagnosis/:id/pdf', async (req, res) => {
+  try {
+    const diagnosis = await Diagnosis.findById(req.params.id);
+    if (!diagnosis || !diagnosis.pdfBuffer) {
+      return res.status(404).json({ message: 'PDF not found' });
+    }
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="diagnosis-report-${req.params.id}.pdf"`
+    });
+    res.send(diagnosis.pdfBuffer);
+  } catch (error) {
+    console.error('Error fetching PDF:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //LOGIN - POST
 app.post("/login", async (req, res) => {
@@ -2093,25 +2266,7 @@ app.get('/labreports', async (req, res) => {
 
 
 // ------------------------- diagnosis -------------------
-app.post('/diagnosis', async (req, res) => {
-  try {
-    const { patientEmail, doctorEmail, diagnosis, medications, notes } = req.body;
 
-    const newDiagnosis = new Diagnosis({
-      patientEmail: patientEmail,
-      doctorEmail: doctorEmail,
-      diagnosis: diagnosis,
-      medications: medications,
-      notes: notes
-    });
-    
-    const savedDiagnosis = await newDiagnosis.save();
-    
-    res.json(savedDiagnosis);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
 
 app.get('/counter/:email', async (req, res) => {

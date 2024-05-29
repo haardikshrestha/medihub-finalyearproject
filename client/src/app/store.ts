@@ -1,7 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+
 import { apiSlice } from "./apiSlice";
-import authSlice from "./authSlice";
+import authSlice, { setInitialAuth } from "./authSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,7 +11,14 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
-});
+},
+
+
+);
+
+setInitialAuth(store.dispatch);
+
+
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

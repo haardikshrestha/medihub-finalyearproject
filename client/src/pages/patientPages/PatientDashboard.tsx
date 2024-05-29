@@ -11,6 +11,7 @@ const PatientDetails: React.FC = () => {
   const [greeting, setGreeting] = useState("");
   const [sampleCollectionCount, setSampleCollectionCount] = useState(0);
   const [appointmentCount, setAppointmentCount] = useState(0);
+  const [labReportsCount, setLabReportsCount] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,19 +52,22 @@ const PatientDetails: React.FC = () => {
     try {
       const email = localStorage.getItem("email");
       if (email) {
-        const response = await axios.get(`http://localhost:5173/patientstatnum`, {
-          params: { email: email }
+        const response = await axios.get('http://localhost:5173/patientstats', {
+          params: {
+            email: email
+          }
         });
-        const { sampleCollectionCount, appointmentCount } = response.data;
-        setSampleCollectionCount(sampleCollectionCount);
-        setAppointmentCount(appointmentCount);
+        const { appointments, diagnosis, labReports } = response.data;
+        setSampleCollectionCount(diagnosis);
+        setAppointmentCount(appointments);
+        setLabReportsCount(labReports);
       } else {
         console.error("Email not found in localStorage");
       }
     } catch (error) {
       console.error("Error fetching patient numbers:", error);
     }
-  };
+  }    
 
   interface DashboardCardProps {
     title: string;
@@ -144,8 +148,8 @@ const PatientDetails: React.FC = () => {
               color="#F6AD55"
             />
             <DashboardCard
-              title="Lab Results"
-              value={0}
+              title="Lab Reports"
+              value={labReportsCount}
               viewAllLink="/patient/testhistory"
               color="#4299E1"
             />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Department {
   _id: string;
@@ -13,8 +13,7 @@ const CreateWardPage: React.FC = () => {
   const [wardID, setWardID] = useState<string>('');
   const [departmentShortName, setDepartmentShortName] = useState<string>('');
   const [numberOfBeds, setNumberOfBeds] = useState<string>('');
-  const [startBedID, setStartBedID] = useState<string>('');
-  const [endBedID, setEndBedID] = useState<string>('');
+  const [bedIds, setBedIds] = useState<string[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
 
   useEffect(() => {
@@ -36,9 +35,22 @@ const CreateWardPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+  
+    const numberOfBedsInt = parseInt(numberOfBeds);
+  
+    if (isNaN(numberOfBedsInt)) {
+      alert('Please enter a valid number for the number of beds');
+      return;
+    }
+  
+    if (bedIds.length !== numberOfBedsInt) {
+      alert('Number of bed IDs must match the specified number of beds');
+      return;
+    }
+  
     try {
       const wardIdentifier = wardID + '-' + departmentShortName;
-
+  
       const response = await fetch('http://localhost:5173/newward', {
         method: 'POST',
         headers: {
@@ -47,22 +59,53 @@ const CreateWardPage: React.FC = () => {
         body: JSON.stringify({
           wardId: wardIdentifier,
           numberOfBeds: numberOfBeds,
-          startBedID: startBedID,
-          endBedID: endBedID,
+          bedIds: bedIds,
         }),
       });
-
+  
       if (!response.ok) {
         const errorMessage = await response.json();
         throw new Error(errorMessage.message);
       }
-
+  
       console.log('Ward added successfully!');
-      toast.success('Ward added!');
-    } catch (error) {
+      toast.success('Ward added successfully!');
+    } catch (error: any) {
       console.error('Error adding ward:', error);
-      toast.error('Error adding ward!');
+      toast.error(error.message);
     }
+  };
+
+  const handleBedIdChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const newBedIds = [...bedIds];
+    newBedIds[index] = e.target.value;
+    setBedIds(newBedIds);
+  };
+
+  const addBedId = () => {
+    if (bedIds.length < parseInt(numberOfBeds)) {
+      setBedIds([...bedIds, '']);
+    } else {
+      toast.error('Cannot add more bed IDs than the specified number of beds');
+    }
+  };
+
+  const removeBedId = (index: number) => {
+    const newBedIds = [...bedIds];
+    newBedIds.splice(index, 1);
+    setBedIds(newBedIds);
+    if (newBedIds.length < parseInt(numberOfBeds)) {
+      toast.error('Cannot have fewer bed IDs than the specified number of beds');
+    }
+  };
+
+  const isFormValid = () => {
+    return (
+      wardID.trim() !== '' &&
+      departmentShortName.trim() !== '' &&
+      numberOfBeds.trim() !== '' &&
+      bedIds.length === parseInt(numberOfBeds)
+    );
   };
 
   return (
@@ -114,36 +157,39 @@ const CreateWardPage: React.FC = () => {
             onChange={(e) => setNumberOfBeds(e.target.value)}
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="startBedID" className="block text-gray-700 font-bold mb-2">
-            Start Bed ID
-          </label>
-          <input
-            type="text"
-            id="startBedID"
-            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Enter Start Bed ID"
-            value={startBedID}
-            onChange={(e) => setStartBedID(e.target.value)}
-          />
+        <div>
+          <label className="block text-gray-700 font-bold mb-2">Bed IDs</label>
+          {bedIds.map((bedId, index) => (
+            <div key={index} className="mb-2 flex items-center">
+              <input
+                type="text"
+                className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder={`Enter Bed ID ${index + 1}`}
+                value={bedId}
+                onChange={(e) => handleBedIdChange(e, index)}
+              />
+              <button
+                type="button"
+                className="ml-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
+                onClick={() => removeBedId(index)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
+            onClick={addBedId}
+          >
+            Add Bed ID
+          </button>
         </div>
-        <div className="mb-6">
-          <label htmlFor="endBedID" className="block text-gray-700 font-bold mb-2">
-            End Bed ID
-          </label>
-          <input
-            type="text"
-            id="endBedID"
-            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Enter End Bed ID"
-            value={endBedID}
-            onChange={(e) => setEndBedID(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center mt-6">
           <button
             type="submit"
-            className="bg-lime-500 hover:bg-lime-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
+            className="bg-lime-500 hover:bg-lime-600 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            disabled={!isFormValid()}
           >
             Add Ward
           </button>

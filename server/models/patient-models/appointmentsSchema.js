@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const appointmentStatusEnum = ["Pending", "Scheduled", "Completed"];
+const appointmentStatusEnum = ["Pending", "Scheduled", "Completed", "Cancelled"];
 
 const appointmentSchema = new mongoose.Schema({
     apptID: { type: String, required: true, unique: true }, 

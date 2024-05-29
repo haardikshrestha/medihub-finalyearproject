@@ -3,6 +3,8 @@ const Patient = require("../models/patient-models/patientSchema");
 const User = require("../models/userSchema");
 const Appointment = require("../models/patient-models/appointmentsSchema");
 const SampleCollection = require("../models/pathology-models/sampleCollectionSchema");
+const InPatient = require("../models/patient-models/inPatientSchema");
+const Feedback = require("../models/feedback");
 
 const app = express();
 app.use(express.json());
@@ -55,11 +57,10 @@ const patientsInfo = async (req, res) => {
         .status(400)
         .json({ error: "User must be at least 18 years old." });
     }
-    
 
     const patientId = await generatePatientId();
 
-    console.log(patientId)
+    console.log(patientId);
 
     const newPatient = new Patient({
       patientId,
@@ -203,7 +204,9 @@ const deletePatientByEmail = async (req, res) => {
   try {
     const { email } = req.params;
 
-    const deletedPatient = await Patient.findOneAndDelete({ email }).session(session);
+    const deletedPatient = await Patient.findOneAndDelete({ email }).session(
+      session
+    );
 
     if (!deletedPatient) {
       await session.abortTransaction();
@@ -247,14 +250,109 @@ const updatePatientByEmail = async (req, res) => {
 const patientNumbersStat = async (req, res) => {
   try {
     const { email } = req.body;
-    const sampleCollectionCount = await SampleCollection.countDocuments({ patientEmail: email });
+    const sampleCollectionCount = await SampleCollection.countDocuments({
+      patientEmail: email,
+    });
 
-    const appointmentCount = await Appointment.countDocuments({ patientEmail: email });
+    const appointmentCount = await Appointment.countDocuments({
+      patientEmail: email,
+    });
 
     res.json({ sampleCollectionCount, appointmentCount });
   } catch (error) {
-    console.log('Error fetching patient numbers stat:', error);
+    console.log("Error fetching patient numbers stat:", error);
     res.status(500).json(error);
+  }
+};
+
+const addInpatients = async (req, res) => {
+  const {
+    email,
+    firstName,
+    lastName,
+    gender,
+    dateofbirth,
+    chronicillness,
+    address,
+    bloodgroup,
+    admitdate,
+    dischargedate,
+    ward,
+    bed,
+    status,
+    medications,
+  } = req.body;
+
+  try {
+    const existingPatient = await InPatient.findOne({ email });
+    if (existingPatient) {
+      return res.status(400).json({ error: "Patient already exists." });
+    }
+    const newInPatient = new InPatient({
+      email,
+      firstName,
+      lastName,
+      gender,
+      dateofbirth,
+      chronicillness,
+      address,
+      bloodgroup,
+      admitdate,
+      dischargedate,
+      ward,
+      bed,
+      status,
+      medications,
+    });
+
+    await newInPatient.save();
+
+    const mailOptions = {
+      from: "app.medihub@gmail.com",
+      to: email,
+      subject: "Admission Notification",
+      text: `Dear ${firstName} ${lastName},\n\nYou have been admitted to the hospital.\n\nHere are your details:\nFirst Name: ${firstName}\nLast Name: ${lastName}\nGender: ${gender}\nDate of Birth: ${dateofbirth}\nChronic Illness: ${chronicillness}\nAddress: ${address}\nBlood Group: ${bloodgroup}\nAdmit Date: ${admitdate}\nWard: ${ward}\nBed: ${bed}\n\nThank you.`, // Added bed to email
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+      } else {
+        console.log("Email sent:", info.response);
+      }
+    });
+
+    res
+      .status(201)
+      .json({ message: "Inpatient created successfully", data: newInPatient });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const feedback = async (req, res) => {
+  const { feedbackText } = req.body;
+
+  try {
+    const feedback = new Feedback({
+      feedbackText,
+    });
+
+    await feedback.save();
+    res
+      .status(201)
+      .json({ message: "Feedback submitted successfully", data: feedback });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getAllFeedback = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find();
+    res.status(200).json(feedbacks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -264,9 +362,11 @@ const PatientController = {
   getPatientbyEmail,
   getPatients,
   deletePatientByEmail,
-  updatePatientByEmail, 
-  patientNumbersStat
+  updatePatientByEmail,
+  patientNumbersStat,
+  addInpatients,
+  feedback,
+  getAllFeedback
 };
-
 
 module.exports = PatientController;

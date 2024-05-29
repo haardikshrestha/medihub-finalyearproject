@@ -68,6 +68,9 @@ import CreateWard from "@/components/admin/crud/Ward/CreateWard";
 import PatientSettingsPage from "@/pages/patientPages/PatientSettingsPage";
 import PathologistProfile from "@/components/pathologist/profile/PathologistProfile";
 import TestResultsView from "@/pages/pathologistPages/TestResultsView";
+import PatientDiagnosis from "@/pages/patientPages/Diagnosis/patientDiagnosis";
+import DiagnosisCard from "@/pages/doctorPages/DiagnosisDoctor";
+import AddSurgery from "@/components/admin/crud/Surgery/AddSurgery";
 
 const AppRouter = () => {
   return (
@@ -97,6 +100,7 @@ const AppRouter = () => {
             <Route path="/admin/labtests" element={<LabTestsPage />} />
             <Route path="/admin/vieweditpatients" element={<ViewEditPatients />} />
             <Route path="/admin/vieweditdoctors" element={<ViewEditDoctor />} />
+            <Route path="/admin/surgery" element={<AddSurgery />} />
           </Route>
 
           <Route element={<DoctorLayout />}>
@@ -110,6 +114,7 @@ const AppRouter = () => {
             <Route path="/doctor/pathology" element={<DoctorPathology />} />
             <Route path="/doctor/settings" element={<DoctorSettings />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
+            <Route path="/doctor/diagnosis" element={<DiagnosisCard />} />
           </Route>
 
           <Route element={<PatientLayout />}>
@@ -132,6 +137,7 @@ const AppRouter = () => {
             <Route path="/patient/bedbooking" element={<BedBookingComponent />} />
             <Route path="/patient/wards" element={<WardBookingComponent />} />
             <Route path="/patient/notifications" element={<WardBookingComponent />} />
+            <Route path="/patient/diagnosis" element={<PatientDiagnosis />} />
           </Route>
 
           <Route element={<PathologistLayout />}>

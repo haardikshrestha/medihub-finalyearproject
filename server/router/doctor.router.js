@@ -8,6 +8,7 @@ router.get("/getdoctorsbyexpertise/:expertise", DoctorController.getDoctorbyExpe
 router.get("/getdoctorbyemail/:email", DoctorController.getDoctorbyEmail);
 router.post("/deleteDoctor", DoctorController.deleteDoctor);
 router.post("/newdoctor", DoctorController.newDoctor);
+router.post("/savediagnosis", DoctorController.newDiagnosis);
 
 // -----
 

@@ -1,7 +1,16 @@
 const express = require("express");
 const Appointment = require("../models/patient-models/appointmentsSchema");
+const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.json());
+
+const transporter = nodemailer.createTransport({
+  service: process.env.SERVICE,
+  auth: {
+    user: process.env.USER,
+    pass: process.env.PASS,
+  },
+});
 
 const postAppointments = async (req, res) => {
   try {
@@ -86,11 +95,12 @@ const postDoctorAppointment = async (req, res) => {
     });
 
     if (existingAppointments.length > 0) {
-      return res.status(400).json({ message: "Appointment time is already booked" });
+      return res.status(400).json({ message: 'Appointment time is already booked' });
     }
 
     let apptID = generateRandomId();
     let existingAppointment = await Appointment.findOne({ apptID });
+
     while (existingAppointment) {
       apptID = generateRandomId();
       existingAppointment = await Appointment.findOne({ apptID });
@@ -106,6 +116,33 @@ const postDoctorAppointment = async (req, res) => {
     });
 
     await newAppointment.save();
+
+    const mailOptions = {
+      from: 'your-email@example.com',
+      to: apptPatient,
+      subject: 'Appointment Confirmation',
+      text: `Dear Patient,
+
+Your appointment with Dr. ${newAppointment.apptDoctor} has been scheduled for ${newAppointment.apptDate} at ${newAppointment.apptTime}.
+
+Reason: ${newAppointment.apptReason}
+
+You will be notified after confirmation.
+
+Regards,
+MediHub Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    const doctorMailOptions = {
+      from: 'your-email@example.com',
+      to: newAppointment.apptDoctor,
+      subject: 'New Appointment Scheduled',
+      text: `Dear Doctor, A new appointment has been scheduled for you with ${newAppointment.apptPatient} on ${newAppointment.apptDate} at ${newAppointment.apptTime}. Reason: ${newAppointment.apptReason} Please confirm the appointment at your earliest convenience. Regards, MediHub Team`,
+    };
+    await transporter.sendMail(doctorMailOptions);
+
     res.status(201).json(newAppointment);
   } catch (err) {
     console.error(err);
@@ -121,12 +158,26 @@ const getAppointmentsByDate = async (req, res) => {
       return res.status(400).json({ message: "Date is required" });
     }
 
-    const appointments = await Appointment.find({ apptDate: date });
+    const appointments = await Appointment.find({ apptDate: date, apptStatus: "Scheduled" });
 
     res.status(200).json(appointments);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+const getAppointmentsByDateAndDoctor= async (req, res) => {
+  const { date, doctorEmail } = req.query;
+
+  if (!date || !doctorEmail) {
+    return res.status(400).json({ error: 'Date and doctorEmail are required' });
+  }
+
+  const filteredAppointments = appointments.filter(
+    (appt) => appt.apptDate === date && appt.apptDoctor === doctorEmail
+  );
+
+  res.json(filteredAppointments);
 };
 
 const mongoose = require('mongoose');
@@ -182,6 +233,57 @@ const getPositionInQueue = async (req, res) => {
   }
 };
 
+const sendEmail = async (to, subject, text) => {
+  const mailOptions = {
+    from: 'app.medihub@gmail.com', 
+    to: to,
+    subject: subject,
+    text: text,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
+
+const updateappointment = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { apptStatus: status },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    const subject = `Appointment ${status}`;
+    const text = `Dear Patient,
+
+Your appointment with Dr. ${appointment.apptDoctor} has been ${status.toLowerCase()}.
+
+Appointment Details:
+- Date: ${new Date(appointment.apptDate).toLocaleDateString()}
+- Time: ${appointment.apptTime}
+- Reason: ${appointment.apptReason}
+
+Regards,
+MediHub Team`;
+
+    await sendEmail(appointment.apptPatient, subject, text);
+
+    res.json(appointment);
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 const AppointmentController = {
   postAppointments,
   getAppointments,
@@ -190,7 +292,9 @@ const AppointmentController = {
   postDoctorAppointment,
   getAppointmentsByDate,
   cancelAppointment,
-  getPositionInQueue
+  getPositionInQueue,
+  getAppointmentsByDateAndDoctor,
+  updateappointment
 };
 
 module.exports = AppointmentController;

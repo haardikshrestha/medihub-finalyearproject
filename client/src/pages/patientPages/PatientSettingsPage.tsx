@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { IoMdPerson, IoMdNotifications } from "react-icons/io";
+import { IoMdPerson } from "react-icons/io";
+import { MdFeedback } from "react-icons/md"; // Feedback icon
 import PatientProfile from "@/components/patient/Profile/PatientProfile";
-import PatientNotifications from '@/components/patient/Settings/Notifications';
 import TermsAndConditions from '@/components/patient/Settings/Terms';
+import PatientFeedbackForm from './Feedback/PatientFeedback';
 
 const PatientSettingsPage: React.FC = () => {
-  const [selectedView, setSelectedView] = useState<'profile' | 'notifications' | 'terms'>('profile');
+  const [selectedView, setSelectedView] = useState<'profile' | 'feedback' | 'terms'>('profile');
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 rounded-lg px-4 py-7">
@@ -18,10 +19,10 @@ const PatientSettingsPage: React.FC = () => {
             <IoMdPerson className="h-6 w-6" />
           </button>
           <button
-            onClick={() => setSelectedView('notifications')}
-            className={`text-gray-500 hover:text-[#7da466] focus:outline-none ${selectedView === 'notifications' ? 'text-[#7da466]' : ''}`}
+            onClick={() => setSelectedView('feedback')}
+            className={`text-gray-500 hover:text-[#7da466] focus:outline-none ${selectedView === 'feedback' ? 'text-[#7da466]' : ''}`}
           >
-            <IoMdNotifications className="h-6 w-6" />
+            <MdFeedback className="h-6 w-6" />
           </button>
           <button
             onClick={() => setSelectedView('terms')}
@@ -32,7 +33,7 @@ const PatientSettingsPage: React.FC = () => {
         </div>
       </div>
       {selectedView === 'profile' && <PatientProfile />}
-      {selectedView === 'notifications' && <PatientNotifications />}
+      {selectedView === 'feedback' && <PatientFeedbackForm />}
       {selectedView === 'terms' && <TermsAndConditions />}
     </div>
   );

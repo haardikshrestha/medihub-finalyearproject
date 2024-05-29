@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BsPlus } from "react-icons/bs";
 import DiagnosisForm from "@/components/doctor/DiagnosisForm";
+import PatientDiagnosisCard from "@/components/doctor/Patients/PatientDiagnosis";
+import DiagnosisCardPatient from "@/components/doctor/Patients/PatientDiagnosis";
 
 interface Patient {
   email: string;
@@ -118,17 +120,21 @@ const PatientView: React.FC = () => {
           </div>
         </div>
       </div>
-      {!showDiagnosisForm && (
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={handleAddDiagnosis}
-            className=" py-3 px-6 rounded-full bg-[#7da466] hover:bg-[#668753] text-white transition-colors duration-200 flex items-center"
-          >
-            <BsPlus className="inline-block mr-2" size={24} /> Add Diagnosis
-          </button>
-        </div>
-      )}
-      {showDiagnosisForm && <DiagnosisForm onCancel={handleCancelDiagnosis} />}
+      <div className="">
+        {!showDiagnosisForm && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleAddDiagnosis}
+              className=" py-3 px-6 rounded-full bg-[#7da466] hover:bg-[#668753] text-white transition-colors duration-200 flex items-center"
+            >
+              <BsPlus className="inline-block mr-2" size={24} /> Add Diagnosis
+            </button>
+          </div>
+        )}
+        {showDiagnosisForm && <DiagnosisForm onCancel={handleCancelDiagnosis} />}
+        <DiagnosisCardPatient/>
+      </div>
+
     </div>
   );
 };

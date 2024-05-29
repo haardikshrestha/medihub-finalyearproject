@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const surgerySchema = new mongoose.Schema({
-  patientName: {
+  patientEmail: {
     type: String,
     required: true
   },
@@ -9,26 +9,14 @@ const surgerySchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  surgeonName: {
+  doctorEmail: {
     type: String,
     required: true
   },
-  assistantSurgeonName: String,
-  anesthesiaType: String,
-  procedure: {
-    type: String,
-    required: true
+  notes: {
+    type: [String], 
+    default: [] 
   },
-  notes: String,
-  complications: String,
-  medicationsPrescribed: [{
-    name: String,
-    dosage: String,
-    frequency: String,
-    duration: String
-  }],
-  followUpDate: Date,
-  followUpNotes: String
 });
 
 const Surgery = mongoose.model('Surgery', surgerySchema);

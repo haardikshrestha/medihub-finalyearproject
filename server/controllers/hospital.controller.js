@@ -5,6 +5,15 @@ const Surgery = require("../models/doctor-models/surgerySchema");
 const app = express();
 app.use(express.json());
 
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+  service: process.env.SERVICE,
+  auth: {
+    user: process.env.USER,
+    pass: process.env.PASS,
+  },
+});
+
 const getWards = async (req, res) => {
   try {
     const wards = await Ward.find();
@@ -17,22 +26,15 @@ const getWards = async (req, res) => {
 
 const newWard = async (req, res) => {
   try {
-    const { wardId, numberOfBeds, startBedID, endBedID } = req.body;
-
+    const { wardId, numberOfBeds, bedIds } = req.body;
     const existingWard = await Ward.findOne({ wardId });
+
     if (existingWard) {
       return res.status(400).json({ message: "Ward ID already exists" });
     }
 
-    const newWard = new Ward({
-      wardId,
-      numberOfBeds,
-      startBedID,
-      endBedID
-    });
-
+    const newWard = new Ward({ wardId, numberOfBeds, bedIds });
     const savedWard = await newWard.save();
-
     res.status(201).json(savedWard);
   } catch (error) {
     console.error(error);
@@ -145,16 +147,61 @@ const getdisDepartment = async (req, res) => {
   }
 };
 
+const sendEmail = (patientEmail, surgeryDate, doctorEmail) => {
+  const mailOptions = {
+    from: 'app.medihubl@example.com',
+    to: patientEmail,
+    subject: 'MediHub: Surgery Scheduled',
+    text: `Dear Patient,
+
+Your surgery has been scheduled as follows:
+Date: ${new Date(surgeryDate).toLocaleDateString()}
+Doctor: ${doctorEmail}
+
+Please contact us if you have any questions.
+
+Best regards,
+MediHub Team`
+  };
+
+  return transporter.sendMail(mailOptions);
+};
+
 const addSurgery = async (req, res) => {
   try {
     const newSurgery = new Surgery(req.body);
     await newSurgery.save();
-    res
-      .status(201)
-      .send({ message: "Surgery information saved successfully!" });
+
+    await sendEmail(newSurgery.patientEmail, newSurgery.surgeryDate, newSurgery.doctorEmail);
+
+    res.status(201).send({ message: "Surgery information saved and email sent successfully!" });
   } catch (err) {
     console.error(err);
-    res.status(500).send(error);
+    res.status(500).send({ error: 'Failed to save surgery information or send email.' });
+  }
+};
+
+const addNote = async (req, res) => {
+  const { id } = req.params;
+  const { note } = req.body;
+
+  try {
+    const surgery = await Surgery.findById(id);
+    if (!surgery) {
+      return res.status(404).json({ message: "Surgery not found" });
+    }
+
+    // Check if notes field is an array
+    if (!Array.isArray(surgery.notes)) {
+      surgery.notes = [];
+    }
+
+    surgery.notes.push(note);
+    await surgery.save();
+    res.status(200).json({ notes: surgery.notes });
+  } catch (error) {
+    console.error("Error adding note:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -237,6 +284,7 @@ const HospitalController = {
   editDepartment,
   deleteDepartment,
   getDepartmentById,
+  addNote
 };
 
 module.exports = HospitalController;

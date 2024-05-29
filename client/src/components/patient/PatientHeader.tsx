@@ -33,14 +33,7 @@ const PatientHeader = () => {
   return (
     <>
       <div className="justify-end bg-gray-100 flex items-center p-3 fixed top-0 w-full z-10">
-        <Link to="/patient/notifications" className="text-black mx-2 text-xl relative">
-          <TbBell />
-          {notifications > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-xs">
-              {notifications}
-            </span>
-          )}
-        </Link>
+        
         <Link to="/patient/appointmenthistory" className="text-black mx-2 text-xl relative">
           <TbCalendarEvent />
           {upcomingAppointments > 0 && (

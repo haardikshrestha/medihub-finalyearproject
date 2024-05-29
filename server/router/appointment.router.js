@@ -10,7 +10,7 @@ router.post("/post/doctor/appointment", AppointmentController.postDoctorAppointm
 router.get("/getappointmentsbydate", AppointmentController.getAppointmentsByDate); 
 router.post("/appointmentcancel", AppointmentController.cancelAppointment);
 router.post("/getpositioninqueue", AppointmentController.getPositionInQueue);
-
-
+router.get("/getAppointmentsByDateAndDoctor", AppointmentController.getAppointmentsByDateAndDoctor);
+router.put("/updateappointment/:id", AppointmentController.updateappointment);
 
 module.exports = router;

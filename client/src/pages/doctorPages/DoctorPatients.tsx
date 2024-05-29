@@ -5,7 +5,7 @@ const DoctorPatients = () => {
   return (
     <>
       <div>
-         <Patients/>
+         {/* <Patients/> */}
          <InPatientList/>
       </div>
     </>
